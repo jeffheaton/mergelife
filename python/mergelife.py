@@ -5,7 +5,7 @@ import scipy.stats
 import ctypes
 from PIL import Image
 import os
-import largest_rect
+import dp
 import logging
 
 PATH = "C:\\Users\\jeffh\\temp\mlife\\"
@@ -167,7 +167,7 @@ def calc_objective_stats(ml_instance):
     c = sum(delta.ravel()) / (h * w * 3)
 
     # Largest rect of mode
-    mr = largest_rect.max_size(d2_avg, md2)
+    mr = dp.max_size(d2_avg, md2)
     mr = (mr[0] * mr[1]) / (h * w)
 
     return [c, bg_pct, mr]
@@ -345,7 +345,7 @@ def calc_stat_largest_rect(ml_inst,o):
     height = ml_inst['height']
     width = ml_inst['width']
     e2 = ml_inst['lattice'][1]['eval']
-    mr = largest_rect.max_size(e2['merge'], o['mode'])
+    mr = dp.max_size(e2['merge'], o['mode'])
     return (mr[0] * mr[1]) / (height * width)
 
 
