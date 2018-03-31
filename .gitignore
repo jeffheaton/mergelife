@@ -1,3 +1,7 @@
 .idea
+.gradle
+*.iml
+build/
+out/
 __pycache__
 .DS_Store
