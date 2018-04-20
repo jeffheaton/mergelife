@@ -8,33 +8,75 @@ import java.util.regex.Pattern;
 
 public class MergeLifeRule {
 
+    /**
+     * One subrule within a MergeLife rule.
+     */
     public static class SubRule implements Comparable<SubRule> {
+
+        /**
+         * Alpha: The high-end of the neighbor count range that this subrule applies to.
+         */
         private final int alpha;
+
+        /**
+         * Beta: The percentage that a color tha this subrule applies to should move towards
+         * the key color.
+         */
         private final double beta;
+
+        /**
+         * Gamma: Used to obtain the index of the key color.  If beta is positive, gamma is the
+         * index of the key color.  If beta is negative, the key color is the row after
+         * the index specified by gamma.
+         */
         private final int gamma;
 
+        /**
+         * Construct a SubRule.
+         * @param alpha Alpha: The high end of the ragne.
+         * @param beta Beta: The percent to move towards key color.
+         * @param gamma Gamma: The index.
+         */
         private SubRule(int alpha, double beta, int gamma) {
             this.alpha = alpha;
             this.beta = beta;
             this.gamma = gamma;
         }
 
+        /**
+         * @return Alpha: The high-end of the neighbor count range that this subrule aplies to.
+         */
         public int getAlpha() {
             return alpha;
         }
 
+        /**
+         * @return Beta: The percentage that a color tha this subrule aplies to should move towards
+         * the key color.
+         */
         public double getBeta() {
             return beta;
         }
 
+        /**
+         * @return Gamma: Used to obtain the index of the key color.  If beta is positive,
+         * gamma is the index of the key color.  If beta is negative, the key color is the
+         * row after the index specified by gama.
+         */
         public int getGamma() {
             return gamma;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public int compareTo(SubRule otherRule) {
             return Integer.compare(getAlpha(),otherRule.getAlpha());
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public String toString() {
             StringBuilder result = new StringBuilder();
             result.append("[SubRule: alpha=");
@@ -48,6 +90,9 @@ public class MergeLifeRule {
         }
     }
 
+    /**
+     * The key colors.
+     */
     public static int[][] ColorTable = {
         {0, 0,0},  // Black 0
         {255,0,0},   // Red 1
@@ -59,10 +104,21 @@ public class MergeLifeRule {
         {255,255,255}  // White 7
     };
 
+    /**
+     * REGEX for parsing the hex string for MergeLife.
+     */
     Pattern rulePattern = Pattern.compile("([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})[^a-zA-Z0-9_]?([0-9a-fA-F]{4})");
+
+    /**
+     * The subrules.
+     */
     List<SubRule> subRules = new ArrayList<>();
 
-
+    /**
+     * Construct a MergeLife rule.
+     * @param ruleText The hex string that defines this rule.
+     * @throws MergeLifeException Invalid rule string.
+     */
     public MergeLifeRule(String ruleText) throws MergeLifeException {
         Matcher matcher = rulePattern.matcher(ruleText);
         if(matcher.find()) {
@@ -89,10 +145,16 @@ public class MergeLifeRule {
         }
     }
 
+    /**
+     * @return The subrules.
+     */
     public List<SubRule> getSubRules() {
         return subRules;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String toString() {
         StringBuilder result = new StringBuilder();
         for(SubRule subRule: this.subRules) {
