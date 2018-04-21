@@ -6,6 +6,10 @@ import org.heatonresearch.mergelife.MergeLifeRule;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
+
 public class TestMergeLifeGrid {
 
     @Test
@@ -73,5 +77,106 @@ public class TestMergeLifeGrid {
     public void testIndexOutOfBoundsException() {
         MergeLifeGrid grid = new MergeLifeGrid(2,3);
         grid.getGrid(2);
+    }
+
+    @Test
+    public void testRandomize() {
+        MergeLifeGrid grid = new MergeLifeGrid(2,2);
+        grid.randomize(0, new Random(42));
+        Assert.assertEquals(186, grid.getGrid(0)[0][0][0]);
+        Assert.assertEquals(174, grid.getGrid(0)[0][0][1]);
+        Assert.assertEquals(79, grid.getGrid(0)[0][0][2]);
+
+        Assert.assertEquals(94, grid.getGrid(0)[1][0][0]);
+        Assert.assertEquals(70, grid.getGrid(0)[1][0][1]);
+        Assert.assertEquals(118, grid.getGrid(0)[1][0][2]);
+    }
+
+    private void setPixel(MergeLifeGrid grid, int row, int col, int value) {
+        grid.getGrid(0)[row][col][0] = value;
+        grid.getGrid(0)[row][col][1] = value;
+        grid.getGrid(0)[row][col][2] = value;
+    }
+
+    private MergeLifeGrid createGrid() {
+        int value = 0;
+        MergeLifeGrid grid = new MergeLifeGrid(3,3);
+        for(int row=0;row<3;row++) {
+            for(int col=0;col<3;col++) {
+                setPixel(grid,row,col,value);
+                value+=16;
+            }
+        }
+        return grid;
+    }
+
+    @Test
+    public void testModeGrid() {
+        MergeLifeGrid grid = createGrid();
+        setPixel(grid,1,1,32);
+        grid.calculateModeGrid(0);
+        Assert.assertEquals(32,grid.getModeGrid());
+
+    }
+
+    @Test
+    public void testCountNeighbors() {
+        MergeLifeGrid grid = createGrid();
+        grid.calculateModeGrid(0);
+        int c1 = grid.countNeighbors(1,1);
+        int c2 = grid.countNeighbors(0,0);
+        Assert.assertEquals(512, c1);
+        Assert.assertEquals(128, c2);
+    }
+
+    private void checkUpdate(MergeLifeGrid grid, int row, int col, int idx, int from, int to) {
+        Assert.assertEquals(from, grid.getGrid(0)[row][col][idx]);
+        Assert.assertEquals(to, grid.getGrid(1)[row][col][idx]);
+    }
+
+    @Test
+    public void testStep() {
+        MergeLifeGrid grid = createGrid();
+        MergeLifeRule rule = new MergeLifeRule("2080-0000-6040-0000-0000-0000-0000-0000");
+        grid.step(rule);
+
+        Assert.assertEquals(0, grid.getGrid(0)[0][0][0]);
+        Assert.assertEquals(255, grid.getGrid(1)[0][0][0]);
+
+        checkUpdate(grid,0,0, 0, 0,255);
+        checkUpdate(grid,0,0,1,0,0);
+        checkUpdate(grid,0,0,2,0,0);
+        checkUpdate(grid,0,1,0,16,255);
+        checkUpdate(grid,0,1,1,16,0);
+        checkUpdate(grid,0,1,2,16,0);
+        checkUpdate(grid,0,2,0,32,255);
+        checkUpdate(grid,0,2,1,32,0);
+        checkUpdate(grid,0,2,2,32,0);
+        checkUpdate(grid,1,0,0,48,23);
+        checkUpdate(grid,1,0,1,48,152);
+        checkUpdate(grid,1,0,2,48,23);
+        checkUpdate(grid,1,1,0,64,31);
+        checkUpdate(grid,1,1,1,64,160);
+        checkUpdate(grid,1,1,2,64,31);
+        checkUpdate(grid,1,2,0,80,39);
+        checkUpdate(grid,1,2,1,80,168);
+        checkUpdate(grid,1,2,2,80,39);
+        checkUpdate(grid,2,0,0,96,255);
+        checkUpdate(grid,2,0,1,96,0);
+        checkUpdate(grid,2,0,2,96,0);
+        checkUpdate(grid,2,1,0,112,55);
+        checkUpdate(grid,2,1,1,112,184);
+        checkUpdate(grid,2,1,2,112,55);
+        checkUpdate(grid,2,2,0,128,63);
+        checkUpdate(grid,2,2,1,128,192);
+        checkUpdate(grid,2,2,2,128,63);
+    }
+
+    @Test
+    public void testSavePNG() throws IOException {
+        File tempFile = File.createTempFile("mergelife-test-", ".png");
+        tempFile.deleteOnExit();
+        MergeLifeGrid grid = createGrid();
+        grid.savePNG(0,1,tempFile);
     }
 }

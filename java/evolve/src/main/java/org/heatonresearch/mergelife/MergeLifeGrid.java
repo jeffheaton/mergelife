@@ -1,5 +1,12 @@
 package org.heatonresearch.mergelife;
 
+import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Random;
+
 public class MergeLifeGrid {
     /**
      * The two grids (double buffering) for MergeLife. Thge first dimension is the
@@ -20,6 +27,8 @@ public class MergeLifeGrid {
      */
     private int modeGrid;
 
+    private int currentGrid = 0;
+
     /**
      * Create a MergeLife grid with the specified number of rows and columns.
      * @param rows The number of rows in the grid.
@@ -28,6 +37,19 @@ public class MergeLifeGrid {
     public MergeLifeGrid(int rows, int cols) {
         this.grid = new int[2][rows][cols][3];
         this.mergeGrid = new int[rows][cols];
+    }
+
+    public void randomize(int desiredGrid, Random rnd) {
+        int grid[][][] = getGrid(desiredGrid);
+
+        for(int row = 0; row<getRows(); row++) {
+            for (int col = 0; col < getCols(); col++) {
+                for(int i=0;i<3;i++) {
+                    grid[row][col][i] = (int)(256 * rnd.nextDouble());
+                }
+            }
+        }
+
     }
 
     /**
@@ -130,21 +152,22 @@ public class MergeLifeGrid {
      * @param rule The rule to apply.
      */
     public void step(MergeLifeRule rule) {
-        calculateModeGrid(0);
+        int targetGrid = currentGrid==0 ? 1:0;
+        calculateModeGrid(this.currentGrid);
 
-        int[][][] m = getGrid(0);
-        calculateModeGrid(0);
+        int[][][] m = getGrid(this.currentGrid);
+        calculateModeGrid(this.currentGrid);
         //int b = getModeGrid();
 
         for (int row = 0; row < getRows(); row += 1) {
-            int[][] line = getGrid(0)[row];
-            int[][] linePrime = getGrid(1)[row];
+            int[][] line = getGrid(this.currentGrid)[row];
+            int[][] linePrime = getGrid(targetGrid)[row];
             for (int col = 0; col < line.length; col += 1) {
                 int c = countNeighbors(row,col);
 
                 for(MergeLifeRule.SubRule subRule: rule.getSubRules()) {
                     if( c < subRule.getAlpha() ) {
-                        int dPrime = subRule.getAlpha();
+                        int dPrime = subRule.getGamma();
 
                         if( subRule.getBeta()<0) {
                             dPrime=(dPrime%8)+1;
@@ -152,7 +175,7 @@ public class MergeLifeGrid {
 
                         for(int j=0;j<3;j++) {
                             int delta = MergeLifeRule.ColorTable[dPrime][j] - line[col][j];
-                            delta = (int)Math.floor(delta*subRule.getBeta());
+                            delta = (int)Math.floor(delta*Math.abs(subRule.getBeta()));
                             linePrime[col][j] = line[col][j] + delta;
                         }
                         break;
@@ -160,5 +183,12 @@ public class MergeLifeGrid {
                 }
             }
         }
+        this.currentGrid = currentGrid==0 ? 1:0;
+    }
+
+    public void savePNG(int desiredGrid, int zoom, File file) throws IOException {
+        VisualizeGridImage viz = new VisualizeGridImage(this, zoom);
+        BufferedImage img = viz.visualize(desiredGrid);
+        ImageIO.write(img,"png", file);
     }
 }
