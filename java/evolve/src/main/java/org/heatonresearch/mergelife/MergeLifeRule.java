@@ -3,6 +3,7 @@ package org.heatonresearch.mergelife;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,6 +147,29 @@ public class MergeLifeRule {
     }
 
     /**
+     * Construct a random MergeLife rule.
+     */
+    public MergeLifeRule(Random rnd) {
+        this(MergeLifeRule.generateRandomRuleString(rnd));
+    }
+
+    /**
+     * Generate a random MergeLife rule string.
+     * @return
+     */
+    public static String generateRandomRuleString(Random rnd) {
+        StringBuilder result = new StringBuilder();
+        for(int i=0;i<8;i++) {
+            int j = (int)(0x10000 * rnd.nextDouble());
+            result.append(Integer.toString(j,16));
+            if( i<7 ) {
+                result.append("-");
+            }
+        }
+        return result.toString();
+    }
+
+    /**
      * @return The subrules.
      */
     public List<SubRule> getSubRules() {
@@ -163,4 +187,30 @@ public class MergeLifeRule {
         }
         return result.toString();
     }
+
+    private String hexTwo(int d) {
+        String result = String.format("%02X", d);
+        return result.substring(result.length()-2);
+    }
+
+    public String getRuleString() {
+        StringBuilder result = new StringBuilder();
+        for(int i=0;i<this.getSubRules().size();i++) {
+            for(SubRule subRule: this.subRules) {
+                if( subRule.getGamma() == i) {
+                    int o1 = subRule.getAlpha()/8;
+                    int o2 = (int)(subRule.getBeta()>0 ? subRule.getBeta()*127.0 : subRule.getBeta()*128.0);
+                    o1 = Math.min(255,o1);
+                    o2 = Math.min(255,o2);
+                    result.append(hexTwo(o1));
+                    result.append(hexTwo(o2));
+                }
+            }
+            if( i<7 ) {
+                result.append("-");
+            }
+        }
+        return result.toString().toUpperCase();
+    }
+
 }

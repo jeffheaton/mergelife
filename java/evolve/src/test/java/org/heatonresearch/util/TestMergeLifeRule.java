@@ -5,6 +5,8 @@ import org.heatonresearch.mergelife.MergeLifeRule;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Random;
+
 public class TestMergeLifeRule {
 
     @Test
@@ -132,6 +134,22 @@ public class TestMergeLifeRule {
     public void testIndexOutOfBoundsException() {
         new MergeLifeRule("7b58-f7b4-c5b4-fd87-22fa-eb10-6de8");
 
+    }
+
+    @Test
+    public void testRandomRule() {
+        MergeLifeRule rule = new MergeLifeRule(new Random(42));
+        Assert.assertEquals("",rule.getRuleString());
+    }
+
+    @Test
+    public void testRuleString() {
+        Assert.assertEquals("E542-5F79-9341-F31E-6C6B-7F08-8773-7068", new MergeLifeRule("E542-5F79-9341-F31E-6C6B-7F08-8773-7068").getRuleString());
+        Assert.assertEquals("A07F-C000-0000-0000-0000-0000-FF80-807F", new MergeLifeRule("A07F-C000-0000-0000-0000-0000-FF80-807F").getRuleString());
+        Assert.assertEquals("7B58-F7B4-C5B4-FD87-22FA-EB10-6DE8-107C", new MergeLifeRule("7b58-f7b4-c5b4-fd87-22fa-eb10-6de8-107c").getRuleString());
+        Assert.assertEquals("8503-5EB6-084C-04DF-7657-A5B3-6044-3524", new MergeLifeRule("8503-5eb6-084c-04df-7657-a5b3-6044-3524").getRuleString());
+        Assert.assertEquals("6769-5DD6-7D03-564E-A5EC-CAE2-54C4-810C", new MergeLifeRule("6769-5dd6-7d03-564e-a5ec-cae2-54c4-810c").getRuleString());
+        Assert.assertEquals("DF1D-BBA1-8E06-AA66-48FF-7414-6A2F-6237", new MergeLifeRule("df1d-bba1-8e06-aa66-48ff-7414-6a2f-6237").getRuleString());
     }
 
 }

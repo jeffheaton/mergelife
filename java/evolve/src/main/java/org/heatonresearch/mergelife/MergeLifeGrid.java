@@ -27,7 +27,15 @@ public class MergeLifeGrid {
      */
     private int modeGrid;
 
+    /**
+     * The current grid, flips between 0 and 1 for each step/generation.
+     */
     private int currentGrid = 0;
+
+    /**
+     * The current step, how many update steps have occured.
+     */
+    private int currentStep = 0;
 
     /**
      * Create a MergeLife grid with the specified number of rows and columns.
@@ -39,6 +47,11 @@ public class MergeLifeGrid {
         this.mergeGrid = new int[rows][cols];
     }
 
+    /**
+     * Randomize the grid to random RGA colors.
+     * @param desiredGrid Which grid to randomize (0 or 1)
+     * @param rnd A random number generator to use.
+     */
     public void randomize(int desiredGrid, Random rnd) {
         int grid[][][] = getGrid(desiredGrid);
 
@@ -50,6 +63,8 @@ public class MergeLifeGrid {
             }
         }
 
+        this.currentStep = 0;
+        this.currentGrid = desiredGrid;
     }
 
     /**
@@ -184,11 +199,49 @@ public class MergeLifeGrid {
             }
         }
         this.currentGrid = currentGrid==0 ? 1:0;
+        this.currentStep += 1;
     }
 
+    /**
+     * Save the current grid as a PNG file.
+     * @param desiredGrid The grid to save (0 or 1).
+     * @param zoom How many pixels should each sell contain.
+     * @param file The filename.
+     * @throws IOException An error occured writing the file.
+     */
     public void savePNG(int desiredGrid, int zoom, File file) throws IOException {
         VisualizeGridImage viz = new VisualizeGridImage(this, zoom);
         BufferedImage img = viz.visualize(desiredGrid);
         ImageIO.write(img,"png", file);
+    }
+
+    /**
+     * @return The current step.
+     */
+    public int getCurrentStep() {
+        return currentStep;
+    }
+
+    /**
+     * Set the current step.
+     * @param currentStep The current step.
+     */
+    public void setCurrentStep(int currentStep) {
+        this.currentStep = currentStep;
+    }
+
+    /**
+     * @return The current grid (0 or 1).
+     */
+    public int getCurrentGrid() {
+        return currentGrid;
+    }
+
+    /**
+     * Set the current grid.
+     * @param currentGrid The current grid (0 or 1).
+     */
+    public void setCurrentGrid(int currentGrid) {
+        this.currentGrid = currentGrid;
     }
 }

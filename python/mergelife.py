@@ -4,7 +4,6 @@ import scipy
 import scipy.stats
 import ctypes
 from PIL import Image
-import os
 import dp
 import logging
 
@@ -135,42 +134,6 @@ def randomize_lattice(ml_instance):
     ml_instance['time_step'] = 0
     ml_instance['lattice'][0]['data'] = np.random.randint(0, 256, size=(height, width, 3), dtype=np.uint8)
     ml_instance['lattice'][1]['data'] = np.copy(ml_instance['lattice'][0]['data'])
-
-
-def calc_objective_stats(ml_instance):
-    h = ml_instance['height']
-    w = ml_instance['width']
-
-    e1 = ml_instance['lattice'][0]['eval']
-    e2 = ml_instance['lattice'][1]['eval']
-
-    if e1 is None or e2 is None:
-        return [0, 0, 0]
-
-    d1_avg = e1['merge']
-    d2_avg = e2['merge']
-
-    # What percent of the grid is the mode, what percent is the background
-    md1 = e1['mode']
-    md2 = e2['mode']
-
-    if md1 == md2:
-        bg_count = d2_avg == md2
-        bg_count = bg_count.ravel()
-        bg_count = sum(bg_count)
-        bg_pct = bg_count / (h * w)
-    else:
-        bg_pct = 0
-
-    # What is difference between the last two frames
-    delta = d1_avg == d2_avg
-    c = sum(delta.ravel()) / (h * w * 3)
-
-    # Largest rect of mode
-    mr = dp.max_size(d2_avg, md2)
-    mr = (mr[0] * mr[1]) / (h * w)
-
-    return [c, bg_pct, mr]
 
 
 def save_image(ml_instance, filename):

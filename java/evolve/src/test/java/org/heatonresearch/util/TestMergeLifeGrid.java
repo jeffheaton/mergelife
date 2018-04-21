@@ -179,4 +179,32 @@ public class TestMergeLifeGrid {
         MergeLifeGrid grid = createGrid();
         grid.savePNG(0,1,tempFile);
     }
+
+    public void testCurrentGrid() {
+        MergeLifeGrid grid = createGrid();
+        MergeLifeRule rule = new MergeLifeRule("2080-0000-6040-0000-0000-0000-0000-0000");
+        Assert.assertEquals(0,grid.getCurrentGrid());
+        Assert.assertEquals(0,grid.getCurrentStep());
+        grid.step(rule);
+        Assert.assertEquals(1,grid.getCurrentGrid());
+        Assert.assertEquals(1,grid.getCurrentStep());
+        grid.step(rule);
+        Assert.assertEquals(0,grid.getCurrentGrid());
+        Assert.assertEquals(2,grid.getCurrentStep());
+    }
+
+    public void testSetCurrentGrid() {
+        MergeLifeGrid grid = createGrid();
+        grid.setCurrentGrid(0);
+        MergeLifeRule rule = new MergeLifeRule("2080-0000-6040-0000-0000-0000-0000-0000");
+        Assert.assertEquals(0,grid.getCurrentGrid());
+        Assert.assertEquals(0,grid.getCurrentStep());
+        grid.step(rule);
+        grid.setCurrentStep(10);
+        Assert.assertEquals(1,grid.getCurrentGrid());
+        Assert.assertEquals(10,grid.getCurrentStep());
+        grid.step(rule);
+        Assert.assertEquals(0,grid.getCurrentGrid());
+        Assert.assertEquals(11,grid.getCurrentStep());
+    }
 }
