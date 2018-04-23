@@ -151,5 +151,4 @@ public class TestMergeLifeRule {
         Assert.assertEquals("6769-5DD6-7D03-564E-A5EC-CAE2-54C4-810C", new MergeLifeRule("6769-5dd6-7d03-564e-a5ec-cae2-54c4-810c").getRuleString());
         Assert.assertEquals("DF1D-BBA1-8E06-AA66-48FF-7414-6A2F-6237", new MergeLifeRule("df1d-bba1-8e06-aa66-48ff-7414-6a2f-6237").getRuleString());
     }
-
 }

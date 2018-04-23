@@ -207,4 +207,13 @@ public class TestMergeLifeGrid {
         Assert.assertEquals(0,grid.getCurrentGrid());
         Assert.assertEquals(11,grid.getCurrentStep());
     }
+
+    @Test
+    public void testLastNegative() {
+        MergeLifeRule rule = new MergeLifeRule("136C-67D1-D2AF-49FF-9E1C-5FA6-36AA-83B5");
+        MergeLifeGrid grid = new MergeLifeGrid(100,100);
+        grid.randomize(0,new Random());
+        grid.step(rule);
+        Assert.assertTrue(rule.getSubRules().get(7).getBeta()<0);
+    }
 }

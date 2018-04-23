@@ -182,14 +182,14 @@ public class MergeLifeGrid {
 
                 for(MergeLifeRule.SubRule subRule: rule.getSubRules()) {
                     if( c < subRule.getAlpha() ) {
-                        int dPrime = subRule.getGamma();
+                        int dPrime = subRule.getGamma()+1;
 
                         if( subRule.getBeta()<0) {
                             dPrime=(dPrime%8)+1;
                         }
 
                         for(int j=0;j<3;j++) {
-                            int delta = MergeLifeRule.ColorTable[dPrime][j] - line[col][j];
+                            int delta = MergeLifeRule.ColorTable[dPrime-1][j] - line[col][j];
                             delta = (int)Math.floor(delta*Math.abs(subRule.getBeta()));
                             linePrime[col][j] = line[col][j] + delta;
                         }
