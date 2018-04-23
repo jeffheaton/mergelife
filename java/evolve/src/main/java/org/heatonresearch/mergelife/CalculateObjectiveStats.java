@@ -1,5 +1,7 @@
 package org.heatonresearch.mergelife;
 
+import org.heatonresearch.mergelife.util.LargestRect;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,13 +100,15 @@ public class CalculateObjectiveStats {
 
         int cntChaos = size - (mc + sameColor + act);
 
+        int rect = LargestRect.maximalRectangle(this.grid.getMergeGrid(),this.grid.getModeGrid());
+
         currentStats.put(CalculateObjectiveStats.STAT_MODE_COUNT,(double)mc);
         currentStats.put(CalculateObjectiveStats.STAT_BACKGROUND,((double)mc/size));
         currentStats.put(CalculateObjectiveStats.STAT_FOREGROUND,((double)sameColor/size));
         currentStats.put(CalculateObjectiveStats.STAT_ACTIVE,((double)act/size));
         currentStats.put(CalculateObjectiveStats.STAT_CHAOS,((double)cntChaos/size));
         currentStats.put(CalculateObjectiveStats.STAT_STEPS,(double)this.grid.getCurrentStep());
-        currentStats.put(CalculateObjectiveStats.STAT_RECT,(double)this.grid.getCurrentStep());
+        currentStats.put(CalculateObjectiveStats.STAT_RECT,((double)rect/size));
 
         return this.currentStats;
     }

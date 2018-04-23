@@ -77,7 +77,7 @@ public class ObjectiveFunction {
         return stats;
     }
 
-    public double calculateObjective(String ruleText) {
+    private double calculateObjectiveCycle(String ruleText) {
         MergeLifeGrid grid = new MergeLifeGrid(100, 100);
         MergeLifeRule rule = new MergeLifeRule(ruleText);
         grid.randomize(0,new Random());
@@ -86,7 +86,8 @@ public class ObjectiveFunction {
 
         while(!calcStats.hasStabilized()) {
             grid.step(rule);
-            System.out.println(calcStats.track());
+            calcStats.track();
+            //System.out.println(calcStats.track());
         }
 
         double score = 0;
@@ -95,6 +96,15 @@ public class ObjectiveFunction {
         }
 
         return score;
+    }
+
+    public double calculateObjective(String ruleText) {
+        double sum = 0;
+        for(int i=0;i<5;i++) {
+            //System.out.println("Cycle #"+ i);
+            sum+=calculateObjectiveCycle(ruleText);
+        }
+        return sum/5.0;
     }
 
     public static void main(String[] args) {
