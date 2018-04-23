@@ -7,10 +7,12 @@ public class CalculateObjectiveStats {
     public static final String STAT_MODE_AGE = "mage";
     public static final String STAT_MODE = "mode";
     public static final String STAT_MODE_COUNT = "mc";
-    public static final String STAT_BACKGROUND = "bg";
-    public static final String STAT_FOREGROUND = "fg";
-    public static final String STAT_ACTIVE = "act";
+    public static final String STAT_BACKGROUND = "background";
+    public static final String STAT_FOREGROUND = "foreground";
+    public static final String STAT_ACTIVE = "active";
     public static final String STAT_CHAOS = "chaos";
+    public static final String STAT_STEPS = "steps";
+    public static final String STAT_RECT = "rect";
 
     final MergeLifeGrid grid;
 
@@ -101,6 +103,8 @@ public class CalculateObjectiveStats {
         currentStats.put(CalculateObjectiveStats.STAT_FOREGROUND,((double)sameColor/size));
         currentStats.put(CalculateObjectiveStats.STAT_ACTIVE,((double)act/size));
         currentStats.put(CalculateObjectiveStats.STAT_CHAOS,((double)cntChaos/size));
+        currentStats.put(CalculateObjectiveStats.STAT_STEPS,(double)this.grid.getCurrentStep());
+        currentStats.put(CalculateObjectiveStats.STAT_RECT,(double)this.grid.getCurrentStep());
 
         return this.currentStats;
     }
@@ -128,6 +132,10 @@ public class CalculateObjectiveStats {
         }
 
         return this.grid.getCurrentStep()>1000;
+    }
+
+    public Map<String, Double> getCurrentStats() {
+        return currentStats;
     }
 
     public MergeLifeGrid getGrid() {
