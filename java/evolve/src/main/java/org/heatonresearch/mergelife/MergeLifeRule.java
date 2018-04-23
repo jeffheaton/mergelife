@@ -161,7 +161,11 @@ public class MergeLifeRule {
         StringBuilder result = new StringBuilder();
         for(int i=0;i<8;i++) {
             int j = (int)(0x10000 * rnd.nextDouble());
-            result.append(Integer.toString(j,16));
+            String str = Integer.toString(j,16);
+            while(str.length()<4) {
+                str = "0" + str;
+            }
+            result.append(str);
             if( i<7 ) {
                 result.append("-");
             }
@@ -212,5 +216,4 @@ public class MergeLifeRule {
         }
         return result.toString().toUpperCase();
     }
-
 }

@@ -21,16 +21,20 @@ public class MergeLife {
 		MergeLifeGenome best = null;
 
 		for(int i = 0;i<cycles;i++) {
-			MergeLifeGenome challenger = this.population.get((int)rnd.nextDouble()*(this.population.size()+1));
+			int idx = (int)(rnd.nextDouble()*(this.population.size()));
+			MergeLifeGenome challenger = this.population.get(idx);
 			challenger.calculateScore(this.objectiveFunction);
 
 			if( best!=null ) {
 				if (chooseBest) {
-					if( best.compareTo(challenger)>0) {
+					//System.out.println("Best: " + best);
+					//System.out.println("Challenger:" + challenger);
+					if( best.compareTo(challenger)<0) {
 						best = challenger;
+						//System.out.println("Won!");
 					}
 				} else {
-					if( best.compareTo(challenger)<0) {
+					if( best.compareTo(challenger)>0) {
 						best = challenger;
 					}
 				}
@@ -40,6 +44,14 @@ public class MergeLife {
 		}
 
 		return best;
+	}
+
+	public String mutate(Random rnd, String parent) {
+		return "";
+	}
+
+	public String[] crossover(Random rnd, String parent1, String parent2) {
+		return new String[2];
 	}
 
 	public void step(Random rnd) {
