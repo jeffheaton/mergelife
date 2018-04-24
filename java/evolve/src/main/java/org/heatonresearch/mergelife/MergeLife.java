@@ -7,36 +7,65 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class MergeLife {
+public class MergeLife implements Runnable {
 	private final List<MergeLifeGenome> population = new ArrayList<>();
 	private final ObjectiveFunction objectiveFunction;
 	private final int CUT_LENGTH = 5;
 	private int evalCount;
 	private MergeLifeGenome topGenome;
+	private boolean requestStop;
+	private int noImprovement;
+	private double lastBestScore;
+	private int populationSize;
+	private Random rnd;
 
 	public MergeLife(Random rnd, int populationSize, String objectiveFilename) throws IOException {
 		this.objectiveFunction = new ObjectiveFunction(objectiveFilename);
+		this.populationSize = populationSize;
+		this.rnd = rnd;
+	}
+
+	public void init() {
 		for(int i=0;i<populationSize;i++) {
-			population.add(new MergeLifeGenome(rnd));
+			population.add(new MergeLifeGenome(this.rnd));
 		}
 	}
 
-	public MergeLifeGenome tournament(Random rnd, int cycles) {
-		MergeLifeGenome best = null;
+	private synchronized void report() throws IOException {
 		this.evalCount++;
-		System.out.println("Eval " + this.evalCount + ":" + this.topGenome);
+		System.out.println("Eval #" + this.evalCount + ":" + this.topGenome);
+		if( this.topGenome!=null) {
+			if(this.topGenome.getScore()>this.lastBestScore) {
+				this.lastBestScore = this.topGenome.getScore();
+				this.noImprovement = 0;
+			} else {
+				this.noImprovement++;
+				if(this.noImprovement>500 && !this.requestStop) {
+					System.out.println("No improvement for 500, stopping...");
+					this.requestStop = true;
+					if( this.topGenome.getScore()>3.5 ) {
+						render(this.topGenome.getRuleText());
+					}
+				}
+			}
+		}
+	}
+
+	public MergeLifeGenome tournament(Random rnd, int cycles) throws IOException {
+		MergeLifeGenome best = null;
+
 
 		for(int i = 0;i<cycles;i++) {
 			int idx = (int)(rnd.nextDouble()*(this.population.size()));
 			MergeLifeGenome challenger = this.population.get(idx);
 			challenger.calculateScore(this.objectiveFunction);
+			report();
 
 			if( best!=null ) {
 				if( best.compareTo(challenger)<0) {
 					best = challenger;
 					if(this.topGenome == null || best.getScore()>this.topGenome.getScore()) {
 						this.topGenome = best;
-						System.out.println("New best: " + this.topGenome);
 					}
 				}
 			} else {
@@ -107,46 +136,75 @@ public class MergeLife {
 		return r;
 	}
 
-	public void step(Random rnd) {
-		if( rnd.nextDouble()<0.75) {
-			// Crossover
-			MergeLifeGenome p1 = tournament(rnd,5);
-			MergeLifeGenome p2 = tournament(rnd,5);
-			String[] c = crossover(rnd,p1.getRuleText(),p2.getRuleText());
-			addChild(rnd,c[0]);
-			addChild(rnd,c[1]);
-		} else {
-			// mutation
-			MergeLifeGenome p1 = tournament(rnd,5);
-			String c = mutate(rnd, p1.getRuleText());
-			addChild(rnd,c);
+	@Override
+	public void run() {
+		try {
+			Random rnd = new Random();
+			while(!this.requestStop) {
+				if (rnd.nextDouble() < 0.75) {
+					// Crossover
+					MergeLifeGenome p1 = tournament(rnd, 5);
+					MergeLifeGenome p2 = tournament(rnd, 5);
+					String[] c = crossover(rnd, p1.getRuleText(), p2.getRuleText());
+					addChild(rnd, c[0]);
+					addChild(rnd, c[1]);
+				} else {
+					// mutation
+					MergeLifeGenome p1 = tournament(rnd, 5);
+					String c = mutate(rnd, p1.getRuleText());
+					addChild(rnd, c);
+				}
+			}
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
-	public static void test() throws IOException {
-		MergeLifeGrid grid = new MergeLifeGrid(100, 100);
-		MergeLifeRule rule = new MergeLifeRule("E542-5F79-9341-F31E-6C6B-7F08-8773-7068");
-		grid.randomize(0,new Random());
+	public void startup() throws InterruptedException {
+		List<Thread> threads = new ArrayList<>();
+		this.requestStop = false;
+		this.noImprovement = 0;
+		this.lastBestScore = -100;
+		this.evalCount = 0;
+		this.topGenome = null;
 
-		CalculateObjectiveStats stats = new CalculateObjectiveStats(grid);
-
-		while(!stats.hasStabilized()) {
-			grid.step(rule);
-			System.out.println(stats.track());
+		int cores = Runtime.getRuntime().availableProcessors();
+		for(int i=0;i<cores;i++) {
+			Thread thread = new Thread(this);
+			threads.add(thread);
+			thread.start();
 		}
 
-		grid.savePNG(0, 5, new File("D:\\Users\\jheaton\\projects\\test.png"));
-		System.out.println("Hello world");
+		for (Thread thread : threads) {
+			thread.join();
+		}
+		System.out.println("Done.");
+	}
+
+	public static void render(String ruleText) throws IOException {
+		MergeLifeGrid grid = new MergeLifeGrid(100, 100);
+		MergeLifeRule rule = new MergeLifeRule(ruleText);
+		grid.randomize(0,new Random());
+
+		for(int i=0;i<250;i++) {
+			grid.step(rule);
+		}
+
+		File file = new File("mergelife-"+ruleText+".png");
+		grid.savePNG(0, 5, file);
+		System.out.println("Saved: " + file);
 	}
 
 	public static void main(String[] args) {
 		try {
 			Random rnd = new Random();
-			MergeLife life = new MergeLife( rnd,100, "D:\\Users\\jheaton\\projects\\mergelife\\java\\evolve\\paperObjective.json");
+			MergeLife life = new MergeLife(rnd, 100, "D:\\Users\\jheaton\\projects\\mergelife\\java\\evolve\\paperObjective.json");
 			for(;;) {
-				life.step(rnd);
+				life.init();
+				life.startup();
 			}
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}

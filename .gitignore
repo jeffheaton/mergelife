@@ -2,6 +2,7 @@
 .idea
 .gradle
 *.iml
+*.png
 build/
 out/
 __pycache__
