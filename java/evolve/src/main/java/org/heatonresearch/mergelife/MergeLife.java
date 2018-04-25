@@ -1,5 +1,7 @@
 package org.heatonresearch.mergelife;
 
+import org.apache.commons.cli.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ public class MergeLife implements Runnable {
 	}
 
 	public void init() {
+		this.population.clear();
 		for(int i=0;i<populationSize;i++) {
 			population.add(new MergeLifeGenome(this.rnd));
 		}
@@ -40,8 +43,8 @@ public class MergeLife implements Runnable {
 				this.noImprovement = 0;
 			} else {
 				this.noImprovement++;
-				if(this.noImprovement>500 && !this.requestStop) {
-					System.out.println("No improvement for 500, stopping...");
+				if(this.noImprovement>1000 && !this.requestStop) {
+					System.out.println("No improvement for 1000, stopping...");
 					this.requestStop = true;
 					if( this.topGenome.getScore()>3.5 ) {
 						render(this.topGenome.getRuleText());
@@ -106,7 +109,6 @@ public class MergeLife implements Runnable {
 			for(int i = 0;i<5;i++) {
 				int idx = (int)(rnd.nextDouble()*(this.population.size()));
 				MergeLifeGenome challenger = this.population.get(idx);
-				challenger.calculateScore(this.objectiveFunction);
 
 				if( worst!=null ) {
 					if( worst.compareTo(challenger)>0) {
@@ -122,6 +124,12 @@ public class MergeLife implements Runnable {
 			this.population.remove(worstIdx);
 			this.population.add(worstIdx,genome);
 		}
+	}
+
+	public void scorePopulation() {
+		System.out.println("Scoring initial population");
+		this.population.parallelStream().forEach(genome -> genome.calculateScore(this.objectiveFunction));
+		System.out.println("Initial population scored");
 	}
 
 	public String[] crossover(Random rnd, String parent1, String parent2) {
@@ -197,13 +205,53 @@ public class MergeLife implements Runnable {
 	}
 
 	public static void main(String[] args) {
+
 		try {
-			Random rnd = new Random();
-			MergeLife life = new MergeLife(rnd, 100, "D:\\Users\\jheaton\\projects\\mergelife\\java\\evolve\\paperObjective.json");
-			for(;;) {
-				life.init();
-				life.startup();
-			}
+			Options options = new Options();
+			options.addOption("t", false, "display current time");
+
+			Option buildfile = OptionBuilder.withArgName( "file" )
+					.hasArg()
+					.withDescription(  "the configuration file" )
+					.create( "config");
+			Option numRows = OptionBuilder.withArgName( "num" )
+					.hasArg()
+					.withDescription(  "the number of rows" )
+					.create( "rows");
+			Option numCols = OptionBuilder.withArgName( "num" )
+					.hasArg()
+					.withDescription(  "the number of columns" )
+					.create( "numCols");
+			options.addOption(buildfile);
+			options.addOption(numRows);
+			options.addOption(numCols);
+
+			CommandLineParser parser = new GnuParser();
+			CommandLine cmd = parser.parse( options, args);
+
+			String configFile;
+
+			if( cmd.hasOption("config")) {
+			    configFile = cmd.getOptionValue("config");
+            } else {
+			    configFile = "./mergelife.json";
+            }
+
+			if( cmd.getArgs().length==0) {
+				// automatically generate the help statement
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp( "mergelife", options );
+			} else {
+                Random rnd = new Random();
+                MergeLife life = new MergeLife(rnd, 100, configFile);
+                for(;;) {
+                    life.init();
+                    life.scorePopulation();
+                    life.startup();
+                }
+            }
+
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

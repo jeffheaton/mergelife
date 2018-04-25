@@ -29,5 +29,6 @@ targetCompatibility = 1.8
 dependencies {
     compile "joda-time:joda-time:2.2"
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     testCompile "junit:junit:4.12"
 }
