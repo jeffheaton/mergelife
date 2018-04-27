@@ -10,6 +10,16 @@ import java.util.*;
 
 public class ObjectiveFunction {
 
+    private MergeLifeConfig config;
+
+    public ObjectiveFunction(MergeLifeConfig theConfig) {
+        this.config = theConfig;
+    }
+
+    public void addStat(ObjectiveFunctionStat stat) {
+        this.stats.add(stat);
+    }
+
     public static class ObjectiveFunctionStat {
         private final String stat;
         private final double min;
@@ -56,29 +66,12 @@ public class ObjectiveFunction {
 
     private final List<ObjectiveFunctionStat> stats = new ArrayList<>();
 
-    public ObjectiveFunction(String filename) throws IOException {
-        byte[] mapData = Files.readAllBytes(Paths.get(filename));
-        //Map<String,String> myMap = new HashMap<String, String>();
-        ObjectMapper objectMapper = new ObjectMapper();
-        ArrayList<Object> list = objectMapper.readValue(mapData, ArrayList.class);
-        for(Object obj: list) {
-            Map map = (Map)obj;
-            String stat = (String)map.get("stat");
-            double min = Double.parseDouble(map.get("min").toString());
-            double max = Double.parseDouble(map.get("max").toString());
-            double weight = Double.parseDouble(map.get("weight").toString());
-            double minWeight = Double.parseDouble(map.get("min_weight").toString());
-            double maxWeight = Double.parseDouble(map.get("max_weight").toString());
-            this.stats.add(new ObjectiveFunctionStat(stat,min,max,weight,minWeight,maxWeight));
-        }
-    }
-
     public List<ObjectiveFunctionStat> getStats() {
         return stats;
     }
 
     private double calculateObjectiveCycle(String ruleText) {
-        MergeLifeGrid grid = new MergeLifeGrid(100, 100);
+        MergeLifeGrid grid = new MergeLifeGrid(this.config.getRows(), this.config.getCols());
         MergeLifeRule rule = new MergeLifeRule(ruleText);
         grid.randomize(0,new Random());
 
@@ -107,12 +100,4 @@ public class ObjectiveFunction {
         return sum/5.0;
     }
 
-    public static void main(String[] args) {
-        try {
-            ObjectiveFunction obj = new ObjectiveFunction("D:\\Users\\jheaton\\projects\\mergelife\\java\\evolve\\paperObjective.json");
-            System.out.println(obj.calculateObjective("E542-5F79-9341-F31E-6C6B-7F08-8773-7068"));
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        }
-    }
 }
