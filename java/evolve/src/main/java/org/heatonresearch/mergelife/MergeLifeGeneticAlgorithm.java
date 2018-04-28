@@ -77,7 +77,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
     }
 
     public String mutate(Random rnd, String parent) {
-        final String h = "0123456789ABCDEF";
+        final String h = "0123456789abcdef";
         String result = "";
 
         boolean done = false;
@@ -87,6 +87,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
             if (parent.charAt(i) != '-') {
                 int i2 = (int) (rnd.nextDouble() * h.length());
                 result = parent.substring(0, i) + h.charAt(i2) + parent.substring(i + 1);
+                result = result.toLowerCase();
                 if (!result.equalsIgnoreCase(parent)) {
                     done = true;
                 }
@@ -175,7 +176,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
             grid.step(rule);
         }
 
-        File file = new File("mergelife-"+ruleText+".png");
+        File file = new File("mergelife-"+ruleText.toLowerCase()+".png");
         grid.savePNG(0, 5, file);
         System.out.println("Saved: " + file);
     }

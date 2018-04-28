@@ -8,7 +8,7 @@ public class MergeLifeGenome implements Comparable<MergeLifeGenome> {
     private double score = Double.NaN;
 
     public MergeLifeGenome(String theRuleText) {
-        this.ruleText = theRuleText;
+        this.ruleText = theRuleText.toLowerCase();
     }
 
     public MergeLifeGenome(Random rnd) {
