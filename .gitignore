@@ -1,3 +1,7 @@
+*.iws
+test_stats.py
+*.ipr
+*.ips
 .spyproject
 .idea
 .gradle
