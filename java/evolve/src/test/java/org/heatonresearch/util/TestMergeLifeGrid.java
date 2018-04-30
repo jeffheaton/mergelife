@@ -216,4 +216,14 @@ public class TestMergeLifeGrid {
         grid.step(rule);
         Assert.assertTrue(rule.getSubRules().get(7).getBeta()<0);
     }
+
+    @Test
+    public void testGridAttributes() {
+        MergeLifeGrid grid = createGrid();
+        grid.setCurrentGrid(42);
+        Assert.assertEquals(42, grid.getCurrentGrid());
+
+        grid.setCurrentStep(43);
+        Assert.assertEquals(43, grid.getCurrentStep());
+    }
 }

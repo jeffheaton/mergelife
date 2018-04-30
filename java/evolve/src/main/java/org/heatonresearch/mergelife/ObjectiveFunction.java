@@ -37,6 +37,26 @@ public class ObjectiveFunction {
             this.maxWeight = maxWeight;
         }
 
+        public double getMin() {
+            return min;
+        }
+
+        public double getMax() {
+            return max;
+        }
+
+        public double getWeight() {
+            return weight;
+        }
+
+        public double getMinWeight() {
+            return minWeight;
+        }
+
+        public double getMaxWeight() {
+            return maxWeight;
+        }
+
         public String getStat() {
             return stat;
         }

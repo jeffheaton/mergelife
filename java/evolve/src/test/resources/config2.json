@@ -1,0 +1,51 @@
+{
+  "config": {
+    "rows": 100,
+    "cols": 200,
+    "populationSize": 50,
+    "crossover": "0.75",
+    "tournamentCycles": 5
+  },
+  "objective": [
+    {
+      "stat": "steps",
+      "min": 300,
+      "max": 1000,
+      "weight": 1,
+      "min_weight": -1,
+      "max_weight": 1
+    },
+    {
+      "stat": "foreground",
+      "min": 0.001,
+      "max": 0.1,
+      "weight": 1,
+      "min_weight": -0.1,
+      "max_weight": -1
+    },
+    {
+      "stat": "active",
+      "min": 0.001,
+      "max": 0.1,
+      "weight": 1,
+      "min_weight": -1,
+      "max_weight": -1
+    },
+    {
+      "stat": "rect",
+      "min": 0.02,
+      "max": 0.25,
+      "weight": 2,
+      "min_weight": -2,
+      "max_weight": 2
+    },
+    {
+      "stat": "mage",
+      "min": 5,
+      "max": 10,
+      "weight": 0,
+      "min_weight": -5,
+      "max_weight": 0
+    }
+  ]
+}
