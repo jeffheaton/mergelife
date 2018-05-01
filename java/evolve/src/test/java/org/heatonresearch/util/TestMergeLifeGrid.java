@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 public class TestMergeLifeGrid {
@@ -173,11 +174,16 @@ public class TestMergeLifeGrid {
     }
 
     @Test
-    public void testSavePNG() throws IOException {
+    public void testSavePNG() throws IOException, NoSuchAlgorithmException {
         File tempFile = File.createTempFile("mergelife-test-", ".png");
         tempFile.deleteOnExit();
         MergeLifeGrid grid = createGrid();
+        String before = grid.toSHA256(0);
         grid.savePNG(0,1,tempFile);
+        MergeLifeGrid grid2 = grid.loadPNG(1, tempFile);
+        String after = grid2.toSHA256(0);
+        Assert.assertEquals("eae2f610ad238a0cc6d840af033606b74fa104a437c9d6665c84059d2bc27e53",before);
+        Assert.assertEquals("eae2f610ad238a0cc6d840af033606b74fa104a437c9d6665c84059d2bc27e53",after);
     }
 
     public void testCurrentGrid() {

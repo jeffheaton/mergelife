@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -216,6 +218,31 @@ public class MergeLifeGrid {
     }
 
     /**
+     * Load a grid from a PNG file.
+     * @param zoom The zoom size that the PNG was saved with.
+     * @param file The file to load.
+     */
+    public static MergeLifeGrid loadPNG(int zoom, File file) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(file);
+        byte[] pixels = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+        MergeLifeGrid grid = new MergeLifeGrid(bufferedImage.getHeight(),bufferedImage.getWidth());
+        int[][][] gridData = grid.getGrid(grid.getCurrentGrid());
+
+        int colWidth = 3*zoom;
+        int rowWidth = grid.getCols()*colWidth;
+
+        for(int row = 0;row<gridData.length;row++) {
+            for(int col = 0;col<gridData[row].length;col++) {
+                int offset = (row*rowWidth)+(col*colWidth);
+                for(int i=0;i<3;i++) {
+                    gridData[row][col][i] = pixels[offset]&0xff;
+                }
+            }
+        }
+        return grid;
+    }
+
+    /**
      * @return The current step.
      */
     public int getCurrentStep() {
@@ -243,5 +270,46 @@ public class MergeLifeGrid {
      */
     public void setCurrentGrid(int currentGrid) {
         this.currentGrid = currentGrid;
+    }
+
+    /**
+     * Flatten the grid into an array of bytes.
+     * @param desiredGrid The grid to use.
+     * @return An array of bytes.
+     */
+    public byte[] toBytes(int desiredGrid) {
+        byte[] result = new byte[getRows()*getCols()*3];
+
+        int idx = 0;
+        for(int row=0;row<getRows();row++) {
+            for(int col=0;col<getCols();col++) {
+                for(int i=0;i<3;i++) {
+                    result[idx++] = (byte)this.grid[desiredGrid][row][col][i];
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Generate a SHA256 hash from the grid.  This can be a quick way to compare multiple grids without the
+     * need to store the entire grid.
+     * @param desiredGrid The grid to generate a SHA256 hash from.
+     * @return The hash string.
+     */
+    public String toSHA256(int desiredGrid) throws NoSuchAlgorithmException {
+        byte[] b = toBytes(desiredGrid);
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(b);
+
+        StringBuffer hexString = new StringBuffer();
+
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+
+        return hexString.toString();
     }
 }
