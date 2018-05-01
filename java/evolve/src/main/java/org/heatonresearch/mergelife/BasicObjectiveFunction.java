@@ -1,18 +1,12 @@
 package org.heatonresearch.mergelife;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
-public class ObjectiveFunction {
+public class BasicObjectiveFunction implements EvaluateObjective {
 
     private MergeLifeConfig config;
 
-    public ObjectiveFunction(MergeLifeConfig theConfig) {
+    public BasicObjectiveFunction(MergeLifeConfig theConfig) {
         this.config = theConfig;
     }
 
@@ -111,6 +105,7 @@ public class ObjectiveFunction {
         return score;
     }
 
+    @Override
     public double calculateObjective(String ruleText) {
         double sum = 0;
         for(int i=0;i<5;i++) {

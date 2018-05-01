@@ -15,7 +15,7 @@ public class MergeLifeConfig {
     private int populationSize;
     private int tournamentCycles;
     private double crossoverPct;
-    private ObjectiveFunction objectiveFunction;
+    private BasicObjectiveFunction objectiveFunction;
 
 
     public MergeLifeConfig(String filename) throws IOException {
@@ -30,7 +30,7 @@ public class MergeLifeConfig {
         this.tournamentCycles = readInt(configMap, "tournamentCycles");
         this.crossoverPct = readDouble(configMap, "crossover");
 
-        this.objectiveFunction = new ObjectiveFunction(this);
+        this.objectiveFunction = new BasicObjectiveFunction(this);
         ArrayList<Object> list = (ArrayList<Object>)map.get("objective");
         for(Object obj: list) {
             Map map2 = (Map)obj;
@@ -40,7 +40,7 @@ public class MergeLifeConfig {
             double weight = Double.parseDouble(map2.get("weight").toString());
             double minWeight = Double.parseDouble(map2.get("min_weight").toString());
             double maxWeight = Double.parseDouble(map2.get("max_weight").toString());
-            objectiveFunction.addStat(new ObjectiveFunction.ObjectiveFunctionStat(stat,min,max,weight,minWeight,maxWeight));
+            objectiveFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(stat,min,max,weight,minWeight,maxWeight));
         }
     }
 
@@ -79,7 +79,7 @@ public class MergeLifeConfig {
         }
     }
 
-    public ObjectiveFunction getObjectiveFunction() {
+    public BasicObjectiveFunction getObjectiveFunction() {
         return objectiveFunction;
     }
 

@@ -15,7 +15,7 @@ public class MergeLifeGenome implements Comparable<MergeLifeGenome> {
         this(MergeLifeRule.generateRandomRuleString(rnd));
     }
 
-    public double calculateScore(ObjectiveFunction objectiveFunction) {
+    public double calculateScore(EvaluateObjective objectiveFunction) {
         if( !Double.isNaN(this.score) ) {
             return score;
         }

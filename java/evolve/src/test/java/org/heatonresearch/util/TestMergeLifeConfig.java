@@ -2,7 +2,7 @@ package org.heatonresearch.util;
 
 import org.heatonresearch.mergelife.MergeLifeConfig;
 import org.heatonresearch.mergelife.MergeLifeException;
-import org.heatonresearch.mergelife.ObjectiveFunction;
+import org.heatonresearch.mergelife.BasicObjectiveFunction;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,7 +22,7 @@ public class TestMergeLifeConfig {
         Assert.assertEquals(75, (int)(config.getCrossoverPct()*100));
 
         Assert.assertEquals(5, config.getObjectiveFunction().getStats().size());
-        for(ObjectiveFunction.ObjectiveFunctionStat stat: config.getObjectiveFunction().getStats()) {
+        for(BasicObjectiveFunction.ObjectiveFunctionStat stat: config.getObjectiveFunction().getStats()) {
             if(stat.equals("steps")) {
                 Assert.assertEquals(1000,stat.getMax(), 0.01);
                 Assert.assertEquals(300,stat.getMin(), 0.01);

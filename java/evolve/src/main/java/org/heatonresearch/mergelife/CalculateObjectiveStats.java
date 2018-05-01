@@ -16,16 +16,16 @@ public class CalculateObjectiveStats {
     public static final String STAT_STEPS = "steps";
     public static final String STAT_RECT = "rect";
 
-    final MergeLifeGrid grid;
+    private final MergeLifeGrid grid;
 
-    final int[][] modeCount;
-    final int[][] lastColor;
-    final int[][] lastColorCount;
-    final int[][] lastModeStep;
-    int lastModeCount;
-    int modeCountSame;
+    private final int[][] modeCount;
+    private final int[][] lastColor;
+    private final int[][] lastColorCount;
+    private final int[][] lastModeStep;
+    private int lastModeCount;
+    private int modeCountSame;
 
-    private Map<String,Double> currentStats =  new HashMap<>();
+    private final Map<String,Double> currentStats =  new HashMap<>();
 
     public CalculateObjectiveStats(MergeLifeGrid theGrid) {
         this.grid = theGrid;

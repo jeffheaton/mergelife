@@ -9,7 +9,7 @@ import java.util.Random;
 public class MergeLifeGeneticAlgorithm implements Runnable {
     private final MergeLifeConfig config;
     private final List<MergeLifeGenome> population = new ArrayList<>();
-    private final ObjectiveFunction objectiveFunction;
+    private final BasicObjectiveFunction objectiveFunction;
     private final int CUT_LENGTH = 5;
     private int evalCount;
     private MergeLifeGenome topGenome;
