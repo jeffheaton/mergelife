@@ -3,7 +3,8 @@
     "rows": 100,
     "cols": 200,
     "populationSize": 50,
-    "tournamentCycles": 5
+    "tournamentCycles": 5,
+    "evalCycles": 5
   },
   "objective": [
     {

@@ -17,7 +17,7 @@ public class TestMergeLifeGenome {
         }
 
         @Override
-        public double calculateObjective(String ruleText) {
+        public double calculateObjective(String ruleText, Random rnd) {
             return this.fixedScore;
         }
     }
@@ -38,12 +38,12 @@ public class TestMergeLifeGenome {
         MergeLifeGenome genome2 = new MergeLifeGenome(random);
         EvaluateObjective obj1 = new FixedObjTest(1);
         EvaluateObjective obj2 = new FixedObjTest(2);
-        genome1.calculateScore(obj1);
-        genome2.calculateScore(obj2);
+        genome1.calculateScore(obj1, random);
+        genome2.calculateScore(obj2, random);
         Assert.assertEquals(1, genome1.getScore(),0.1);
         Assert.assertEquals(2, genome2.getScore(),0.1);
-        Assert.assertEquals(1, genome1.calculateScore(obj1),0.1);
-        Assert.assertEquals(2, genome2.calculateScore(obj2),0.1);
+        Assert.assertEquals(1, genome1.calculateScore(obj1,random),0.1);
+        Assert.assertEquals(2, genome2.calculateScore(obj2,random),0.1);
         Assert.assertEquals(-1, genome1.compareTo(genome2));
         Assert.assertEquals(1, genome2.compareTo(genome1));
         Assert.assertFalse(genome1.equals(genome2));

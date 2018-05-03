@@ -6,7 +6,8 @@ public class BasicObjectiveFunction implements EvaluateObjective {
 
     private MergeLifeConfig config;
 
-    public BasicObjectiveFunction(MergeLifeConfig theConfig) {
+    public BasicObjectiveFunction(MergeLifeConfig theConfig)
+    {
         this.config = theConfig;
     }
 
@@ -84,10 +85,10 @@ public class BasicObjectiveFunction implements EvaluateObjective {
         return stats;
     }
 
-    private double calculateObjectiveCycle(String ruleText) {
+    private double calculateObjectiveCycle(String ruleText, Random random) {
         MergeLifeGrid grid = new MergeLifeGrid(this.config.getRows(), this.config.getCols());
         MergeLifeRule rule = new MergeLifeRule(ruleText);
-        grid.randomize(0,new Random());
+        grid.randomize(0, random);
 
         CalculateObjectiveStats calcStats = new CalculateObjectiveStats(grid);
 
@@ -106,13 +107,12 @@ public class BasicObjectiveFunction implements EvaluateObjective {
     }
 
     @Override
-    public double calculateObjective(String ruleText) {
+    public double calculateObjective(String ruleText, Random random) {
         double sum = 0;
-        for(int i=0;i<5;i++) {
+        for(int i=0;i<config.getEvalCycles();i++) {
             //System.out.println("Cycle #"+ i);
-            sum+=calculateObjectiveCycle(ruleText);
+            sum+=calculateObjectiveCycle(ruleText, random);
         }
         return sum/5.0;
     }
-
 }

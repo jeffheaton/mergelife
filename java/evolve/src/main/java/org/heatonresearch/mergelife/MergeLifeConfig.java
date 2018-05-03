@@ -15,6 +15,7 @@ public class MergeLifeConfig {
     private int populationSize;
     private int tournamentCycles;
     private double crossoverPct;
+    private int evalCycles;
     private BasicObjectiveFunction objectiveFunction;
 
 
@@ -29,6 +30,7 @@ public class MergeLifeConfig {
         this.populationSize = readInt(configMap, "populationSize");
         this.tournamentCycles = readInt(configMap, "tournamentCycles");
         this.crossoverPct = readDouble(configMap, "crossover");
+        this.evalCycles = readInt(configMap, "evalCycles");
 
         this.objectiveFunction = new BasicObjectiveFunction(this);
         ArrayList<Object> list = (ArrayList<Object>)map.get("objective");
@@ -101,5 +103,9 @@ public class MergeLifeConfig {
 
     public int getTournamentCycles() {
         return tournamentCycles;
+    }
+
+    public int getEvalCycles() {
+        return evalCycles;
     }
 }

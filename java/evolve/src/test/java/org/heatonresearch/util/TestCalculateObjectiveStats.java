@@ -40,6 +40,6 @@ public class TestCalculateObjectiveStats {
 
         Assert.assertEquals(84, stats.getCurrentStats().get(CalculateObjectiveStats.STAT_MODE),0.1);
         Assert.assertEquals(grid, stats.getGrid());
-
     }
+
 }

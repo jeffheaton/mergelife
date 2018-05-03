@@ -4,7 +4,8 @@
     "cols": 200,
     "populationSize": 50,
     "crossover": "0.75xxx",
-    "tournamentCycles": 5
+    "tournamentCycles": 5,
+    "evalCycles": 5
   },
   "objective": [
     {

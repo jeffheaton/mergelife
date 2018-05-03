@@ -58,7 +58,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         for(int i = 0;i<cycles;i++) {
             int idx = (int)(rnd.nextDouble()*(this.population.size()));
             MergeLifeGenome challenger = this.population.get(idx);
-            challenger.calculateScore(this.objectiveFunction);
+            challenger.calculateScore(this.objectiveFunction, rnd);
             report();
 
             if( best!=null ) {
@@ -98,7 +98,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
 
     public void addChild(Random rnd, String ruleText) {
         MergeLifeGenome genome = new MergeLifeGenome(ruleText);
-        genome.calculateScore(this.objectiveFunction);
+        genome.calculateScore(this.objectiveFunction, rnd);
         int worstIdx =-1;
 
         synchronized (this.population) {
@@ -126,7 +126,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
 
     public void scorePopulation() {
         System.out.println("Scoring initial population");
-        this.population.parallelStream().forEach(genome -> genome.calculateScore(this.objectiveFunction));
+        this.population.parallelStream().forEach(genome -> genome.calculateScore(this.objectiveFunction, rnd));
         System.out.println("Initial population scored");
     }
 

@@ -117,11 +117,6 @@ public class CalculateObjectiveStats {
         if( this.currentStats.size()==0) {
             return false;
         }
-        if(this.grid.getCurrentStep()>100) {
-            if (this.currentStats.get(STAT_BACKGROUND) < 0.01) {
-                return true;
-            }
-        }
 
         // Time to stop?
         int mc = this.currentStats.get(CalculateObjectiveStats.STAT_MODE_COUNT).intValue();

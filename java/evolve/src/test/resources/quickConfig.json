@@ -1,11 +1,11 @@
 {
     "config": {
-        "rows": 100,
-        "cols": 100,
-        "populationSize": 100,
+        "rows": 10,
+        "cols": 10,
+        "populationSize": 10,
         "crossover": 0.75,
         "tournamentCycles": 5,
-        "evalCycles": 5
+        "evalCycles": 2
     },
     "objective": [
         {

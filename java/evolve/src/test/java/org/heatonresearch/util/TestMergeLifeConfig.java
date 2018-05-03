@@ -20,10 +20,11 @@ public class TestMergeLifeConfig {
         Assert.assertEquals(50,config.getPopulationSize());
         Assert.assertEquals(5, config.getTournamentCycles());
         Assert.assertEquals(75, (int)(config.getCrossoverPct()*100));
+        Assert.assertEquals(5, config.getEvalCycles());
 
         Assert.assertEquals(5, config.getObjectiveFunction().getStats().size());
         for(BasicObjectiveFunction.ObjectiveFunctionStat stat: config.getObjectiveFunction().getStats()) {
-            if(stat.equals("steps")) {
+            if(stat.getStat().equals("steps")) {
                 Assert.assertEquals(1000,stat.getMax(), 0.01);
                 Assert.assertEquals(300,stat.getMin(), 0.01);
                 Assert.assertEquals(1,stat.getWeight(), 0.01);
