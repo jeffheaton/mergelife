@@ -82,21 +82,31 @@ public class MergeLife {
 			}
 
 
+            Random rnd = new Random();
 
 			if( cmd.getArgs().length==0) {
                 displayHelp(options);
 			} else if(cmd.getArgs()[0].equalsIgnoreCase("evolve")) {
-                Random rnd = new Random();
-                MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
-                ga.process();
+			    if(cmd.getArgs().length!=1) {
+			        System.out.println("Usage: evolve");
+                } else {
+                    MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
+                    ga.process();
+                }
             } else if(cmd.getArgs()[0].equalsIgnoreCase("render")) {
-				Random rnd = new Random();
-				MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
-				ga.render(cmd.getArgs()[1]);
+                if(cmd.getArgs().length!=2) {
+                    System.out.println("Usage: render [rule-text]");
+                } else {
+                    MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
+                    ga.render(cmd.getArgs()[1]);
+                }
 			} else if(cmd.getArgs()[0].equalsIgnoreCase("score")) {
-				Random rnd = new Random();
-				MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
-				ga.render(cmd.getArgs()[1]);
+                if(cmd.getArgs().length!=2) {
+                    System.out.println("Usage: score [rule-text]");
+                } else {
+                    MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
+                    ga.score(cmd.getArgs()[1]);
+                }
 			} else {
                 displayHelp(options);
             }

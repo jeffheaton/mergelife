@@ -167,20 +167,6 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         }
     }
 
-    public void render(String ruleText) throws IOException {
-        MergeLifeGrid grid = new MergeLifeGrid(this.config.getRows(), this.config.getCols());
-        MergeLifeRule rule = new MergeLifeRule(ruleText);
-        grid.randomize(0,new Random());
-
-        for(int i=0;i<config.getRenderSteps();i++) {
-            grid.step(rule);
-        }
-
-        File file = new File("mergelife-"+ruleText.toLowerCase()+".png");
-        grid.savePNG(0, config.getZoom(), file);
-        System.out.println("Saved: " + file);
-    }
-
     public void processSingleRun() throws InterruptedException {
         List<Thread> threads = new ArrayList<>();
         this.requestStop = false;
@@ -208,5 +194,34 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
             scorePopulation();
             processSingleRun();
         }
+    }
+
+    public void render(String ruleText) throws IOException {
+        MergeLifeGrid grid = new MergeLifeGrid(this.config.getRows(), this.config.getCols());
+        MergeLifeRule rule = new MergeLifeRule(ruleText);
+        grid.randomize(0,new Random());
+
+        for(int i=0;i<config.getRenderSteps();i++) {
+            grid.step(rule);
+        }
+
+        File file = new File("mergelife-"+ruleText.toLowerCase()+".png");
+        grid.savePNG(0, config.getZoom(), file);
+        System.out.println("Saved: " + file);
+    }
+
+    public void score(String ruleText) {
+        EvaluateObjective objFunction = this.config.getObjectiveFunction();
+        objFunction.setReport(new MergeLifeReportable() {
+            @Override
+            public void report(String message) {
+                System.out.println(message);
+            }
+        });
+        if(objFunction==null) {
+            throw new MergeLifeException("Missing objective function, please specify config file with -config.");
+        }
+        double score = objFunction.calculateObjective(ruleText, new Random());
+        System.out.println("Score: " + score);
     }
 }

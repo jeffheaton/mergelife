@@ -5,6 +5,7 @@ import java.util.*;
 public class BasicObjectiveFunction implements EvaluateObjective {
 
     private MergeLifeConfig config;
+    private MergeLifeReportable report;
 
     public BasicObjectiveFunction(MergeLifeConfig theConfig)
     {
@@ -94,8 +95,10 @@ public class BasicObjectiveFunction implements EvaluateObjective {
 
         while(!calcStats.hasStabilized()) {
             grid.step(rule);
-            calcStats.track();
-            //System.out.println(calcStats.track());
+            Map<String, Double> t = calcStats.track();
+            if(report!=null) {
+                report.report(t.toString());
+            }
         }
 
         double score = 0;
@@ -110,9 +113,19 @@ public class BasicObjectiveFunction implements EvaluateObjective {
     public double calculateObjective(String ruleText, Random random) {
         double sum = 0;
         for(int i=0;i<config.getEvalCycles();i++) {
-            //System.out.println("Cycle #"+ i);
+            if(this.report!=null) {
+                report.report("Cycle #"+ i);
+            }
             sum+=calculateObjectiveCycle(ruleText, random);
         }
         return sum/5.0;
+    }
+
+    public MergeLifeReportable getReport() {
+        return report;
+    }
+
+    public void setReport(MergeLifeReportable report) {
+        this.report = report;
     }
 }
