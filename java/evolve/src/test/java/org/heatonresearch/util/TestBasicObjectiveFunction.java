@@ -22,8 +22,9 @@ public class TestBasicObjectiveFunction {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("config1.json").getFile());
         MergeLifeConfig config = new MergeLifeConfig(file.toString());
+        BasicObjectiveFunction objectiveFunction = (BasicObjectiveFunction)config.getObjectiveFunction();
 
-        for(BasicObjectiveFunction.ObjectiveFunctionStat stat: config.getObjectiveFunction().getStats()) {
+        for(BasicObjectiveFunction.ObjectiveFunctionStat stat: objectiveFunction.getStats()) {
             if(stat.getStat().equals(statName)) {
                 return stat.calculate(objStats);
             }

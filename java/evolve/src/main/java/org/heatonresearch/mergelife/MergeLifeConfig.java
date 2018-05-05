@@ -12,12 +12,17 @@ import java.util.Map;
 public class MergeLifeConfig {
     private int rows;
     private int cols;
+    private int zoom;
+    private int renderSteps;
     private int populationSize;
     private int tournamentCycles;
     private double crossoverPct;
     private int evalCycles;
-    private BasicObjectiveFunction objectiveFunction;
+    private EvaluateObjective objectiveFunction;
 
+    public MergeLifeConfig() {
+
+    }
 
     public MergeLifeConfig(String filename) throws IOException {
         byte[] mapData = Files.readAllBytes(Paths.get(filename));
@@ -27,12 +32,14 @@ public class MergeLifeConfig {
 
         this.rows = readInt(configMap, "rows");
         this.cols = readInt(configMap, "cols");
+        this.zoom = readInt(configMap, "zoom");
+        this.renderSteps = readInt(configMap, "renderSteps");
         this.populationSize = readInt(configMap, "populationSize");
         this.tournamentCycles = readInt(configMap, "tournamentCycles");
         this.crossoverPct = readDouble(configMap, "crossover");
         this.evalCycles = readInt(configMap, "evalCycles");
 
-        this.objectiveFunction = new BasicObjectiveFunction(this);
+        BasicObjectiveFunction objFunction = new BasicObjectiveFunction(this);
         ArrayList<Object> list = (ArrayList<Object>)map.get("objective");
         for(Object obj: list) {
             Map map2 = (Map)obj;
@@ -42,8 +49,9 @@ public class MergeLifeConfig {
             double weight = Double.parseDouble(map2.get("weight").toString());
             double minWeight = Double.parseDouble(map2.get("min_weight").toString());
             double maxWeight = Double.parseDouble(map2.get("max_weight").toString());
-            objectiveFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(stat,min,max,weight,minWeight,maxWeight));
+            objFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(stat,min,max,weight,minWeight,maxWeight));
         }
+        this.objectiveFunction = objFunction;
     }
 
     private int readInt(Map<String,String> map, String key) {
@@ -81,7 +89,7 @@ public class MergeLifeConfig {
         }
     }
 
-    public BasicObjectiveFunction getObjectiveFunction() {
+    public EvaluateObjective getObjectiveFunction() {
         return objectiveFunction;
     }
 
@@ -107,5 +115,29 @@ public class MergeLifeConfig {
 
     public int getEvalCycles() {
         return evalCycles;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
+    public void setCols(int cols) {
+        this.cols = cols;
+    }
+
+    public int getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(int zoom) {
+        this.zoom = zoom;
+    }
+
+    public int getRenderSteps() {
+        return renderSteps;
+    }
+
+    public void setRenderSteps(int renderSteps) {
+        this.renderSteps = renderSteps;
     }
 }

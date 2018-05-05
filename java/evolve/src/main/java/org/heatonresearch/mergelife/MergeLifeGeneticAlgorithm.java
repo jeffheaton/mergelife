@@ -9,7 +9,7 @@ import java.util.Random;
 public class MergeLifeGeneticAlgorithm implements Runnable {
     private final MergeLifeConfig config;
     private final List<MergeLifeGenome> population = new ArrayList<>();
-    private final BasicObjectiveFunction objectiveFunction;
+    private final EvaluateObjective objectiveFunction;
     private final int CUT_LENGTH = 5;
     private int evalCount;
     private MergeLifeGenome topGenome;
@@ -18,8 +18,8 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
     private double lastBestScore;
     private Random rnd;
 
-    public MergeLifeGeneticAlgorithm(Random rnd, String configFilename) throws IOException {
-        this.config = new MergeLifeConfig(configFilename);
+    public MergeLifeGeneticAlgorithm(Random rnd, MergeLifeConfig theConfig) throws IOException {
+        this.config = theConfig;
         this.objectiveFunction = this.config.getObjectiveFunction(); //null;//new ObjectiveFunction(objectiveFilename);
         this.rnd = rnd;
     }
@@ -172,12 +172,12 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         MergeLifeRule rule = new MergeLifeRule(ruleText);
         grid.randomize(0,new Random());
 
-        for(int i=0;i<250;i++) {
+        for(int i=0;i<config.getRenderSteps();i++) {
             grid.step(rule);
         }
 
         File file = new File("mergelife-"+ruleText.toLowerCase()+".png");
-        grid.savePNG(0, 5, file);
+        grid.savePNG(0, config.getZoom(), file);
         System.out.println("Saved: " + file);
     }
 

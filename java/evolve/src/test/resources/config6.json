@@ -4,6 +4,8 @@
     "cols": 200,
     "populationSize": 50,
     "tournamentCycles": 5,
+    "zoom": 5,
+    "renderSteps": 250,
     "evalCycles": 5
   },
   "objective": [

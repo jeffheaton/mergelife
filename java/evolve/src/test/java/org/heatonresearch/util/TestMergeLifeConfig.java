@@ -22,8 +22,9 @@ public class TestMergeLifeConfig {
         Assert.assertEquals(75, (int)(config.getCrossoverPct()*100));
         Assert.assertEquals(5, config.getEvalCycles());
 
-        Assert.assertEquals(5, config.getObjectiveFunction().getStats().size());
-        for(BasicObjectiveFunction.ObjectiveFunctionStat stat: config.getObjectiveFunction().getStats()) {
+        BasicObjectiveFunction objFunction = (BasicObjectiveFunction)config.getObjectiveFunction();
+        Assert.assertEquals(5, objFunction.getStats().size());
+        for(BasicObjectiveFunction.ObjectiveFunctionStat stat: objFunction.getStats()) {
             if(stat.getStat().equals("steps")) {
                 Assert.assertEquals(1000,stat.getMax(), 0.01);
                 Assert.assertEquals(300,stat.getMin(), 0.01);

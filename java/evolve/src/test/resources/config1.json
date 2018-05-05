@@ -5,6 +5,8 @@
         "populationSize": 50,
         "crossover": 0.75,
         "tournamentCycles": 5,
+        "zoom": 5,
+        "renderSteps": 250,
         "evalCycles": 5
     },
     "objective": [
