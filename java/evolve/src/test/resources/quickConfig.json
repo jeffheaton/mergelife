@@ -7,7 +7,10 @@
         "tournamentCycles": 5,
         "zoom": 5,
       "renderSteps": 250,
-        "evalCycles": 2
+        "evalCycles": 2,
+        "patience": 1000,
+        "scoreThreshold": 3.5,
+        "maxRuns": 10
     },
     "objective": [
         {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 public class MergeLifeGeneticAlgorithm implements Runnable {
+    public static final int REPORT_TIME = 60000;
     private final MergeLifeConfig config;
     private final List<MergeLifeGenome> population = new ArrayList<>();
     private final EvaluateObjective objectiveFunction;
@@ -17,6 +18,11 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
     private int noImprovement;
     private double lastBestScore;
     private Random rnd;
+    private long lastReport;
+    private int runCount;
+    private long startTime;
+    private long totalEvalCount;
+
 
     public MergeLifeGeneticAlgorithm(Random rnd, MergeLifeConfig theConfig) throws IOException {
         this.config = theConfig;
@@ -32,23 +38,37 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
     }
 
     private synchronized void report() throws IOException {
+        long now = System.currentTimeMillis();
+        boolean report = false;
+
         this.evalCount++;
-        System.out.println("Eval #" + this.evalCount + ":" + this.topGenome);
+        if( (now-this.lastReport) > REPORT_TIME ) {
+            this.lastReport = now;
+            report = true;
+        }
         if( this.topGenome!=null) {
             if(this.topGenome.getScore()>this.lastBestScore) {
                 this.lastBestScore = this.topGenome.getScore();
                 this.noImprovement = 0;
             } else {
                 this.noImprovement++;
-                if(this.noImprovement>1000 && !this.requestStop) {
-                    System.out.println("No improvement for 1000, stopping...");
+                if(this.noImprovement>this.config.getPatience() && !this.requestStop) {
+                    report = true;
                     this.requestStop = true;
-                    if( this.topGenome.getScore()>3.5 ) {
+                    if( this.topGenome.getScore()>this.config.getScoreThreshold() ) {
                         render(this.topGenome.getRuleText());
                     }
                 }
             }
         }
+
+        if(report) {
+            long elapsed = (now - this.startTime)/1000;
+            double perSec = ((double)this.totalEvalCount)/elapsed;
+            int perMin = (int)(perSec*60);
+            System.out.printf("Run #%d, Eval #%d: %s, evals/min=%d\n", this.runCount, this.evalCount, this.topGenome, perMin);
+        }
+
     }
 
     public MergeLifeGenome tournament(Random rnd, int cycles) throws IOException {
@@ -58,7 +78,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         for(int i = 0;i<cycles;i++) {
             int idx = (int)(rnd.nextDouble()*(this.population.size()));
             MergeLifeGenome challenger = this.population.get(idx);
-            challenger.calculateScore(this.objectiveFunction, rnd);
+            calculateScore(challenger,rnd);
             report();
 
             if( best!=null ) {
@@ -124,9 +144,14 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         }
     }
 
+    private void calculateScore(MergeLifeGenome genome, Random rnd) {
+        this.totalEvalCount++;
+        genome.calculateScore(this.objectiveFunction, this.rnd);
+    }
+
     public void scorePopulation() {
         System.out.println("Scoring initial population");
-        this.population.parallelStream().forEach(genome -> genome.calculateScore(this.objectiveFunction, rnd));
+        this.population.parallelStream().forEach(genome -> calculateScore(genome,rnd));
         System.out.println("Initial population scored");
     }
 
@@ -185,11 +210,16 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         for (Thread thread : threads) {
             thread.join();
         }
-        System.out.println("Done.");
+        this.runCount++;
     }
 
     public void process() throws InterruptedException {
-        for(;;) {
+        this.lastReport = System.currentTimeMillis();
+        this.startTime = this.lastReport;
+        this.runCount = 1;
+        this.totalEvalCount = 0;
+
+        for(int i=0;i<this.config.getMaxRuns();i++) {
             init();
             scorePopulation();
             processSingleRun();

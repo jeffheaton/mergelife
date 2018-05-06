@@ -18,6 +18,10 @@ public class MergeLifeConfig {
     private int tournamentCycles;
     private double crossoverPct;
     private int evalCycles;
+    private int patience;
+    private double scoreThreshold;
+    private int maxRuns;
+
     private EvaluateObjective objectiveFunction;
 
     public MergeLifeConfig() {
@@ -38,6 +42,9 @@ public class MergeLifeConfig {
         this.tournamentCycles = readInt(configMap, "tournamentCycles");
         this.crossoverPct = readDouble(configMap, "crossover");
         this.evalCycles = readInt(configMap, "evalCycles");
+        this.patience = readInt(configMap, "patience");
+        this.scoreThreshold = readDouble(configMap, "scoreThreshold");
+        this.maxRuns = readInt(configMap, "maxRuns");
 
         BasicObjectiveFunction objFunction = new BasicObjectiveFunction(this);
         ArrayList<Object> list = (ArrayList<Object>)map.get("objective");
@@ -139,5 +146,17 @@ public class MergeLifeConfig {
 
     public void setRenderSteps(int renderSteps) {
         this.renderSteps = renderSteps;
+    }
+
+    public int getPatience() {
+        return patience;
+    }
+
+    public double getScoreThreshold() {
+        return scoreThreshold;
+    }
+
+    public int getMaxRuns() {
+        return maxRuns;
     }
 }
