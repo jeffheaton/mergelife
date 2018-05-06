@@ -55,9 +55,6 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
                 if(this.noImprovement>this.config.getPatience() && !this.requestStop) {
                     report = true;
                     this.requestStop = true;
-                    if( this.topGenome.getScore()>this.config.getScoreThreshold() ) {
-                        render(this.topGenome.getRuleText());
-                    }
                 }
             }
         }
@@ -150,9 +147,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
     }
 
     public void scorePopulation() {
-        System.out.println("Scoring initial population");
         this.population.parallelStream().forEach(genome -> calculateScore(genome,rnd));
-        System.out.println("Initial population scored");
     }
 
     public String[] crossover(Random rnd, String parent1, String parent2) {
@@ -192,7 +187,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         }
     }
 
-    public void processSingleRun() throws InterruptedException {
+    public void processSingleRun() throws InterruptedException, IOException {
         List<Thread> threads = new ArrayList<>();
         this.requestStop = false;
         this.noImprovement = 0;
@@ -210,10 +205,14 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         for (Thread thread : threads) {
             thread.join();
         }
+
+        if( this.topGenome.getScore()>this.config.getScoreThreshold() ) {
+            render(this.topGenome.getRuleText());
+        }
         this.runCount++;
     }
 
-    public void process() throws InterruptedException {
+    public void process() throws InterruptedException, IOException {
         this.lastReport = System.currentTimeMillis();
         this.startTime = this.lastReport;
         this.runCount = 1;

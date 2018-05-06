@@ -2,6 +2,7 @@ package org.heatonresearch.util;
 
 import org.heatonresearch.mergelife.EvaluateObjective;
 import org.heatonresearch.mergelife.MergeLifeGenome;
+import org.heatonresearch.mergelife.MergeLifeReportable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,6 +20,16 @@ public class TestMergeLifeGenome {
         @Override
         public double calculateObjective(String ruleText, Random rnd) {
             return this.fixedScore;
+        }
+
+        @Override
+        public MergeLifeReportable getReport() {
+            return null;
+        }
+
+        @Override
+        public void setReport(MergeLifeReportable report) {
+
         }
     }
 
