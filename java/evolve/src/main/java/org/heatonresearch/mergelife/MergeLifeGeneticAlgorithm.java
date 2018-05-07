@@ -1,5 +1,8 @@
 package org.heatonresearch.mergelife;
 
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -253,4 +256,5 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         double score = objFunction.calculateObjective(ruleText, new Random());
         System.out.println("Score: " + score);
     }
+
 }
