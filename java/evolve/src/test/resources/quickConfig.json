@@ -8,9 +8,9 @@
         "zoom": 5,
       "renderSteps": 250,
         "evalCycles": 2,
-        "patience": 1000,
+        "patience": 100,
         "scoreThreshold": 3.5,
-        "maxRuns": 10
+        "maxRuns": 2
     },
     "objective": [
         {

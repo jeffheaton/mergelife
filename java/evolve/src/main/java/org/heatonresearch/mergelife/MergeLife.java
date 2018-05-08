@@ -105,7 +105,8 @@ public class MergeLife {
                     System.out.println("Usage: score [rule-text]");
                 } else {
                     MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd, config);
-                    ga.score(cmd.getArgs()[1]);
+                    double score = ga.score(cmd.getArgs()[1]);
+					System.out.println("Score: " + score);
                 }
 			} else {
                 displayHelp(options);

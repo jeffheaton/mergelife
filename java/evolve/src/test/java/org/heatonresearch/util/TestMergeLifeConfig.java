@@ -22,6 +22,10 @@ public class TestMergeLifeConfig {
         Assert.assertEquals(75, (int)(config.getCrossoverPct()*100));
         Assert.assertEquals(5, config.getEvalCycles());
 
+        Assert.assertEquals(1000, config.getPatience());
+        Assert.assertEquals(3.5, config.getScoreThreshold(),0.001);
+        Assert.assertEquals(1000000, config.getMaxRuns());
+
         BasicObjectiveFunction objFunction = (BasicObjectiveFunction)config.getObjectiveFunction();
         Assert.assertEquals(5, objFunction.getStats().size());
         for(BasicObjectiveFunction.ObjectiveFunctionStat stat: objFunction.getStats()) {
@@ -72,4 +76,17 @@ public class TestMergeLifeConfig {
         MergeLifeConfig config = new MergeLifeConfig(file.toString());
     }
 
+    @Test
+    public void testSetter() {
+        MergeLifeConfig config = new MergeLifeConfig();
+        config.setRenderSteps(1000);
+        config.setRows(1001);
+        config.setZoom(1002);
+        config.setCols(1003);
+
+        Assert.assertEquals(1000,config.getRenderSteps());
+        Assert.assertEquals(1001,config.getRows());
+        Assert.assertEquals(1002,config.getZoom());
+        Assert.assertEquals(1003,config.getCols());
+    }
 }

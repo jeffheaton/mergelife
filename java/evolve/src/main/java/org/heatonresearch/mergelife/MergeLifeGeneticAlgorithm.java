@@ -242,7 +242,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         System.out.println("Saved: " + file);
     }
 
-    public void score(String ruleText) {
+    public double score(String ruleText) {
         EvaluateObjective objFunction = this.config.getObjectiveFunction();
         objFunction.setReport(new MergeLifeReportable() {
             @Override
@@ -250,11 +250,14 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
                 System.out.println(message);
             }
         });
-        if(objFunction==null) {
+        if (objFunction == null) {
             throw new MergeLifeException("Missing objective function, please specify config file with -config.");
         }
-        double score = objFunction.calculateObjective(ruleText, new Random());
-        System.out.println("Score: " + score);
+        return objFunction.calculateObjective(ruleText, new Random());
+
     }
 
+    public List<MergeLifeGenome> getPopulation() {
+        return population;
+    }
 }
