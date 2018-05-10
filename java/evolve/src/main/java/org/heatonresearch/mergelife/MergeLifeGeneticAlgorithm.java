@@ -1,8 +1,10 @@
+/*
+ * MergeLife, Copyrighr 2018 by Jeff Heaton
+ * http://www.heatonresearch.com/mergelife/
+ * MIT License
+ */
 package org.heatonresearch.mergelife;
 
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
