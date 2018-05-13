@@ -214,7 +214,7 @@ public class BasicObjectiveFunction implements EvaluateObjective {
             }
             sum+=calculateObjectiveCycle(ruleText, random);
         }
-        return sum/5.0;
+        return sum/config.getEvalCycles();
     }
 
     /**
