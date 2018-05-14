@@ -1,0 +1,16 @@
+{
+  "extends": ["standard","plugin:jasmine/recommended"],
+  "plugins": ["jasmine"],
+  "rules": {
+    "no-var": 1,
+    "dot-notation": 1,
+    "prefer-const": 1
+  },
+  "env": {
+    "jasmine": true,
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "jquery": true
+  }
+}

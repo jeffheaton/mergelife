@@ -1,3 +1,4 @@
+node_modules
 *.iws
 test_stats.py
 *.ipr

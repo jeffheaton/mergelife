@@ -9,7 +9,7 @@ import org.apache.commons.cli.*;
 import java.util.Random;
 
 
-// java -jar evolve-all.jar -rows 2048 -cols 2048 -renderSteps 250 -zoom 1 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+// D:\Users\jheaton\projects\mergelife\java\evolve\build\libs>java -jar evolve-all.jar --rows 1000 --cols 1000 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
 public class MergeLife {
 
 	public static void displayHelp(Options options) {
@@ -23,7 +23,6 @@ public class MergeLife {
 
 		try {
 			Options options = new Options();
-			options.addOption("t", false, "display current time");
 
 			Option buildfile = OptionBuilder.withArgName( "file" )
 					.hasArg()
