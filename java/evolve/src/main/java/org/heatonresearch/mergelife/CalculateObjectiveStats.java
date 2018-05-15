@@ -11,18 +11,61 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CalculateObjectiveStats {
+    /**
+     * The mode age:  How long has the merged matrix mode been at the same value.  Measured in CA generations/updates.
+     */
     public static final String STAT_MODE_AGE = "mage";
+
+    /**
+     * The current mode (background) color.
+     */
     public static final String STAT_MODE = "mode";
+
+    /**
+     * The count (numeric, not percent) of mode (background) cells.
+     */
     public static final String STAT_MODE_COUNT = "mc";
+
+    /**
+     * The percent of cells that have the mode color. (are background color)
+     */
     public static final String STAT_BACKGROUND = "background";
+
+    /**
+     * The percent of cells that are in a foreground state.  A foreground cell has had the same non-background color
+     * on the merged grid for longer than 5 CA generations/updates.  These cells are usually part of "still life".
+     */
     public static final String STAT_FOREGROUND = "foreground";
+
+    /**
+     * The percent of cells that are in an active state.  An active cell was background between 5 and 25 CA generations
+     * ago.  These cells generally have activity passing through them that could indicate "space ship" activity.
+     */
     public static final String STAT_ACTIVE = "active";
+
+    /**
+     * The percent of cells that are in a chaotic state.  Chaotic cells are the remaining cells that are not
+     * background, foreground or active.
+     */
     public static final String STAT_CHAOS = "chaos";
+
+    /**
+     * The number of CA generations.
+     */
     public static final String STAT_STEPS = "steps";
+
+    /**
+     * The largest background colored rectangle on the merged grid.  This is given in percent and indicates the
+     * amount of space between active regions of the grid.
+     */
     public static final String STAT_RECT = "rect";
 
+    /**
+     * The grid being evaluated.
+     */
     private final MergeLifeGrid grid;
 
+    
     private final int[][] modeCount;
     private final int[][] lastColor;
     private final int[][] lastColorCount;
