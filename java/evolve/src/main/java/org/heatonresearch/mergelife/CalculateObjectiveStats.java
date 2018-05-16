@@ -65,16 +65,45 @@ public class CalculateObjectiveStats {
      */
     private final MergeLifeGrid grid;
 
-    
+    /**
+     * The count of how many CA generations each cell has been the mode.
+     */
     private final int[][] modeCount;
+
+    /**
+     * The last merged color that each cell was.
+     */
     private final int[][] lastColor;
+
+    /**
+     * The count of how many CA steps each cell has had its color.
+     */
     private final int[][] lastColorCount;
+
+    /**
+     * The last CA generation/step that each cell was the merged mode/background.
+     */
     private final int[][] lastModeStep;
+
+    /**
+     * The last count of merged mode (background) cells.
+     */
     private int lastModeCount;
+
+    /**
+     * How many CA generations has the merged mode count been the same.
+     */
     private int modeCountSame;
 
+    /**
+     * The current evaluation stats.
+     */
     private final Map<String,Double> currentStats =  new HashMap<>();
 
+    /**
+     * Construct to calculate objective stats for the specified grid.
+     * @param theGrid The grid to calculate stats for.
+     */
     public CalculateObjectiveStats(MergeLifeGrid theGrid) {
         this.grid = theGrid;
         this.modeCount = new int[this.grid.getRows()][this.grid.getCols()];
@@ -83,6 +112,10 @@ public class CalculateObjectiveStats {
         this.lastModeStep = new int[this.grid.getRows()][this.grid.getCols()];
     }
 
+    /**
+     * Track the objective stats for a current CA generation/step.
+     * @return The current stats, after the CA generation..
+     */
     public Map<String,Double>  track() {
         int height = this.grid.getRows();
         int width = this.grid.getCols();
@@ -161,6 +194,9 @@ public class CalculateObjectiveStats {
         return this.currentStats;
     }
 
+    /**
+     * @return True, if the grid has stablized to the point that more CA generations are not needed.
+     */
     public boolean hasStabilized() {
         if( this.currentStats.size()==0) {
             return false;
@@ -181,10 +217,16 @@ public class CalculateObjectiveStats {
         return this.grid.getCurrentStep()>1000;
     }
 
+    /**
+     * @return The current stats.
+     */
     public Map<String, Double> getCurrentStats() {
         return currentStats;
     }
 
+    /**
+     * @return The grid being evaluated.
+     */
     public MergeLifeGrid getGrid() {
         return grid;
     }
