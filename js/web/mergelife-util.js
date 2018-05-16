@@ -6,7 +6,7 @@ const commandLineUsage = require('command-line-usage')
 const Jimp = require('Jimp')
 const fs = require('fs')
 
-function render(ruleText,rows,cols,steps,zoom) {
+function render (ruleText, rows, cols, steps, zoom) {
   const renderer = new ml.MergeLifeRender()
   renderer.init({
     rows: rows,
@@ -43,11 +43,11 @@ function render(ruleText,rows,cols,steps,zoom) {
 
 const optionDefinitions = [
   {
-  name: 'help',
-  alias: 'h',
-  type: Boolean,
-  description: 'Display this usage guide.'
-},
+    name: 'help',
+    alias: 'h',
+    type: Boolean,
+    description: 'Display this usage guide.'
+  },
   { name: 'rows', type: Number, description: 'Number of rows in the grid.' },
   { name: 'cols', type: Number, description: 'Number of columns in the grid.' },
   { name: 'config', type: String, description: 'Location of the config file.' },
@@ -58,9 +58,9 @@ const optionDefinitions = [
 
 const options = commandLineArgs(optionDefinitions)
 
-const config = options.config ?
-  JSON.parse(fs.readFileSync(options.config, 'utf8')):
-  {config:{}}
+const config = options.config
+  ? JSON.parse(fs.readFileSync(options.config, 'utf8'))
+  : {config: {}}
 
 const rows = options.rows || config.config.rows || 100
 const cols = options.cols || config.config.cols || 100
@@ -79,15 +79,14 @@ if (options.help) {
     }
   ])
   console.log(usage)
-} else if (options.command[0] == 'render') {
-
-  if(options.command.length<2) {
-    console.log("Must specify what rule hex-code you wish to render.")
+} else if (options.command[0] === 'render') {
+  if (options.command.length < 2) {
+    console.log('Must specify what rule hex-code you wish to render.')
     process.exit(1)
   } else {
-    rule = options.command[1]
-    render(rule,rows,cols,renderSteps,zoom)
+    const rule = options.command[1]
+    render(rule, rows, cols, renderSteps, zoom)
   }
-}  else {
+} else {
   console.log(`Unknown command ${options.command[0]}`)
 }
