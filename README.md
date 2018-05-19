@@ -20,4 +20,8 @@ guns, oscillators, and Universal Turing Machines. Because the true animated beha
 of these CA cannot be observed from static images, we also present an on-line
 JavaScript viewer that is capable of animating any MergeLife 16-byte update rule
 
-[JavaScript Demo](http://www.heatonresearch.com/mergelife)
+Useful Links
+------------
+
+* [JavaScript Demo](http://www.heatonresearch.com/mergelife)
+* [Binary Downloads](https://github.com/jeffheaton/mergelife/blob/master/binaries.md)
