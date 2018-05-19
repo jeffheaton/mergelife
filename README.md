@@ -1,6 +1,11 @@
-# MergeLife
+MergeLife
+=========
+
+![MergeLife](https://raw.githubusercontent.com/jeffheaton/mergelife/master/img/mergelife-1.png)
+
 
 Evolving Continuous Cellular Automata for Aesthetic Objectives
+--------------------------------------------------------------
 Jeff Heaton
 
 **Abstract;** We present MergeLife, a genetic algorithm (GA) capable of evolving continuous
@@ -25,3 +30,10 @@ Useful Links
 
 * [JavaScript Demo](http://www.heatonresearch.com/mergelife)
 * [Binary Downloads](https://github.com/jeffheaton/mergelife/blob/master/binaries.md)
+
+MergeLife Implementations
+-------------------------
+
+* [MergeLife in JavaScript](https://github.com/jeffheaton/mergelife/tree/master/js/)
+* [MergeLife in Java](https://github.com/jeffheaton/mergelife/tree/master/java/)
+* [MergeLife in Python](https://github.com/jeffheaton/mergelife/tree/master/python/)
