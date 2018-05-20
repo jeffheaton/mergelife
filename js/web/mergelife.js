@@ -54,9 +54,9 @@ const MergeLifeRender = function (canvas) {
     return result
   }
 
-  this.randomLattice = function (lattice) {
-    for (let row = 0; row < lattice.length; row += 1) {
-      const line = lattice[row]
+  this.randomGrid = function (grid) {
+    for (let row = 0; row < grid.length; row += 1) {
+      const line = grid[row]
       for (let col = 0; col < line.length; col += 1) {
         const pixel = line[col]
         for (let i = 0; i < 3; i++) {
@@ -105,14 +105,13 @@ const MergeLifeRender = function (canvas) {
   }
 
   this.updateStep = function (lattice, latticeNext, updateRule) {
-    const lg = this.magnitude
-    const mode = this.latticeGray(lattice, lg)
+    this.gridMode = this.latticeGray(lattice, this.mergeGrid)
 
     for (let row = 0; row < lattice.length; row += 1) {
       const line = lattice[row]
       const lineNext = latticeNext[row]
       for (let col = 0; col < line.length; col += 1) {
-        const nc = this.sumNeighbor(lg, row, col, mode)
+        const nc = this.sumNeighbor(this.mergeGrid, row, col, this.gridMode)
 
         for (let i = 0; i < updateRule.length; i++) {
           if (nc < updateRule[i][0]) {
@@ -161,15 +160,15 @@ const MergeLifeRender = function (canvas) {
     this.stepCount += 1
 
     this.updateStep(
-      this.lattice[this.current_lattice_lattice],
-      this.lattice[this.current_lattice_lattice === 0 ? 1 : 0],
+      this.lattice[this.currentGrid],
+      this.lattice[this.currentGrid === 0 ? 1 : 0],
       this.update_rule)
-    this.current_lattice_lattice = this.current_lattice_lattice === 0 ? 1 : 0
+    this.currentGrid = this.currentGrid === 0 ? 1 : 0
   }
 
   this.animateFunction = function () {
     this.singleStep()
-    const lattice = this.lattice[this.current_lattice_lattice]
+    const lattice = this.lattice[this.currentGrid]
     this.render(0, lattice)
   }
 
@@ -179,14 +178,14 @@ const MergeLifeRender = function (canvas) {
 
   this.startAnimation = function (time) {
     this.stepCount = 0
-    this.randomLattice(this.lattice[this.current_lattice_lattice])
+    this.randomGrid(this.lattice[this.currentGrid])
     if (this.updateEvent === null) {
       this.updateEvent = setInterval(() => this.animateFunction(), time || 10)
     }
   }
 
   this.render = function () {
-    const lattice = this.lattice[this.current_lattice_lattice]
+    const lattice = this.lattice[this.currentGrid]
 
     this.ctx.strokeStyle = 'grey'
 
@@ -222,28 +221,30 @@ const MergeLifeRender = function (canvas) {
   }
 
   this.init = function (params) {
-    let rows = 0
-    let cols = 0
+    this.rows = 0
+    this.cols = 0
+    this.gridMode = 0
+
     if (params.canvas == null) {
-      rows = params.rows || 100
-      cols = params.cols || 100
+      this.rows = params.rows || 100
+      this.cols = params.cols || 100
     } else {
       this.ctx = params.canvas.getContext('2d')
       this.cellSize = params.cellSize || 5
-      rows = this.ctx.canvas.height / this.cellSize
-      cols = this.ctx.canvas.width / this.cellSize
+      this.rows = this.ctx.canvas.height / this.cellSize
+      this.cols = this.ctx.canvas.width / this.cellSize
     }
 
     this.lattice = []
-    this.lattice[0] = this.alloc(rows, cols, 3)
-    this.lattice[1] = this.alloc(rows, cols, 3)
-    this.magnitude = this.alloc(rows, cols, 1)
-    this.current_lattice_lattice = 0
+    this.lattice[0] = this.alloc(this.rows, this.cols, 3)
+    this.lattice[1] = this.alloc(this.rows, this.cols, 3)
+    this.mergeGrid = this.alloc(this.rows, this.cols, 1)
+    this.currentGrid = 0
     this.update_rule = null
     this.updateEvent = null
     this.stepCount = 0
 
-    this.randomLattice(this.lattice[0])
+    this.randomGrid(this.lattice[0])
 
     const result = this.parseUpdateRule(params.rule)
     this.update_rule = result

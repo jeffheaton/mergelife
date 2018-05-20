@@ -69,7 +69,7 @@ public class TestBasicObjectiveFunction {
         MergeLifeConfig config = new MergeLifeConfig(file.toString());
 
         double score = config.getObjectiveFunction().calculateObjective("E542-5F79-9341-F31E-6C6B-7F08-8773-7068", new Random(42));
-        Assert.assertEquals(-0.04, score, 0.01);
+        Assert.assertEquals(-0.1, score, 0.01);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class TestBasicObjectiveFunction {
         MergeLifeConfig config = new MergeLifeConfig(file.toString());
 
         double score = config.getObjectiveFunction().calculateObjective("ff7f-0000-0000-0000-0000-0000-0000-0000", new Random(42));
-        Assert.assertEquals(-0.04, score, 0.01);
+        Assert.assertEquals(-0.1, score, 0.01);
     }
 
     @Test
@@ -95,6 +95,6 @@ public class TestBasicObjectiveFunction {
         config.getObjectiveFunction().setReport(rept);
         Assert.assertEquals(rept,config.getObjectiveFunction().getReport());
         double score = config.getObjectiveFunction().calculateObjective("E542-5F79-9341-F31E-6C6B-7F08-8773-7068", new Random(42));
-        Assert.assertEquals(-0.04, score, 0.01);
+        Assert.assertEquals(-0.1, score, 0.01);
     }
 }

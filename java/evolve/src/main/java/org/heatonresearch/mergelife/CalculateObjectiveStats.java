@@ -120,8 +120,6 @@ public class CalculateObjectiveStats {
         int height = this.grid.getRows();
         int width = this.grid.getCols();
         int size = height * width;
-        int timeStep = this.grid.getCurrentStep();
-        int cg = this.grid.getCurrentGrid();
 
         if( currentStats.size()==0) {
             currentStats.put(CalculateObjectiveStats.STAT_MODE_AGE,0.0);
@@ -143,7 +141,6 @@ public class CalculateObjectiveStats {
         }
 
         // What percent of the grid is the mode, what percent is the background
-        int modeCount = 0;
         int mc = 0;
         int sameColor = 0;
         int act = 0;
@@ -151,7 +148,6 @@ public class CalculateObjectiveStats {
         for(int row=0;row<this.grid.getRows();row++) {
             for(int col=0;col<this.grid.getCols();col++) {
                 if(this.grid.getMergeGrid()[row][col]==this.grid.getModeGrid()) {
-                    modeCount++;
                     this.modeCount[row][col]++;
                     this.lastModeStep[row][col] = this.grid.getCurrentStep();
                     if( this.modeCount[row][col]>50) {
