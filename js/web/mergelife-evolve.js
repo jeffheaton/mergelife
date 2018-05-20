@@ -1,24 +1,11 @@
 const MergeLifeEvolve = function (theGrid) {
-  this.alloc = function (rows, cols, depth) {
-    const result = []
+  this.zeros = function (dimensions) {
+    const array = []
 
-    for (let row = 0; row < rows; row += 1) {
-      const temp = []
-      for (let col = 0; col < cols; col += 1) {
-        if (depth === 1) {
-          temp[col] = 0
-        } else {
-          const temp2 = []
-          for (let d = 0; d < depth; d++) {
-            temp2[d] = 0
-          }
-          temp[col] = temp2
-        }
-      }
-      result[row] = temp
+    for (let i = 0; i < dimensions[0]; ++i) {
+      array.push(dimensions.length === 1 ? 0 : this.zeros(dimensions.slice(1)))
     }
-
-    return result
+    return array
   }
 
   this.track = function () {
@@ -41,7 +28,7 @@ const MergeLifeEvolve = function (theGrid) {
 
     for (let row = 0; row < this.grid.rows; row++) {
       for (let col = 0; col < this.grid.cols; col++) {
-        if (this.grid.lattice[this.grid.currentGrid][row][col] === this.grid.gridMode) {
+        if (this.grid.mergeGrid[row][col] === this.grid.gridMode) {
           this.modeCount[row][col]++
           this.lastModeStep[row][col] = this.grid.stepCount
           if (this.modeCount[row][col] > 50) {
@@ -57,7 +44,7 @@ const MergeLifeEvolve = function (theGrid) {
         }
 
         if (this.lastColor[row][col] !== this.grid.mergeGrid[row][col] ||
-          this.grid.mergeGrid[row][col] === this.grid.modeGrid) {
+          this.grid.mergeGrid[row][col] === this.grid.gridMode) {
           this.lastColor[row][col] = this.grid.mergeGrid[row][col]
           this.lastColorCount[row][col] = 0
         } else {
@@ -71,33 +58,48 @@ const MergeLifeEvolve = function (theGrid) {
 
     const cntChaos = size - (mc + sameColor + act)
 
-    const rect = maximalRectangle(this.grid.mergeGrid, this.grid.modeGrid)
+    const rect = maximalRectangle(this.grid.mergeGrid, this.grid.gridMode)
 
-    this.currentStats.statModeCount = mc
+    this.currentStats.mc = mc
     this.currentStats.statBackground = mc / size
     this.currentStats.statForeground = sameColor / size
     this.currentStats.statActive = act / size
-    this.currentStats.statCHaos = cntChaos / size
+    this.currentStats.statChaos = cntChaos / size
     this.currentStats.statSteps = this.grid.stepCount
     this.currentStats.statRect = rect / size
 
     return this.currentStats
   }
 
+  this.hasStabilized = function () {
+    // Time to stop?
+    const mc = this.currentStats.mc
+    if (mc === this.lastModeCount) {
+      this.modeCountSame++
+      if (this.modeCountSame > 100) {
+        return true
+      }
+    } else {
+      this.modeCountSame = 0
+      this.lastModeCount = mc
+    }
+    return this.grid.stepCount > 1000
+  }
+
   // The grid being evaluated.
   this.grid = theGrid
 
   // The count of how many CA generations each cell has been the mode.
-  this.modeCount = this.alloc([this.grid.rows, this.grid.cols])
+  this.modeCount = this.zeros([this.grid.rows, this.grid.cols])
 
   // The last merged color that each cell was.
-  this.lastColor = this.alloc([this.grid.rows, this.grid.cols])
+  this.lastColor = this.zeros([this.grid.rows, this.grid.cols])
 
   // The count of how many CA steps each cell has had its color.
-  this.lastColorCount = this.alloc([this.grid.rows, this.grid.cols])
+  this.lastColorCount = this.zeros([this.grid.rows, this.grid.cols])
 
   // The last CA generation/step that each cell was the merged mode/background.
-  this.lastModeStep = this.alloc([this.grid.rows, this.grid.cols])
+  this.lastModeStep = this.zeros([this.grid.rows, this.grid.cols])
 
   // The last count of merged mode (background) cells.
   this.lastModeCount = 0
@@ -110,7 +112,7 @@ const MergeLifeEvolve = function (theGrid) {
 
   this.currentStats.statModeAge = 0.0
   this.currentStats.statMode = 0.0
-  this.currentStats.statModeCount = 0.0
+  this.currentStats.mc = 0
   this.currentStats.statBackground = 0.0
   this.currentStats.statForeground = 0.0
   this.currentStats.statActive = 0.0

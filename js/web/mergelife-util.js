@@ -1,10 +1,25 @@
 // npm run mergelife -- --rows 50 --cols 100 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
 
 const ml = require('./mergelife')
+const mlev = require('./mergelife-evolve')
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
 const Jimp = require('Jimp')
 const fs = require('fs')
+
+function score (ruleText) {
+  const renderer = new ml.MergeLifeRender()
+  renderer.init({
+    rows: rows,
+    cols: cols,
+    rule: ruleText
+  })
+  const tracker = new mlev.MergeLifeEvolve(renderer)
+  while (!tracker.hasStabilized()) {
+    renderer.singleStep()
+    console.log(JSON.stringify(tracker.track()))
+  }
+}
 
 function render (ruleText, rows, cols, steps, zoom) {
   const renderer = new ml.MergeLifeRender()
@@ -36,8 +51,13 @@ function render (ruleText, rows, cols, steps, zoom) {
     })
   })
 
-  image.write(`${ruleText}.png`, (err) => {
-    if (err) throw err
+  const filename = `${ruleText}.png`
+  image.write(filename, (err) => {
+    if (err) {
+      throw err
+    } else {
+      console.log(`Saved: ${filename}`)
+    }
   })
 }
 
@@ -67,7 +87,7 @@ const cols = options.cols || config.config.cols || 100
 const zoom = options.zoom || config.config.zoom || 5
 const renderSteps = options.renderSteps || config.renderStep || 250
 
-if (options.help) {
+if (!('command' in options) || options.help) {
   const usage = commandLineUsage([
     {
       header: 'Typical Example',
@@ -86,6 +106,14 @@ if (options.help) {
   } else {
     const rule = options.command[1]
     render(rule, rows, cols, renderSteps, zoom)
+  }
+} else if (options.command[0] === 'score') {
+  if (options.command.length < 2) {
+    console.log('Must specify what rule hex-code you wish to score.')
+    process.exit(1)
+  } else {
+    const rule = options.command[1]
+    score(rule)
   }
 } else {
   console.log(`Unknown command ${options.command[0]}`)

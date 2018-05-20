@@ -66,7 +66,7 @@ const MergeLifeRender = function (canvas) {
     }
   }
 
-  this.latticeGray = function (latticeIn, latticeOut) {
+  this.calculateModeGrid = function (latticeIn, latticeOut) {
     const freq = Array.apply(null, Array(256)).map(Number.prototype.valueOf, 0)
 
     for (let row = 0; row < latticeIn.length; row += 1) {
@@ -105,7 +105,7 @@ const MergeLifeRender = function (canvas) {
   }
 
   this.updateStep = function (lattice, latticeNext, updateRule) {
-    this.gridMode = this.latticeGray(lattice, this.mergeGrid)
+    this.gridMode = this.calculateModeGrid(lattice, this.mergeGrid)
 
     for (let row = 0; row < lattice.length; row += 1) {
       const line = lattice[row]
