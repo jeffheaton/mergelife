@@ -86,7 +86,7 @@ const MergeLifeEvolve = function (theGrid, theObjective) {
     return this.grid.stepCount > 1000
   }
 
-  this.objectiveFunction = function (dump) {
+  this.objectiveFunctionCycle = function (dump) {
     while (!this.hasStabilized()) {
       this.grid.singleStep()
       const s = this.track()
@@ -107,11 +107,11 @@ const MergeLifeEvolve = function (theGrid, theObjective) {
       if (actual < currentValue.min) {
         // too small
         return accumulator + currentValue.min_weight
-      } else if (actual > this.max) {
+      } else if (actual > currentValue.max) {
         // too big
         return accumulator + currentValue.max_weight
       } else {
-        let adjust = ((range / 2) - Math.abs(actual - ideal)) / (range / 2)
+        let adjust = ((range / 2.0) - Math.abs(actual - ideal)) / (range / 2.0)
         adjust *= currentValue.weight
         return accumulator + adjust
       }

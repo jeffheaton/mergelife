@@ -7,15 +7,29 @@ const commandLineUsage = require('command-line-usage')
 const Jimp = require('Jimp')
 const fs = require('fs')
 
+function objectiveFunction(dump, ruleText) {
+  let sum = 0
+  for (let i = 0; i < 5; i++) {
+    const renderer = new ml.MergeLifeRender()
+    renderer.init({
+      rows: rows,
+      cols: cols,
+      rule: ruleText
+    })
+
+    if (dump) {
+      console.log(`Cycle #${i}`)
+    }
+
+    const tracker = new mlev.MergeLifeEvolve(renderer, objective)
+    const score = tracker.objectiveFunctionCycle(true)
+    sum += score
+  }
+  return sum / 5.0
+}
+
 function score (ruleText, objective) {
-  const renderer = new ml.MergeLifeRender()
-  renderer.init({
-    rows: rows,
-    cols: cols,
-    rule: ruleText
-  })
-  const tracker = new mlev.MergeLifeEvolve(renderer, objective)
-  const score = tracker.objectiveFunction(true)
+  const score = objectiveFunction(false, ruleText)
   console.log(`Final score: ${score}`)
 }
 
