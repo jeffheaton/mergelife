@@ -7,18 +7,16 @@ const commandLineUsage = require('command-line-usage')
 const Jimp = require('Jimp')
 const fs = require('fs')
 
-function score (ruleText) {
+function score (ruleText, objective) {
   const renderer = new ml.MergeLifeRender()
   renderer.init({
     rows: rows,
     cols: cols,
     rule: ruleText
   })
-  const tracker = new mlev.MergeLifeEvolve(renderer)
-  while (!tracker.hasStabilized()) {
-    renderer.singleStep()
-    console.log(JSON.stringify(tracker.track()))
-  }
+  const tracker = new mlev.MergeLifeEvolve(renderer, objective)
+  const score = tracker.objectiveFunction(true)
+  console.log(`Final score: ${score}`)
 }
 
 function render (ruleText, rows, cols, steps, zoom) {
@@ -86,6 +84,7 @@ const rows = options.rows || config.config.rows || 100
 const cols = options.cols || config.config.cols || 100
 const zoom = options.zoom || config.config.zoom || 5
 const renderSteps = options.renderSteps || config.renderStep || 250
+const objective = config.objective
 
 if (!('command' in options) || options.help) {
   const usage = commandLineUsage([
@@ -111,9 +110,12 @@ if (!('command' in options) || options.help) {
   if (options.command.length < 2) {
     console.log('Must specify what rule hex-code you wish to score.')
     process.exit(1)
+  } else if (!objective) {
+    console.log('Must specify objective function (from config file).')
+    process.exit(1)
   } else {
     const rule = options.command[1]
-    score(rule)
+    score(rule, objective)
   }
 } else {
   console.log(`Unknown command ${options.command[0]}`)

@@ -42,5 +42,5 @@ A configuration file must be provided that specifies the objective function. A s
 with the MergeLife paper, is [provided here](https://github.com/jeffheaton/mergelife/blob/master/java/evolve/paperObjective.json).
 
 ```
-java -jar mergelife-evolve-all.jar -config paperObjective.json  score E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+npm run mergelife -- --config paperObjective.json score E542-5F79-9341-F31E-6C6B-7F08-8773-7068
 ```

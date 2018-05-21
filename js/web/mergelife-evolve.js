@@ -1,4 +1,4 @@
-const MergeLifeEvolve = function (theGrid) {
+const MergeLifeEvolve = function (theGrid, theObjective) {
   this.zeros = function (dimensions) {
     const array = []
 
@@ -13,12 +13,12 @@ const MergeLifeEvolve = function (theGrid) {
     const width = this.grid.cols
     const size = height * width
 
-    if (this.currentStats.statMode === this.grid.gridMode) {
-      const age = this.currentStats.statModeAge + 1
-      this.currentStats.statModeAge = age
+    if (this.currentStats.mode === this.grid.gridMode) {
+      const age = this.currentStats.mage + 1
+      this.currentStats.mage = age
     } else {
-      this.currentStats.statMode = this.grid.gridMode
-      this.currentStats.statModeAge = 0
+      this.currentStats.mode = this.grid.gridMode
+      this.currentStats.mage = 0
     }
 
     // What percent of the grid is the mode, what percent is the background
@@ -61,12 +61,12 @@ const MergeLifeEvolve = function (theGrid) {
     const rect = maximalRectangle(this.grid.mergeGrid, this.grid.gridMode)
 
     this.currentStats.mc = mc
-    this.currentStats.statBackground = mc / size
-    this.currentStats.statForeground = sameColor / size
-    this.currentStats.statActive = act / size
-    this.currentStats.statChaos = cntChaos / size
-    this.currentStats.statSteps = this.grid.stepCount
-    this.currentStats.statRect = rect / size
+    this.currentStats.background = mc / size
+    this.currentStats.foreground = sameColor / size
+    this.currentStats.active = act / size
+    this.currentStats.chaos = cntChaos / size
+    this.currentStats.steps = this.grid.stepCount
+    this.currentStats.rect = rect / size
 
     return this.currentStats
   }
@@ -85,6 +85,41 @@ const MergeLifeEvolve = function (theGrid) {
     }
     return this.grid.stepCount > 1000
   }
+
+  this.objectiveFunction = function (dump) {
+    while (!this.hasStabilized()) {
+      this.grid.singleStep()
+      const s = this.track()
+      if (dump) {
+        console.log(JSON.stringify(s))
+      }
+    }
+
+    return this.objective.reduce((accumulator, currentValue) => {
+      const range = currentValue.max - currentValue.min
+      const ideal = range / 2
+
+      if (!(currentValue.stat in this.currentStats)) {
+        console.log(`Unknown objective stat: ${currentValue.stat}`)
+      }
+
+      const actual = this.currentStats[currentValue.stat]
+      if (actual < currentValue.min) {
+        // too small
+        return accumulator + currentValue.min_weight
+      } else if (actual > this.max) {
+        // too big
+        return accumulator + currentValue.max_weight
+      } else {
+        let adjust = ((range / 2) - Math.abs(actual - ideal)) / (range / 2)
+        adjust *= currentValue.weight
+        return accumulator + adjust
+      }
+    }, 0)
+  }
+
+  // The objective
+  this.objective = theObjective
 
   // The grid being evaluated.
   this.grid = theGrid
@@ -110,13 +145,13 @@ const MergeLifeEvolve = function (theGrid) {
   // The current evaluation stats.
   this.currentStats = {}
 
-  this.currentStats.statModeAge = 0.0
-  this.currentStats.statMode = 0.0
+  this.currentStats.mage = 0.0
+  this.currentStats.mode = 0.0
   this.currentStats.mc = 0
-  this.currentStats.statBackground = 0.0
-  this.currentStats.statForeground = 0.0
-  this.currentStats.statActive = 0.0
-  this.currentStats.statChaos = 0.0
+  this.currentStats.background = 0.0
+  this.currentStats.foreground = 0.0
+  this.currentStats.active = 0.0
+  this.currentStats.chaos = 0.0
 }
 
 function maxAreaInHist (height) {
