@@ -266,6 +266,22 @@ MergeLifeRender.prototype.KEY_COLOR = [
   [255, 255, 255] // White 7
 ]
 
+MergeLifeRender.randomRule = function () {
+  let str = ''
+
+  for (let i = 0; i < 8; i++) {
+    let r = Math.floor(Math.random() * 0x10000).toString(16)
+    while (r.length < 4) {
+      r = '0' + r
+    }
+    if (str.length > 0) {
+      str += '-'
+    }
+
+    str += r
+  }
+}
+
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   exports.MergeLifeRender = MergeLifeRender
 }
