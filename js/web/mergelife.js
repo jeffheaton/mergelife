@@ -280,6 +280,7 @@ MergeLifeRender.randomRule = function () {
 
     str += r
   }
+  return str
 }
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

@@ -7,7 +7,7 @@ const commandLineUsage = require('command-line-usage')
 const Jimp = require('Jimp')
 const fs = require('fs')
 
-function objectiveFunction(dump, ruleText) {
+function objectiveFunction (dump, ruleText) {
   let sum = 0
   for (let i = 0; i < 5; i++) {
     const renderer = new ml.MergeLifeRender()
@@ -73,6 +73,10 @@ function render (ruleText, rows, cols, steps, zoom) {
   })
 }
 
+function evolve () {
+
+}
+
 const optionDefinitions = [
   {
     name: 'help',
@@ -131,6 +135,8 @@ if (!('command' in options) || options.help) {
     const rule = options.command[1]
     score(rule, objective)
   }
+} else if (options.command[0] === 'evolve') {
+  evolve()
 } else {
   console.log(`Unknown command ${options.command[0]}`)
 }
