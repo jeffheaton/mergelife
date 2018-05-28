@@ -6,6 +6,21 @@ const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
 const Jimp = require('Jimp')
 const fs = require('fs')
+const cluster = require('cluster')
+const os = require('os')
+const {performance} = require('perf_hooks')
+
+let topGenome = null
+let evalCount = 0
+let lastReport = 0
+let lastBestScore = 0
+let noImprovement = 0
+let totalEvalCount = 0
+let startTime = 0
+let requestStop = false
+let runCount = 0
+const REPORT_TIME = 60000
+const CUT_LENGTH = 5
 
 function objectiveFunction (dump, ruleText) {
   let sum = 0
@@ -22,7 +37,7 @@ function objectiveFunction (dump, ruleText) {
     }
 
     const tracker = new mlev.MergeLifeEvolve(renderer, objective)
-    const score = tracker.objectiveFunctionCycle(true)
+    const score = tracker.objectiveFunctionCycle(dump)
     sum += score
   }
   return sum / 5.0
@@ -73,8 +88,177 @@ function render (ruleText, rows, cols, steps, zoom) {
   })
 }
 
-function evolve () {
+function report () {
+  const now = performance.now()
+  let report = false
 
+  evalCount++
+  if ((now - lastReport) > REPORT_TIME) {
+    lastReport = now
+    report = true
+  }
+
+  if (topGenome != null) {
+    if (topGenome.score > lastBestScore) {
+      lastBestScore = topGenome.score
+      noImprovement = 0
+    } else {
+      noImprovement++
+      if (noImprovement > config.config.patience && !requestStop) {
+        report = true
+        requestStop = true
+      }
+    }
+  }
+  if (report) {
+    const elapsed = (now - startTime) / 1000.0
+    const perSec = totalEvalCount / elapsed
+    const perMin = Math.floor(perSec * 60.0)
+    console.log(`Run #${runCount}, Eval #${evalCount}: ${JSON.stringify(topGenome)}, evals/min=${perMin}`)
+  }
+}
+
+function tournament (population, cycles) {
+  let best = null
+  for (let i = 0; i < cycles; i++) {
+    const idx = Math.floor(Math.random() * (population.length))
+    const challenger = population[idx]
+    report()
+
+    if (best != null) {
+      if (best.score < challenger.score) {
+        best = challenger
+        if (topGenome == null || best.score > topGenome.score) {
+          topGenome = best
+        }
+      }
+    } else {
+      best = challenger
+    }
+  }
+
+  return best
+}
+
+function revTournamentIndex (population, cycles) {
+  let worst = null
+  let worstIdx = null
+
+  for (let i = 0; i < cycles; i++) {
+    const idx = Math.floor(Math.random() * (population.length))
+    const challenger = population[idx]
+
+    if (worst != null) {
+      if (worst.score > challenger.score) {
+        worst = challenger
+        worstIdx = idx
+      }
+    } else {
+      worst = challenger
+      worstIdx = idx
+    }
+  }
+
+  return worstIdx
+}
+
+function mutate (parent) {
+  const h = '0123456789abcdef'
+  let result = ''
+
+  let done = false
+  while (!done) {
+    const i = Math.floor(Math.random() * parent.length)
+
+    if (parent.charAt(i) !== '-') {
+      const i2 = Math.floor(Math.random() * h.length)
+      result = parent.substring(0, i) + h.charAt(i2) + parent.substring(i + 1)
+      result = result.toLowerCase()
+      if (result.toLowerCase() !== parent.toLowerCase()) {
+        done = true
+      }
+    }
+  }
+  return result
+}
+
+function crossover(parent1, parent2) {
+  // The genome must be cut at two positions, determine them
+  const cutpoint1 = Math.floor(Math.random() * (parent1.length - CUT_LENGTH))
+  const cutpoint2 = cutpoint1 + CUT_LENGTH
+
+  // Produce two offspring
+  return ([
+    parent1.substring(0, cutpoint1) + parent2.substring(cutpoint1, cutpoint2) + parent1.substring(cutpoint2),
+    parent2.substring(0, cutpoint1) + parent1.substring(cutpoint1, cutpoint2) + parent2.substring(cutpoint2)
+  ])
+}
+
+function evolve () {
+  if (cluster.isMaster) {
+    const cpus = os.cpus().length
+    startTime = performance.now()
+
+    console.log(`Forking for ${cpus} CPUs`)
+    for (let i = 0; i < cpus; i++) {
+      cluster.fork()
+    }
+
+    const children = []
+    for (let i = 0; i < config.config.populationSize; i++) {
+      children.push(ml.MergeLifeRender.randomRule())
+    }
+    const population = []
+
+    cluster.on('message', (worker, message, handle) => {
+      if (arguments.length === 2) {
+        handle = message
+        message = worker
+        worker = undefined
+      }
+
+      if (population.length >= config.config.populationSize) {
+        const idx = revTournamentIndex(population, config.config.evalCycles)
+        population[idx] = message
+      } else {
+        population.push(message)
+      }
+      // console.log(`Population size: ${population.length}`)
+      if (children.length > 0) {
+        totalEvalCount += 1
+        worker.send(children.pop())
+      } else {
+        if (Math.random() < config.config.crossover) {
+          const p1 = tournament(population, config.config.evalCycles)
+          const p2 = tournament(population, config.config.evalCycles)
+          const c = crossover(p1.rule, p2.rule)
+          children.push(c[0])
+          children.push(c[1])
+          //console.log(`crossover: ${p1}:${p2} ->${c[0]},${c[1]}`)
+        } else {
+          const p1 = tournament(population, config.config.evalCycles)
+          const c1 = mutate(p1.rule)
+          children.push(c1)
+          //console.log(`mutate: ${p1.rule} -> ${c1}`)
+        }
+        worker.send(children.pop())
+        totalEvalCount += 1
+      }
+    })
+
+    cluster.on('online', (worker) => {
+      if (children.length > 0) {
+        worker.send(children.pop())
+        totalEvalCount += 1
+      }
+    })
+  } else {
+    process.on('message', ruleText => {
+      const score = objectiveFunction(false, ruleText)
+      const genome = {'rule': ruleText, 'score': score}
+      process.send(genome)
+    })
+  }
 }
 
 const optionDefinitions = [
