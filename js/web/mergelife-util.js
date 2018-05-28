@@ -194,6 +194,13 @@ function crossover(parent1, parent2) {
   ])
 }
 
+function randomize (pop) {
+  pop.length = 0
+  for (let i = 0; i < config.config.populationSize; i++) {
+    pop.push(ml.MergeLifeRender.randomRule())
+  }
+}
+
 function evolve () {
   if (cluster.isMaster) {
     const cpus = os.cpus().length
@@ -205,9 +212,7 @@ function evolve () {
     }
 
     const children = []
-    for (let i = 0; i < config.config.populationSize; i++) {
-      children.push(ml.MergeLifeRender.randomRule())
-    }
+    randomize(children)
     const population = []
 
     cluster.on('message', (worker, message, handle) => {
@@ -223,8 +228,17 @@ function evolve () {
       } else {
         population.push(message)
       }
-      // console.log(`Population size: ${population.length}`)
-      if (children.length > 0) {
+
+      if (requestStop) {
+        // reset and try again
+        evalCount = 0
+        requestStop = false
+        noImprovement = 0
+        children.length = 0
+        population.length = 0
+        runCount += 1
+        randomize(children)
+      } else if (children.length > 0) {
         totalEvalCount += 1
         worker.send(children.pop())
       } else {
@@ -234,12 +248,10 @@ function evolve () {
           const c = crossover(p1.rule, p2.rule)
           children.push(c[0])
           children.push(c[1])
-          //console.log(`crossover: ${p1}:${p2} ->${c[0]},${c[1]}`)
         } else {
           const p1 = tournament(population, config.config.evalCycles)
           const c1 = mutate(p1.rule)
           children.push(c1)
-          //console.log(`mutate: ${p1.rule} -> ${c1}`)
         }
         worker.send(children.pop())
         totalEvalCount += 1

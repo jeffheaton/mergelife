@@ -30,7 +30,7 @@ define the objective function.  A sample configuration file, that was used
 with the MergeLife paper, is [provided here](https://github.com/jeffheaton/mergelife/blob/master/java/evolve/paperObjective.json).
 
 ```
-java -jar mergelife-evolve-all.jar -config paperObjective.json evolve
+npm run mergelife -- --config paperObjective.json evolve
 ```
 
 
