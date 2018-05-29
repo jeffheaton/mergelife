@@ -16,7 +16,7 @@ a **.png** file for that hex string. The dimensions and zoom factor can also
 be specified.
 
 ```
-npm run mergelife -- --rows 100 --cols 100 --renderSteps250 --zoom 5 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+npm run mergelife -- --rows 100 --cols 100 --renderSteps 250 --zoom 5 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
 ```
 
 

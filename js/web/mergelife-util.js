@@ -27,8 +27,8 @@ function objectiveFunction (dump, ruleText) {
   for (let i = 0; i < 5; i++) {
     const renderer = new ml.MergeLifeRender()
     renderer.init({
-      rows: rows,
-      cols: cols,
+      rows: config.config.rows,
+      cols: config.config.cols,
       rule: ruleText
     })
 
@@ -44,11 +44,16 @@ function objectiveFunction (dump, ruleText) {
 }
 
 function score (ruleText, objective) {
-  const score = objectiveFunction(false, ruleText)
+  const score = objectiveFunction(true, ruleText)
   console.log(`Final score: ${score}`)
 }
 
-function render (ruleText, rows, cols, steps, zoom) {
+function render (ruleText) {
+  const rows = config.config.rows
+  const cols = config.config.cols
+  const steps = config.config.renderSteps
+  const zoom = config.config.zoom
+
   const renderer = new ml.MergeLifeRender()
   renderer.init({
     rows: rows,
@@ -79,6 +84,7 @@ function render (ruleText, rows, cols, steps, zoom) {
   })
 
   const filename = `${ruleText}.png`
+
   image.write(filename, (err) => {
     if (err) {
       throw err
@@ -182,7 +188,7 @@ function mutate (parent) {
   return result
 }
 
-function crossover(parent1, parent2) {
+function crossover (parent1, parent2) {
   // The genome must be cut at two positions, determine them
   const cutpoint1 = Math.floor(Math.random() * (parent1.length - CUT_LENGTH))
   const cutpoint2 = cutpoint1 + CUT_LENGTH
@@ -197,7 +203,7 @@ function crossover(parent1, parent2) {
 function randomize (pop) {
   pop.length = 0
   for (let i = 0; i < config.config.populationSize; i++) {
-    pop.push(ml.MergeLifeRender.randomRule())
+    pop.push({'score': -10, 'rule': ml.MergeLifeRender.randomRule(), 'run': runCount})
   }
 }
 
@@ -222,22 +228,33 @@ function evolve () {
         worker = undefined
       }
 
-      if (population.length >= config.config.populationSize) {
-        const idx = revTournamentIndex(population, config.config.evalCycles)
-        population[idx] = message
-      } else {
-        population.push(message)
+      // If this genome belogs to the current run then save it.  (it might be
+      // a holdover from the last run.)
+      if (message.run === runCount) {
+        if (population.length >= config.config.populationSize) {
+          const idx = revTournamentIndex(population, config.config.evalCycles)
+          population[idx] = message
+        } else {
+          population.push(message)
+        }
       }
 
       if (requestStop) {
         // reset and try again
+        if (topGenome.score >= config.config.scoreThreshold) {
+          render(topGenome.rule)
+        }
         evalCount = 0
         requestStop = false
         noImprovement = 0
+        lastReport = 0
+        lastBestScore = 0
         children.length = 0
         population.length = 0
         runCount += 1
         randomize(children)
+        topGenome = null
+        worker.send(children.pop())
       } else if (children.length > 0) {
         totalEvalCount += 1
         worker.send(children.pop())
@@ -246,12 +263,12 @@ function evolve () {
           const p1 = tournament(population, config.config.evalCycles)
           const p2 = tournament(population, config.config.evalCycles)
           const c = crossover(p1.rule, p2.rule)
-          children.push(c[0])
-          children.push(c[1])
+          children.push({'rule': c[0], 'score': -10, 'run': runCount})
+          children.push({'rule': c[1], 'score': -10, 'run': runCount})
         } else {
           const p1 = tournament(population, config.config.evalCycles)
           const c1 = mutate(p1.rule)
-          children.push(c1)
+          children.push({'rule': c1, 'score': -10, 'run': runCount})
         }
         worker.send(children.pop())
         totalEvalCount += 1
@@ -265,10 +282,9 @@ function evolve () {
       }
     })
   } else {
-    process.on('message', ruleText => {
-      const score = objectiveFunction(false, ruleText)
-      const genome = {'rule': ruleText, 'score': score}
-      process.send(genome)
+    process.on('message', genome => {
+      const score = objectiveFunction(false, genome.rule)
+      process.send({'rule': genome.rule, 'score': score, 'run': genome.run})
     })
   }
 }
@@ -294,10 +310,10 @@ const config = options.config
   ? JSON.parse(fs.readFileSync(options.config, 'utf8'))
   : {config: {}}
 
-const rows = options.rows || config.config.rows || 100
-const cols = options.cols || config.config.cols || 100
-const zoom = options.zoom || config.config.zoom || 5
-const renderSteps = options.renderSteps || config.renderStep || 250
+config.config.rows = options.rows || config.config.rows || 100
+config.config.cols = options.cols || config.config.cols || 100
+config.config.zoom = options.zoom || config.config.zoom || 5
+config.config.renderSteps = options.renderSteps || config.renderStep || 250
 const objective = config.objective
 
 if (!('command' in options) || options.help) {
@@ -318,7 +334,7 @@ if (!('command' in options) || options.help) {
     process.exit(1)
   } else {
     const rule = options.command[1]
-    render(rule, rows, cols, renderSteps, zoom)
+    render(rule)
   }
 } else if (options.command[0] === 'score') {
   if (options.command.length < 2) {
