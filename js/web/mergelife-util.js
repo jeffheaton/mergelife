@@ -99,6 +99,7 @@ function report () {
   let report = false
 
   evalCount++
+  totalEvalCount++
   if ((now - lastReport) > REPORT_TIME) {
     lastReport = now
     report = true
@@ -118,6 +119,8 @@ function report () {
   }
   if (report) {
     const elapsed = (now - startTime) / 1000.0
+    console.log(elapsed)
+    console.log(totalEvalCount)
     const perSec = totalEvalCount / elapsed
     const perMin = Math.floor(perSec * 60.0)
     console.log(`Run #${runCount}, Eval #${evalCount}: ${JSON.stringify(topGenome)}, evals/min=${perMin}`)
@@ -256,7 +259,6 @@ function evolve () {
         topGenome = null
         worker.send(children.pop())
       } else if (children.length > 0) {
-        totalEvalCount += 1
         worker.send(children.pop())
       } else {
         if (Math.random() < config.config.crossover) {
