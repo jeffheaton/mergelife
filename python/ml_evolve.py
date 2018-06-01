@@ -1,12 +1,5 @@
-import mergelife
-import eval_client
 import numpy as np
 import operator
-
-POPULATION_SIZE = 100
-HEIGHT = 100
-WIDTH = 100
-CYCLES = 5
 
 def hms_string(sec_elapsed):
     h = int(sec_elapsed / (60 * 60))
@@ -37,24 +30,6 @@ def crossover(genome1,genome2,cut_length):
 
     return [c1,c2]
 
-
-threads_needed = eval_client.ml_init_eval(["localhost:5000"])
-
-if threads_needed==0:
-    print("Did not find any handlers, will run local.")
-    threads_needed = 1
-else:
-    print("Found: {} handler(s).".format(threads_needed))
-
-print("Generating and evaluating initial population.")
-population = [ {'score': None, 'rule':mergelife.random_update_rule()} for i in range(POPULATION_SIZE)]
-#population[0]['rule'] = "E542-5F79-9341-F31E-6C6B-7F08-8773-7068"
-#population[0]['rule'] = "a07f-c000-0000-0000-0000-0000-ff80-807f"
-
-stats = eval_client.evaluate_population(population,HEIGHT,WIDTH,CYCLES)
-population = sorted(population, key=lambda k: k['score'], reverse=True)
-print("Beginning epochs.")
-
 def select_tournament(population,rounds,cmp=operator.gt):
     result = np.random.randint(0,len(population))
 
@@ -65,7 +40,6 @@ def select_tournament(population,rounds,cmp=operator.gt):
             break
 
     return result
-
 
 def process_epoch(population):
     children = []
@@ -99,10 +73,3 @@ def process_epoch(population):
         population[target_idx] = child
 
     return eval_stats
-
-
-for i in range(10000):
-    eval_stats = process_epoch(population)
-    population = sorted(population, key=lambda k: k['score'], reverse=True)
-    print("{}:{}:epoch time:{},time 10K steps:{}".format(i+1,population[0],
-          hms_string(eval_stats['total_time']),hms_string(eval_stats['time_per_10k'])))

@@ -295,15 +295,6 @@ def count_discrete(ml_instance):
             states.add(str(lattice[row][col]))
     return len(states)
 
-
-OBJ = [
-    {'stat': 'steps', 'min': 300, 'max': 1000, 'weight': 1, 'min_weight': -1, 'max_weight': 1},
-    {'stat': 'foreground', 'min': 0.001, 'max': 0.1, 'weight': 1, 'min_weight': -0.1, 'max_weight': -1},
-    {'stat': 'active', 'min': 0.001, 'max': 0.1, 'weight': 1, 'min_weight': -1, 'max_weight': -1},
-    {'stat': 'rect', 'min': 0.02, 'max': 0.25, 'weight': 2, 'min_weight': -2, 'max_weight': 2},
-    {'stat': 'mage', 'min': 5, 'max': 10, 'weight': 0, 'min_weight': -5, 'max_weight': 0 }
-]
-
 def calc_stat_largest_rect(ml_inst,o):
     height = ml_inst['height']
     width = ml_inst['width']
@@ -312,7 +303,7 @@ def calc_stat_largest_rect(ml_inst,o):
     return (mr[0] * mr[1]) / (height * width)
 
 
-def calc_objective_function(ml_inst):
+def calc_objective_function(ml_inst, objective, dump=False):
 
     randomize_lattice(ml_inst)
 
@@ -320,6 +311,8 @@ def calc_objective_function(ml_inst):
     while not done:
         update_step(ml_inst)
         o = calc_objective_stats(ml_inst)
+        if dump:
+            print(o)
         done = is_lattice_stable(ml_inst, o)
 
     stats = {
@@ -331,7 +324,7 @@ def calc_objective_function(ml_inst):
     }
 
     score = 0
-    for rule in OBJ:
+    for rule in objective:
         actual = stats[rule['stat']]
         rule_min = rule['min']
         rule_max = rule['max']
@@ -356,11 +349,13 @@ def calc_objective_function(ml_inst):
     return {'time_step':ml_inst['time_step'],'score':score}
 
 
-def objective_function(ml_inst,cycles):
+def objective_function(ml_inst,cycles,objective,dump=False):
     lst = []
     steps = 0
     for i in range(cycles):
-        result = calc_objective_function(ml_inst)
+        if dump:
+            print("Cycle #{}".format(i))
+        result = calc_objective_function(ml_inst,objective,dump)
         lst.append(result['score'])
         steps+=result['time_step']
     return {'time_step':steps,'score':np.max(lst)}
