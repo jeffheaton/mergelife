@@ -15,6 +15,10 @@ The Python viewer will launch a Matplotlib window and animate the CA.  The value
 CODE in the file ml_viewer.py specifies the ML rule that is to be viewed.
 There are many CODE values to choose from in the comments of the source code.
 
+```
+python ml_viewer.py --rows 300 --cols 300 E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+```
+
 
 Render an Image
 ---------------
