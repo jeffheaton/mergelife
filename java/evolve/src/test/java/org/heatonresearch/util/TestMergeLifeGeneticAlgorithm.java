@@ -5,7 +5,9 @@
  */
 package org.heatonresearch.util;
 
+import javafx.scene.media.MediaException;
 import org.heatonresearch.mergelife.MergeLifeConfig;
+import org.heatonresearch.mergelife.MergeLifeException;
 import org.heatonresearch.mergelife.MergeLifeGeneticAlgorithm;
 import org.heatonresearch.mergelife.MergeLifeGenome;
 import org.junit.Assert;
@@ -79,5 +81,24 @@ public class TestMergeLifeGeneticAlgorithm {
         MergeLifeConfig config = new MergeLifeConfig(file.toString());
         MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd,config);
         ga.process();
+    }
+
+    @Test(expected = MergeLifeException.class)
+    public void testScoreError() throws IOException {
+        Random rnd = new Random(42);
+        MergeLifeConfig config = new MergeLifeConfig();
+        MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd,config);
+        ga.score("E542-5F79-9341-F31E-6C6B-7F08-8773-7068");
+    }
+
+    @Test
+    public void testScore() throws IOException {
+        Random rnd = new Random(42);
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource("quickConfig.json").getFile());
+        MergeLifeConfig config = new MergeLifeConfig(file.toString());
+        MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(rnd,config);
+        double score = ga.score("E542-5F79-9341-F31E-6C6B-7F08-8773-7068");
+        Assert.assertTrue(score>-0.5);
     }
 }

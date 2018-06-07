@@ -246,15 +246,15 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
 
     public double score(String ruleText) {
         EvaluateObjective objFunction = this.config.getObjectiveFunction();
+        if (objFunction == null) {
+            throw new MergeLifeException("Missing objective function, please specify config file with -config.");
+        }
         objFunction.setReport(new MergeLifeReportable() {
             @Override
             public void report(String message) {
                 System.out.println(message);
             }
         });
-        if (objFunction == null) {
-            throw new MergeLifeException("Missing objective function, please specify config file with -config.");
-        }
         return objFunction.calculateObjective(ruleText, new Random());
 
     }
