@@ -4,7 +4,8 @@
   "rules": {
     "no-var": 1,
     "dot-notation": 1,
-    "prefer-const": 1
+    "prefer-const": 1,
+    "new-line-between-declarations": 0
   },
   "env": {
     "jasmine": true,

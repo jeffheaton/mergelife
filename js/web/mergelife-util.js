@@ -1,5 +1,3 @@
-// npm run mergelife -- --rows 50 --cols 100 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
-
 const ml = require('./mergelife')
 const mlev = require('./mergelife-evolve')
 const commandLineArgs = require('command-line-args')

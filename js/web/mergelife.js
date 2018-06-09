@@ -1,24 +1,11 @@
 const MergeLifeRender = function (canvas) {
-  this.alloc = function (rows, cols, depth) {
-    const result = []
+  this.zeros = function (dimensions) {
+    const array = []
 
-    for (let row = 0; row < rows; row += 1) {
-      const temp = []
-      for (let col = 0; col < cols; col += 1) {
-        if (depth === 1) {
-          temp[col] = 0
-        } else {
-          const temp2 = []
-          for (let d = 0; d < depth; d++) {
-            temp2[d] = 0
-          }
-          temp[col] = temp2
-        }
-      }
-      result[row] = temp
+    for (let i = 0; i < dimensions[0]; ++i) {
+      array.push(dimensions.length === 1 ? 0 : this.zeros(dimensions.slice(1)))
     }
-
-    return result
+    return array
   }
 
   this.parseUpdateRule = function (hexCode) {
@@ -236,9 +223,9 @@ const MergeLifeRender = function (canvas) {
     }
 
     this.lattice = []
-    this.lattice[0] = this.alloc(this.rows, this.cols, 3)
-    this.lattice[1] = this.alloc(this.rows, this.cols, 3)
-    this.mergeGrid = this.alloc(this.rows, this.cols, 1)
+    this.lattice[0] = this.zeros([this.rows, this.cols, 3])
+    this.lattice[1] = this.zeros([this.rows, this.cols, 3])
+    this.mergeGrid = this.zeros([this.rows, this.cols, 1])
     this.currentGrid = 0
     this.update_rule = null
     this.updateEvent = null
