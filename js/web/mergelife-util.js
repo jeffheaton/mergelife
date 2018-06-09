@@ -1,3 +1,5 @@
+// npm run mergelife -- --rows 50 --cols 100 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+
 const ml = require('./mergelife')
 const mlev = require('./mergelife-evolve')
 const commandLineArgs = require('command-line-args')
@@ -62,7 +64,7 @@ function render (ruleText) {
     renderer.singleStep()
   }
 
-  const imageData = renderer.lattice[0]
+  const imageData = renderer.grid[0]
 
   const image = new Jimp(cols * zoom, rows * zoom, function (err, image) {
     if (err) throw err
@@ -117,8 +119,6 @@ function report () {
   }
   if (report) {
     const elapsed = (now - startTime) / 1000.0
-    console.log(elapsed)
-    console.log(totalEvalCount)
     const perSec = totalEvalCount / elapsed
     const perMin = Math.floor(perSec * 60.0)
     console.log(`Run #${runCount}, Eval #${evalCount}: ${JSON.stringify(topGenome)}, evals/min=${perMin}`)

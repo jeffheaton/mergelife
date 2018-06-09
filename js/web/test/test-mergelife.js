@@ -56,4 +56,18 @@ describe('MergeLifeRender', function () {
     assert.equal(141, b[9][0])
     assert.equal(98, b[9][9])
   })
+
+  it('sumNeighbor should clunt neighbors', function () {
+    seedrandom('42', { global: true })
+    const render = new ml.MergeLifeRender()
+    const a =
+    [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8]
+    ]
+    render.randomGrid(a)
+    const c = render.sumNeighbor(a, 0, 0, 0)
+    assert.equal(8, c)
+  })
 })

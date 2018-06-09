@@ -53,13 +53,13 @@ const MergeLifeRender = function (canvas) {
     }
   }
 
-  this.calculateModeGrid = function (latticeIn, latticeOut) {
+  this.calculateModeGrid = function (gridIn, gridOut) {
     const freq = Array.apply(null, Array(256)).map(Number.prototype.valueOf, 0)
 
-    for (let row = 0; row < latticeIn.length; row += 1) {
-      const lineIn = latticeIn[row]
-      const lineOut = latticeOut[row]
-      for (let col = 0; col < lineIn.length; col += 1) {
+    for (let row = 0; row < gridIn.length; row += 1) {
+      const lineIn = gridIn[row]
+      const lineOut = gridOut[row]
+      for (let col = 0; col < gridIn.length; col += 1) {
         const pixel = lineIn[col]
         let sum = 0
         for (let i = 0; i < 3; i++) {
@@ -74,7 +74,7 @@ const MergeLifeRender = function (canvas) {
     return freq.indexOf(Math.max(...freq))
   }
 
-  this.sumNeighbor = function (lattice, row, col, pad) {
+  this.sumNeighbor = function (grid, row, col, pad) {
     const colTransform = [0, 0, -1, 1, -1, 1, 1, -1]
     const rowTransform = [-1, 1, 0, 0, -1, 1, -1, 1]
 
@@ -82,8 +82,8 @@ const MergeLifeRender = function (canvas) {
     for (let i = 0; i < colTransform.length; i++) {
       const neighborRow = rowTransform[i] + row
       const neighborCol = colTransform[i] + col
-      if (neighborRow >= 0 && neighborCol >= 0 && neighborRow < lattice.length && neighborCol < lattice[0].length) {
-        sum += lattice[neighborRow][neighborCol]
+      if (neighborRow >= 0 && neighborCol >= 0 && neighborRow < grid.length && neighborCol < grid[0].length) {
+        sum += grid[neighborRow][neighborCol]
       } else {
         sum += pad
       }
@@ -91,12 +91,12 @@ const MergeLifeRender = function (canvas) {
     return sum
   }
 
-  this.updateStep = function (lattice, latticeNext, updateRule) {
-    this.gridMode = this.calculateModeGrid(lattice, this.mergeGrid)
+  this.updateStep = function (grid, gridNext, updateRule) {
+    this.gridMode = this.calculateModeGrid(grid, this.mergeGrid)
 
-    for (let row = 0; row < lattice.length; row += 1) {
-      const line = lattice[row]
-      const lineNext = latticeNext[row]
+    for (let row = 0; row < grid.length; row += 1) {
+      const line = grid[row]
+      const lineNext = gridNext[row]
       for (let col = 0; col < line.length; col += 1) {
         const nc = this.sumNeighbor(this.mergeGrid, row, col, this.gridMode)
 
@@ -114,7 +114,7 @@ const MergeLifeRender = function (canvas) {
             }
 
             for (let j = 0; j < 3; j++) {
-              let d = MergeLifeRender.prototype.KEY_COLOR[ki][j] - lattice[row][col][j]
+              let d = MergeLifeRender.prototype.KEY_COLOR[ki][j] - grid[row][col][j]
               d *= pct
               d = Math.floor(d)
               lineNext[col][j] = line[col][j] + d
