@@ -212,7 +212,7 @@ const MergeLifeRender = function () {
 
   this.renderControls = function () {
     this.ctx.font = 'bold 20px Georgia'
-    const text = '' + this.stepCount
+    const text = this.stepCount.toLocaleString() // parseInt()
     const lineHeight = this.ctx.measureText('M').width
     const textY = lineHeight
     const textX = this.ctx.canvas.width - (this.ctx.measureText(text).width + 10)
