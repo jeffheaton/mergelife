@@ -204,7 +204,34 @@ const MergeLifeRender = function () {
     this.ctx.scale(this.cellSize, this.cellSize)
     this.ctx.drawImage(newCanvas, 0, 0)
     this.ctx.restore()
+    this.renderControls()
     this.postRenderFunction(this.ctx)
+  }
+
+  this.renderControls = function () {
+    this.ctx.font = 'bold 20px Georgia'
+    const lineHeight = this.ctx.measureText('M').height
+    const textY = lineHeight
+    const textX = this.ctx.canvas.height
+    this.ctx.fillStyle = '#ffffff'
+    this.ctx.strokeStyle = 'black'
+    this.ctx.lineWidth = 7
+    this.ctx.strokeText(this.stepCount, textX, textY)
+    this.ctx.fillText(this.stepCount, textX, textY)
+
+    /* const text = 'Hello world!'
+    const blur = 5
+    const width = this.ctx.measureText(text).width + blur * 2
+    this.ctx.font = '20px Georgia'
+    this.ctx.textBaseline = 'top'
+    this.ctx.shadowColor = '#000'
+    this.ctx.shadowOffsetX = width
+    this.ctx.shadowOffsetY = 0
+    this.ctx.shadowBlur = blur
+    this.ctx.fillText(text, -width, 0)
+    this.ctx.shadowBlur = 0
+    this.ctx.fillStyle = ''
+    this.ctx.fillText(text, -width, 0)*/
   }
 
   this.init = function (params) {
