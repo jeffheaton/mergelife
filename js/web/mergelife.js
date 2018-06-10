@@ -205,19 +205,22 @@ const MergeLifeRender = function () {
     this.ctx.drawImage(newCanvas, 0, 0)
     this.ctx.restore()
     this.renderControls()
-    this.postRenderFunction(this.ctx)
+    if (this.postRenderFunction) {
+      this.postRenderFunction(this.ctx)
+    }
   }
 
   this.renderControls = function () {
     this.ctx.font = 'bold 20px Georgia'
-    const lineHeight = this.ctx.measureText('M').height
+    const text = '' + this.stepCount
+    const lineHeight = this.ctx.measureText('M').width
     const textY = lineHeight
-    const textX = this.ctx.canvas.height
+    const textX = this.ctx.canvas.width - (this.ctx.measureText(text).width + 10)
     this.ctx.fillStyle = '#ffffff'
     this.ctx.strokeStyle = 'black'
     this.ctx.lineWidth = 7
-    this.ctx.strokeText(this.stepCount, textX, textY)
-    this.ctx.fillText(this.stepCount, textX, textY)
+    this.ctx.strokeText(text, textX, textY)
+    this.ctx.fillText(text, textX, textY)
 
     /* const text = 'Hello world!'
     const blur = 5
