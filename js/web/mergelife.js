@@ -1,4 +1,4 @@
-const MergeLifeRender = function (canvas) {
+const MergeLifeRender = function () {
   this.zeros = function (dimensions) {
     const array = []
 
