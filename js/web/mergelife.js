@@ -147,9 +147,9 @@ const MergeLifeRender = function () {
     this.stepCount += 1
 
     this.updateStep(
-      this.lattice[this.currentGrid],
-      this.lattice[this.currentGrid === 0 ? 1 : 0],
-      this.update_rule)
+      this.grid[this.currentGrid],
+      this.grid[this.currentGrid === 0 ? 1 : 0],
+      this.updateRule)
     this.currentGrid = this.currentGrid === 0 ? 1 : 0
   }
 
@@ -157,8 +157,7 @@ const MergeLifeRender = function () {
     if (this.autoStep) {
       this.singleStep()
     }
-    const lattice = this.lattice[this.currentGrid]
-    this.render(0, lattice)
+    this.render(0, this.grid[this.currentGrid])
   }
 
   this.stopAnimation = function () {
@@ -168,28 +167,28 @@ const MergeLifeRender = function () {
 
   this.startAnimation = function (time) {
     this.stepCount = 0
-    this.randomGrid(this.lattice[this.currentGrid])
+    this.randomGrid(this.grid[this.currentGrid])
     if (this.updateEvent === null) {
       this.updateEvent = setInterval(() => this.animateFunction(), time || 10)
     }
   }
 
   this.render = function () {
-    const lattice = this.lattice[this.currentGrid]
+    const grid = this.grid[this.currentGrid]
 
     this.ctx.strokeStyle = 'grey'
 
-    const wid = lattice[0].length
-    const hei = lattice.length
+    const wid = grid[0].length
+    const hei = grid.length
     const imgdata = this.ctx.getImageData(0, 0, wid, hei)
     const pix = imgdata.data
 
     const tw = wid * 4
-    for (let row = 0; row < lattice.length; row += 1) {
-      for (let col = 0; col < lattice[0].length; col += 1) {
+    for (let row = 0; row < grid.length; row += 1) {
+      for (let col = 0; col < grid[0].length; col += 1) {
         const pos = (tw * row) + (col * 4)
-        const pixel = (this.colorRangeLow == null) ? this.getColor(lattice[row][col])
-          : this.getColorRange(lattice[row][col])
+        const pixel = (this.colorRangeLow == null) ? this.getColor(grid[row][col])
+          : this.getColorRange(grid[row][col])
         pix[pos] = pixel[0]
         pix[pos + 1] = pixel[1]
         pix[pos + 2] = pixel[2]
@@ -329,7 +328,7 @@ const MergeLifeRender = function () {
           this.singleStep()
           break
         case 2:
-          this.randomGrid(this.lattice[this.currentGrid])
+          this.randomGrid(this.grid[this.currentGrid])
           this.autoStep = false
           break
       }
@@ -352,19 +351,19 @@ const MergeLifeRender = function () {
       this.cols = this.ctx.canvas.width / this.cellSize
     }
 
-    this.lattice = []
-    this.lattice[0] = this.zeros([this.rows, this.cols, 3])
-    this.lattice[1] = this.zeros([this.rows, this.cols, 3])
+    this.grid = []
+    this.grid[0] = this.zeros([this.rows, this.cols, 3])
+    this.grid[1] = this.zeros([this.rows, this.cols, 3])
     this.mergeGrid = this.zeros([this.rows, this.cols, 1])
     this.currentGrid = 0
-    this.update_rule = null
+    this.updateRule = null
     this.updateEvent = null
     this.stepCount = 0
 
-    this.randomGrid(this.lattice[0])
+    this.randomGrid(this.grid[0])
 
     const result = this.parseUpdateRule(params.rule)
-    this.update_rule = result
+    this.updateRule = result
 
     this.ctx.canvas.addEventListener('mouseenter', () => this.mouseEnter())
     this.ctx.canvas.addEventListener('mouseout', () => this.mouseExit())
