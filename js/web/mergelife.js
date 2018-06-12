@@ -154,13 +154,16 @@ const MergeLifeRender = function () {
   }
 
   this.animateFunction = function () {
-    this.singleStep()
+    if (this.autoStep) {
+      this.singleStep()
+    }
     const lattice = this.lattice[this.currentGrid]
     this.render(0, lattice)
   }
 
   this.stopAnimation = function () {
     clearInterval(this.updateEvent)
+    this.updateEvent = null
   }
 
   this.startAnimation = function (time) {
@@ -204,10 +207,80 @@ const MergeLifeRender = function () {
     this.ctx.scale(this.cellSize, this.cellSize)
     this.ctx.drawImage(newCanvas, 0, 0)
     this.ctx.restore()
-    this.renderControls()
+
+    if (this.mouseInside) {
+      this.renderControls()
+    }
     if (this.postRenderFunction) {
       this.postRenderFunction(this.ctx)
     }
+  }
+
+  this.renderButton = function (idx) {
+    const x = 5 + (35 * idx)
+    const y = this.ctx.canvas.height - 40
+
+    this.ctx.globalAlpha = 0.8
+    this.ctx.fillStyle = '#a0a0a0'
+    this.ctx.fillRect(x, y, 32, 32)
+    this.ctx.lineWidth = 2
+    this.ctx.fillStyle = '#606060'
+    this.ctx.strokeStyle = '#606060'
+    this.ctx.strokeRect(x, y, 32, 32)
+    this.ctx.globalAlpha = 1.0
+    return [x, y]
+  }
+
+  this.renderStopButton = function (idx) {
+    const r = this.renderButton(idx)
+    const x = r[0]
+    const y = r[1]
+    this.ctx.fillRect(x + 8, y + 8, 16, 16)
+  }
+
+  this.renderPauseButton = function (idx) {
+    const r = this.renderButton(idx)
+    const x = r[0]
+    const y = r[1]
+    this.ctx.fillRect(x + 8, y + 8, 6, 16)
+    this.ctx.fillRect(x + 18, y + 8, 6, 16)
+  }
+
+  this.renderPlayButton = function (idx) {
+    const r = this.renderButton(idx)
+    const x = r[0]
+    const y = r[1]
+    this.ctx.beginPath()
+    this.ctx.moveTo(x + 10, y + 8)
+    this.ctx.lineTo(x + 10, y + 24)
+    this.ctx.lineTo(x + 22, y + 15)
+    this.ctx.closePath()
+    this.ctx.fill()
+  }
+
+  this.renderClearButton = function (idx) {
+    const r = this.renderButton(idx)
+    const x = r[0]
+    const y = r[1]
+    this.ctx.strokeStyle = 'black'
+    this.ctx.beginPath()
+    this.ctx.moveTo(x + 8, y + 8)
+    this.ctx.lineTo(x + 24, y + 24)
+    this.ctx.closePath()
+    this.ctx.stroke()
+  }
+
+  this.renderStepButton = function (idx) {
+    const r = this.renderButton(idx)
+    const x = r[0]
+    const y = r[1]
+    this.ctx.beginPath()
+    this.ctx.moveTo(x + 10, y + 8)
+    this.ctx.lineTo(x + 10, y + 24)
+    this.ctx.lineTo(x + 22, y + 15)
+    this.ctx.closePath()
+    this.ctx.fill()
+    this.ctx.fillRect(x + 20, y + 8, 4, 16)
   }
 
   this.renderControls = function () {
@@ -222,19 +295,46 @@ const MergeLifeRender = function () {
     this.ctx.strokeText(text, textX, textY)
     this.ctx.fillText(text, textX, textY)
 
-    /* const text = 'Hello world!'
-    const blur = 5
-    const width = this.ctx.measureText(text).width + blur * 2
-    this.ctx.font = '20px Georgia'
-    this.ctx.textBaseline = 'top'
-    this.ctx.shadowColor = '#000'
-    this.ctx.shadowOffsetX = width
-    this.ctx.shadowOffsetY = 0
-    this.ctx.shadowBlur = blur
-    this.ctx.fillText(text, -width, 0)
-    this.ctx.shadowBlur = 0
-    this.ctx.fillStyle = ''
-    this.ctx.fillText(text, -width, 0)*/
+    if (this.autoStep) {
+      this.renderPauseButton(0)
+    } else {
+      this.renderPlayButton(0)
+    }
+    this.renderStepButton(1)
+    this.renderStopButton(2)
+  }
+
+  this.mouseEnter = function () {
+    this.mouseInside = true
+  }
+
+  this.mouseExit = function () {
+    this.mouseInside = false
+  }
+
+  this.mouseUp = function (event) {
+    const x = event.layerX
+    const y = event.layerY
+
+    const buttonTop = this.ctx.canvas.height - 40
+    const buttonBottom = buttonTop + 32
+
+    if (y >= buttonTop && y < buttonBottom) {
+      const buttonIdx = Math.floor((x - 5) / 35)
+      switch (buttonIdx) {
+        case 0:
+          this.autoStep = !this.autoStep
+          break
+        case 1:
+          this.singleStep()
+          break
+        case 2:
+          this.randomGrid(this.lattice[this.currentGrid])
+          this.autoStep = false
+          break
+      }
+      console.log(buttonIdx)
+    }
   }
 
   this.init = function (params) {
@@ -265,11 +365,17 @@ const MergeLifeRender = function () {
 
     const result = this.parseUpdateRule(params.rule)
     this.update_rule = result
+
+    this.ctx.canvas.addEventListener('mouseenter', () => this.mouseEnter())
+    this.ctx.canvas.addEventListener('mouseout', () => this.mouseExit())
+    this.ctx.canvas.addEventListener('mouseup', (e) => this.mouseUp(e))
+    this.autoStep = true
   }
 
   this.postRenderFunction = null
   this.colorRangeLow = null
   this.colorRangeHigh = null
+  this.mouseInside = false
 }
 
 MergeLifeRender.prototype.KEY_COLOR = [
