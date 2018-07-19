@@ -27,6 +27,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
     private int runCount;
     private long startTime;
     private long totalEvalCount;
+    private long successfulRuns;
 
 
     public MergeLifeGeneticAlgorithm(Random rnd, MergeLifeConfig theConfig) throws IOException {
@@ -213,6 +214,8 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
 
         if( this.topGenome.getScore()>this.config.getScoreThreshold() ) {
             render(this.topGenome.getRuleText());
+            this.successfulRuns++;
+            System.out.println("Successful runs: " + this.successfulRuns);
         }
         this.runCount++;
     }
