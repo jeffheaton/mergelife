@@ -66,12 +66,17 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         }
 
         if(report) {
-            long elapsed = (now - this.startTime)/1000;
-            double perSec = ((double)this.totalEvalCount)/elapsed;
-            int perMin = (int)(perSec*60);
-            System.out.printf("Run #%d, Eval #%d: %s, evals/min=%d\n", this.runCount, this.evalCount, this.topGenome, perMin);
+            displayReportLine();
         }
 
+    }
+
+    private void displayReportLine() {
+        long now = System.currentTimeMillis();
+        long elapsed = (now - this.startTime)/1000;
+        double perSec = ((double)this.totalEvalCount)/elapsed;
+        int perMin = (int)(perSec*60);
+        System.out.printf("Run #%d, Eval #%d: %s, evals/min=%d\n", this.runCount, this.evalCount, this.topGenome, perMin);
     }
 
     public MergeLifeGenome tournament(Random rnd, int cycles) throws IOException {
@@ -215,8 +220,10 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         if( this.topGenome.getScore()>this.config.getScoreThreshold() ) {
             render(this.topGenome.getRuleText());
             this.successfulRuns++;
-            System.out.println("Successful runs: " + this.successfulRuns);
         }
+
+        displayReportLine();
+        System.out.println("Successful runs: " + this.successfulRuns);
         this.runCount++;
     }
 
@@ -225,6 +232,7 @@ public class MergeLifeGeneticAlgorithm implements Runnable {
         this.startTime = this.lastReport;
         this.runCount = 1;
         this.totalEvalCount = 0;
+        this.successfulRuns = 0;
 
         for(int i=0;i<this.config.getMaxRuns();i++) {
             init();
