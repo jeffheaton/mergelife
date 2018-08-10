@@ -220,7 +220,7 @@ if __name__ == '__main__':
 
     if args.command[0] == 'render':
         if len(args.command)<2:
-            print("Must specify what rule hex- ode you wish to render.")
+            print("Must specify what rule hex-code you wish to render.")
             sys.exit(0)
         else:
             render(config, args.command[1])
