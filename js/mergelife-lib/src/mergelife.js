@@ -344,11 +344,16 @@ const MergeLifeRender = function () {
     if (params.canvas == null) {
       this.rows = params.rows || 100
       this.cols = params.cols || 100
+      this.autoStep = false
     } else {
       this.ctx = params.canvas.getContext('2d')
       this.cellSize = params.cellSize || 5
       this.rows = this.ctx.canvas.height / this.cellSize
       this.cols = this.ctx.canvas.width / this.cellSize
+      this.ctx.canvas.addEventListener('mouseenter', () => this.mouseEnter())
+      this.ctx.canvas.addEventListener('mouseout', () => this.mouseExit())
+      this.ctx.canvas.addEventListener('mouseup', (e) => this.mouseUp(e))
+      this.autoStep = true
     }
 
     this.grid = []
@@ -364,11 +369,6 @@ const MergeLifeRender = function () {
 
     const result = this.parseUpdateRule(params.rule)
     this.updateRule = result
-
-    this.ctx.canvas.addEventListener('mouseenter', () => this.mouseEnter())
-    this.ctx.canvas.addEventListener('mouseout', () => this.mouseExit())
-    this.ctx.canvas.addEventListener('mouseup', (e) => this.mouseUp(e))
-    this.autoStep = true
   }
 
   this.postRenderFunction = null

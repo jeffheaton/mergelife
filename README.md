@@ -25,8 +25,7 @@ animated behavior of these CA cannot be observed from static images, we also
 present an on-line JavaScript viewer that is capable of animating any MergeLife 16-byte update rule.
 
 Accepted for publication in: [Journal of Genetic Programming and Evolvable Machines](https://www.springer.com/computer/ai/journal/10710)
-Article title: Evolving Continuous Cellular Automata for Aesthetic Objectives
-DOI: 10.1007/s10710-018-9336-1
+Article title: Evolving Continuous Cellular Automata for Aesthetic Objectives, DOI: 10.1007/s10710-018-9336-1
 
 Useful Links
 ------------

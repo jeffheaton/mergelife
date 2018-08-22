@@ -1,6 +1,6 @@
 const assert = require('assert')
-const ml = require('../mergelife')
-const mlev = require('../mergelife-evolve')
+const ml = require('../src/mergelife')
+const mlev = require('../src/mergelife-evolve')
 const fs = require('fs')
 
 function getTracker () {

@@ -18,11 +18,15 @@
     "seedrandom": "^2.4.3"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-minify": "^0.4.3",
     "eslint-plugin-standard": "^3.1.0"
   },
   "scripts": {
     "test": "mocha --require test/setup --colors",
-    "mergelife": "node mergelife-util.js"
+    "mergelife": "node mergelife-util.js",
+    "build": "babel src -d lib"
   },
   "author": "Jeff Heaton",
   "license": "MIT"

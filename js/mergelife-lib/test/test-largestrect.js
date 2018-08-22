@@ -1,5 +1,5 @@
 const assert = require('assert')
-const evolve = require('../mergelife-evolve')
+const evolve = require('../src/mergelife-evolve')
 
 describe('largestrect', function () {
   it('should produce expected results in case 1', function () {

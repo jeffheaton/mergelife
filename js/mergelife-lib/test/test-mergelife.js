@@ -1,5 +1,5 @@
 const assert = require('assert')
-const ml = require('../mergelife')
+const ml = require('../src/mergelife')
 const seedrandom = require('seedrandom')
 
 describe('MergeLifeRender', function () {
