@@ -9,8 +9,7 @@ describe('MergeLifeRender', function () {
   })
 
   it('zeros should allocate multi-dim array', function () {
-    const render = new ml.MergeLifeRender()
-    const a = render.zeros([1, 2, 3])
+    const a = ml.MergeLifeRender.zeros([1, 2, 3])
     assert.equal(1, a.length)
     assert.equal(2, a[0].length)
     assert.equal(3, a[0][0].length)
@@ -33,7 +32,7 @@ describe('MergeLifeRender', function () {
   it('randomGrid should produce a random grid', function () {
     seedrandom('42', { global: true })
     const render = new ml.MergeLifeRender()
-    const a = render.zeros([10, 10, 3])
+    const a = ml.MergeLifeRender.zeros([10, 10, 3])
     render.randomGrid(a)
     assert.equal(1, a[0][0][0])
     assert.equal(43, a[0][0][1])
@@ -47,9 +46,9 @@ describe('MergeLifeRender', function () {
   it('calculateModeGrid should average a grid', function () {
     seedrandom('42', { global: true })
     const render = new ml.MergeLifeRender()
-    const a = render.zeros([10, 10, 3])
+    const a = ml.MergeLifeRender.zeros([10, 10, 3])
     render.randomGrid(a)
-    const b = render.zeros([10, 10])
+    const b = ml.MergeLifeRender.zeros([10, 10])
     render.calculateModeGrid(a, b)
     assert.equal(97, b[0][0])
     assert.equal(197, b[0][9])

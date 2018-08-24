@@ -15,12 +15,4 @@ function getTracker () {
   return new mlev.MergeLifeEvolve(renderer, config.objective)
 }
 
-describe('MergeLife evolve', function () {
-  it('zeros should allocate multi-dim array', function () {
-    const tracker = getTracker()
-    const a = tracker.zeros([1, 2, 3])
-    assert.equal(1, a.length)
-    assert.equal(2, a[0].length)
-    assert.equal(3, a[0][0].length)
-  })
-})
+

@@ -1,13 +1,4 @@
 const MergeLifeRender = function () {
-  this.zeros = function (dimensions) {
-    const array = []
-
-    for (let i = 0; i < dimensions[0]; ++i) {
-      array.push(dimensions.length === 1 ? 0 : this.zeros(dimensions.slice(1)))
-    }
-    return array
-  }
-
   this.parseUpdateRule = function (hexCode) {
     const i = hexCode.indexOf(';')
     if (i !== -1) {
@@ -42,8 +33,9 @@ const MergeLifeRender = function () {
   }
 
   this.randomGrid = function (grid) {
-    for (let row = 0; row < grid.length; row += 1) {
-      const line = grid[row]
+    const grid2 = grid || this.grid[this.currentGrid]
+    for (let row = 0; row < grid2.length; row += 1) {
+      const line = grid2[row]
       for (let col = 0; col < line.length; col += 1) {
         const pixel = line[col]
         for (let i = 0; i < 3; i++) {
@@ -357,9 +349,9 @@ const MergeLifeRender = function () {
     }
 
     this.grid = []
-    this.grid[0] = this.zeros([this.rows, this.cols, 3])
-    this.grid[1] = this.zeros([this.rows, this.cols, 3])
-    this.mergeGrid = this.zeros([this.rows, this.cols, 1])
+    this.grid[0] = MergeLifeRender.zeros([this.rows, this.cols, 3])
+    this.grid[1] = MergeLifeRender.zeros([this.rows, this.cols, 3])
+    this.mergeGrid = MergeLifeRender.zeros([this.rows, this.cols, 1])
     this.currentGrid = 0
     this.updateRule = null
     this.updateEvent = null
@@ -403,6 +395,15 @@ MergeLifeRender.randomRule = function () {
     str += r
   }
   return str
+}
+
+MergeLifeRender.zeros = function (dimensions) {
+  const array = []
+
+  for (let i = 0; i < dimensions[0]; ++i) {
+    array.push(dimensions.length === 1 ? 0 : MergeLifeRender.zeros(dimensions.slice(1)))
+  }
+  return array
 }
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

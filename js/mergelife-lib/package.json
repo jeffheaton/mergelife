@@ -25,7 +25,6 @@
   },
   "scripts": {
     "test": "mocha --require test/setup --colors",
-    "mergelife": "node mergelife-util.js",
     "build": "babel src -d lib"
   },
   "author": "Jeff Heaton",
