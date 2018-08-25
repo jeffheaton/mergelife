@@ -26,7 +26,7 @@ const MergeLifeGA = function (config) {
     for (let i = 0; i < this.config.config.populationSize; i++) {
       target.push({
         'score': -10,
-        'rule': MergeLifeRender.randomRule(),
+        'rule': MergeLifeGA.randomRule(),
         'run': this.runCount
       })
     }
@@ -349,16 +349,16 @@ const MergeLifeObjective = function (theGrid, theObjective) {
   this.grid = theGrid
 
   // The count of how many CA generations each cell has been the mode.
-  this.modeCount = MergeLifeRender.zeros([this.grid.rows, this.grid.cols])
+  this.modeCount = MergeLifeGA.zeros([this.grid.rows, this.grid.cols])
 
   // The last merged color that each cell was.
-  this.lastColor = MergeLifeRender.zeros([this.grid.rows, this.grid.cols])
+  this.lastColor = MergeLifeGA.zeros([this.grid.rows, this.grid.cols])
 
   // The count of how many CA steps each cell has had its color.
-  this.lastColorCount = MergeLifeRender.zeros([this.grid.rows, this.grid.cols])
+  this.lastColorCount = MergeLifeGA.zeros([this.grid.rows, this.grid.cols])
 
   // The last CA generation/step that each cell was the merged mode/background.
-  this.lastModeStep = MergeLifeRender.zeros([this.grid.rows, this.grid.cols])
+  this.lastModeStep = MergeLifeGA.zeros([this.grid.rows, this.grid.cols])
 
   this.init()
 }
@@ -410,10 +410,36 @@ function maximalRectangle (matrix, background) {
 }
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  exports.MergeLifeEvolve = MergeLifeGA
+  exports.MergeLifeGA = MergeLifeGA
   exports.maximalRectangle = maximalRectangle
-  exports.MergeLifeEvolveUtil = MergeLifeObjective
+  exports.MergeLifeObjective = MergeLifeObjective
 }
 
 MergeLifeGA.REPORT_TIME = 60000
-MergeLifeObjective.CUT_LENGTH = 5
+MergeLifeGA.CUT_LENGTH = 5
+
+MergeLifeGA.randomRule = function () {
+  let str = ''
+
+  for (let i = 0; i < 8; i++) {
+    let r = Math.floor(Math.random() * 0x10000).toString(16)
+    while (r.length < 4) {
+      r = '0' + r
+    }
+    if (str.length > 0) {
+      str += '-'
+    }
+
+    str += r
+  }
+  return str
+}
+
+MergeLifeGA.zeros = function (dimensions) {
+  const array = []
+
+  for (let i = 0; i < dimensions[0]; ++i) {
+    array.push(dimensions.length === 1 ? 0 : MergeLifeGA.zeros(dimensions.slice(1)))
+  }
+  return array
+}
