@@ -51,7 +51,7 @@ const MergeLifeRender = function () {
     for (let row = 0; row < gridIn.length; row += 1) {
       const lineIn = gridIn[row]
       const lineOut = gridOut[row]
-      for (let col = 0; col < gridIn.length; col += 1) {
+      for (let col = 0; col < lineIn.length; col += 1) {
         const pixel = lineIn[col]
         let sum = 0
         for (let i = 0; i < 3; i++) {
@@ -199,7 +199,7 @@ const MergeLifeRender = function () {
     this.ctx.drawImage(newCanvas, 0, 0)
     this.ctx.restore()
 
-    if (this.mouseInside) {
+    if (this.mouseInside && this.controlsOn) {
       this.renderControls()
     }
     if (this.postRenderFunction) {
@@ -310,7 +310,7 @@ const MergeLifeRender = function () {
     const buttonTop = this.ctx.canvas.height - 40
     const buttonBottom = buttonTop + 32
 
-    if (y >= buttonTop && y < buttonBottom) {
+    if (y >= buttonTop && y < buttonBottom && this.controlsOn) {
       const buttonIdx = Math.floor((x - 5) / 35)
       switch (buttonIdx) {
         case 0:
@@ -324,7 +324,6 @@ const MergeLifeRender = function () {
           this.autoStep = false
           break
       }
-      console.log(buttonIdx)
     }
   }
 
@@ -337,6 +336,7 @@ const MergeLifeRender = function () {
       this.rows = params.rows || 100
       this.cols = params.cols || 100
       this.autoStep = false
+      this.controlsOn = false
     } else {
       this.ctx = params.canvas.getContext('2d')
       this.cellSize = params.cellSize || 5
@@ -346,7 +346,10 @@ const MergeLifeRender = function () {
       this.ctx.canvas.addEventListener('mouseout', () => this.mouseExit())
       this.ctx.canvas.addEventListener('mouseup', (e) => this.mouseUp(e))
       this.autoStep = true
+      this.controlsOn = params.controls === true
     }
+  
+    console.log(this.controlsOn)
 
     this.grid = []
     this.grid[0] = MergeLifeRender.zeros([this.rows, this.cols, 3])
