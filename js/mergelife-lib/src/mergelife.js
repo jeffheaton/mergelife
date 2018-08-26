@@ -348,9 +348,7 @@ const MergeLifeRender = function () {
       this.autoStep = true
       this.controlsOn = params.controls === true
     }
-  
-    console.log(this.controlsOn)
-
+    
     this.grid = []
     this.grid[0] = MergeLifeRender.zeros([this.rows, this.cols, 3])
     this.grid[1] = MergeLifeRender.zeros([this.rows, this.cols, 3])
