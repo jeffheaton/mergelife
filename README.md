@@ -24,8 +24,7 @@ spaceships, guns, oscillators, and Universal Turing Machines. Because the true
 animated behavior of these CA cannot be observed from static images, we also
 present an on-line JavaScript viewer that is capable of animating any MergeLife 16-byte update rule.
 
-Accepted for publication in: [Journal of Genetic Programming and Evolvable Machines](https://www.springer.com/computer/ai/journal/10710)
-Article title: Evolving Continuous Cellular Automata for Aesthetic Objectives, DOI: 10.1007/s10710-018-9336-1
+Heaton, J. Genetic Program Evolvable Mach (2018). [https://doi.org/10.1007/s10710-018-9336-1](https://doi.org/10.1007/s10710-018-9336-1)
 
 Useful Links
 ------------
