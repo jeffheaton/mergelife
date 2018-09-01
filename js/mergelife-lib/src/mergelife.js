@@ -174,8 +174,7 @@ const MergeLifeRender = function () {
     const canvasHeight = this.ctx.canvas.clientHeight;
     const gridWidth = grid[0].length
     const gridHeight = grid.length
-    const imgdata = this.ctx.getImageData(0, 0, canvasWidth, canvasHeight)
-    const pix = imgdata.data
+    const pix = this.imgdata.data
 
     const tw = canvasWidth * 4
     for (let row = 0; row < gridHeight; row += 1) {
@@ -195,7 +194,7 @@ const MergeLifeRender = function () {
       }
     }
 
-    this.ctx.putImageData(imgdata, 0, 0)
+    this.ctx.putImageData(this.imgdata, 0, 0)
 
     if (this.mouseInside && this.controlsOn) {
       this.renderControls()
@@ -345,6 +344,7 @@ const MergeLifeRender = function () {
       this.ctx.canvas.addEventListener('mouseup', (e) => this.mouseUp(e))
       this.autoStep = true
       this.controlsOn = params.controls === true
+      this.imgdata = this.ctx.getImageData(0, 0, this.ctx.canvas.height, this.ctx.canvas.width)
     }
 
     this.grid = []
