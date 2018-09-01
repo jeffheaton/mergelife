@@ -344,7 +344,7 @@ const MergeLifeRender = function () {
       this.ctx.canvas.addEventListener('mouseup', (e) => this.mouseUp(e))
       this.autoStep = true
       this.controlsOn = params.controls === true
-      this.imgdata = this.ctx.getImageData(0, 0, this.ctx.canvas.height, this.ctx.canvas.width)
+      this.imgdata = this.ctx.getImageData(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     }
 
     this.grid = []
