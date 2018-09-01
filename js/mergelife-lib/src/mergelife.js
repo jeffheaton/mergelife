@@ -170,34 +170,32 @@ const MergeLifeRender = function () {
 
     this.ctx.strokeStyle = 'grey'
 
-    const wid = grid[0].length
-    const hei = grid.length
-    const imgdata = this.ctx.getImageData(0, 0, wid, hei)
+    const canvasWidth = this.ctx.canvas.clientWidth;
+    const canvasHeight = this.ctx.canvas.clientHeight;
+    const gridWidth = grid[0].length
+    const gridHeight = grid.length
+    const imgdata = this.ctx.getImageData(0, 0, canvasWidth, canvasHeight)
     const pix = imgdata.data
 
-    const tw = wid * 4
-    for (let row = 0; row < grid.length; row += 1) {
-      for (let col = 0; col < grid[0].length; col += 1) {
-        const pos = (tw * row) + (col * 4)
-        const pixel = (this.colorRangeLow == null) ? this.getColor(grid[row][col])
-          : this.getColorRange(grid[row][col])
-        pix[pos] = pixel[0]
-        pix[pos + 1] = pixel[1]
-        pix[pos + 2] = pixel[2]
-        pix[pos + 3] = 255
+    const tw = canvasWidth * 4
+    for (let row = 0; row < gridHeight; row += 1) {
+      for (let y = 0; y < this.cellSize; y++) {
+        let pos = (tw * this.cellSize * row) + (tw * y)
+        for (let col = 0; col < gridWidth; col += 1) {
+          const pixel = (this.colorRangeLow == null) ? this.getColor(grid[row][col])
+            : this.getColorRange(grid[row][col])
+          for (let x = 0; x < this.cellSize; x++) {
+            pix[pos] = pixel[0]
+            pix[pos + 1] = pixel[1]
+            pix[pos + 2] = pixel[2]
+            pix[pos + 3] = 255
+            pos += 4
+          }
+        }
       }
     }
 
-    const newCanvas = $('<canvas>')
-      .attr('width', imgdata.width)
-      .attr('height', imgdata.height)[0]
-
-    newCanvas.getContext('2d').putImageData(imgdata, 0, 0)
-
-    this.ctx.save()
-    this.ctx.scale(this.cellSize, this.cellSize)
-    this.ctx.drawImage(newCanvas, 0, 0)
-    this.ctx.restore()
+    this.ctx.putImageData(imgdata, 0, 0)
 
     if (this.mouseInside && this.controlsOn) {
       this.renderControls()
@@ -348,7 +346,7 @@ const MergeLifeRender = function () {
       this.autoStep = true
       this.controlsOn = params.controls === true
     }
-    
+
     this.grid = []
     this.grid[0] = MergeLifeRender.zeros([this.rows, this.cols, 3])
     this.grid[1] = MergeLifeRender.zeros([this.rows, this.cols, 3])
