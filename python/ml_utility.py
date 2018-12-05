@@ -20,7 +20,7 @@ waitingCount = 0
 population = []
 
 
-def subprocessScore(inputQueue, outputQueue):
+def subprocessScore(inputQueue, outputQueue, config):
     while True:
         genome = inputQueue.get()
         rule_str = genome['rule']
@@ -96,7 +96,7 @@ def evolve(config):
     for i in range(cpus):
         # parent_conn, child_conn = mp.Pipe()
         # p = mp.Process(target=subprocessScore, args=(parent_conn,))
-        p = mp.Process(target=subprocessScore, args=(inputQueue, outputQueue,))
+        p = mp.Process(target=subprocessScore, args=(inputQueue, outputQueue,config))
         p.start()
         processes.append({'process': p})
 
