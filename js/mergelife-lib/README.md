@@ -9,7 +9,7 @@ This project builds the two minified library files needed by MergeLife:
 These libraries are build with the following command:
 
 ```
-npm build
+npm run build
 ```
 
 These two libraries can be used both from NodeJS and browers based applications.
