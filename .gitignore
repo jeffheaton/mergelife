@@ -1,4 +1,4 @@
-.code-workspace
+*.code-workspace
 .vscode
 mergelife.log
 node_modules
