@@ -18,9 +18,14 @@ Useful Links
 * [JavaScript Demo](http://www.heatonresearch.com/mergelife)
 * [Binary Downloads](https://github.com/jeffheaton/mergelife/blob/master/binaries.md)
 
-MergeLife Implementations
--------------------------
+Reference MergeLife Implementations
+-----------------------------------
 
 * [MergeLife in JavaScript](https://github.com/jeffheaton/mergelife/tree/master/js/)
 * [MergeLife in Java](https://github.com/jeffheaton/mergelife/tree/master/java/)
 * [MergeLife in Python](https://github.com/jeffheaton/mergelife/tree/master/python/)
+
+MergeLife in 3rd Party Software
+-------------------------------
+
+* [Visions of Chaos](https://softology.com.au/voc.htm)
