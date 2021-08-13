@@ -66,20 +66,22 @@ function render (ruleText) {
 
   const imageData = renderer.grid[0]
 
-  const image = new Jimp(cols * zoom, rows * zoom, function (err, image) {
+  const image = new Jimp(cols * zoom, rows * zoom, 0xffffffff, function (err, image) {
     if (err) throw err
+  })
 
-    imageData.forEach((row, y) => {
-      row.forEach((color, x) => {
-        color = (color[2] << 8) + (color[1] << 16) + (color[0] << 24) + 0xff
-        const x2 = x * zoom
-        const y2 = y * zoom
-        for (let i = 0; i < zoom; i++) {
-          for (let j = 0; j < zoom; j++) {
-            image.setPixelColor(color, x2 + i, y2 + j)
-          }
+  image.setPixelColor(0x000000ff, 1,1)
+
+  imageData.forEach((row, y) => {
+    row.forEach((color, x) => {
+      color = Jimp.rgbaToInt(color[0],color[1],color[2],0xff)
+      const x2 = x * zoom
+      const y2 = y * zoom
+      for (let i = 0; i < zoom; i++) {
+        for (let j = 0; j < zoom; j++) {
+          image.setPixelColor(color, x2 + i, y2 + j)
         }
-      })
+      }
     })
   })
 
