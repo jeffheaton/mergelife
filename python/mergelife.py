@@ -47,7 +47,7 @@ def update_step(ml_instance):
     sorted_rule = ml_instance['sorted_rule']
     height = ml_instance['height']
     width = ml_instance['width']
-    changed = np.zeros((height, width), dtype=np.bool)
+    changed = np.zeros((height, width), dtype=bool)
 
     # Swap lattice
     t = ml_instance['lattice'][1]
