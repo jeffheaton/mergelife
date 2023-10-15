@@ -1,3 +1,4 @@
+dist/
 *.code-workspace
 .vscode
 mergelife.log

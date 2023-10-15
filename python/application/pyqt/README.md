@@ -1,4 +1,4 @@
-pyinstaller -y -F --icon ml_icon.png --onefile --windowed ml.py
+pyinstaller -y -F --icon heaton-ca.png --onefile --windowed heaton-ca.py
 
-pyinstaller -y --clean ml.spec
+pyinstaller -y --clean heaton-ca.spec
 
