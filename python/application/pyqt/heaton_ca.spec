@@ -7,7 +7,7 @@ added_files = [
 ]
 
 a = Analysis(
-    ['heaton-ca.py'],
+    ['heaton_ca.py'],
     pathex=[],
     binaries=[],
     datas=added_files,
@@ -33,7 +33,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='test_app',
+    name='heaton_ca',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -42,10 +42,10 @@ exe = EXE(
     runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
-    target_arch='universal2',
+    target_arch='arm64', # universal2
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.icns'
+    icon='heaton_ca.icns'
 )
 
 
@@ -62,9 +62,9 @@ coll = COLLECT(
 
 app = BUNDLE(
     coll,
-    name='Testapp.app',
-    icon='icon.icns',
-    bundle_identifier='com.fake_company.test-app.pkg',
+    name='HeatonCA.app',
+    icon='heaton_ca.icns',
+    bundle_identifier='com.heatonresearch.heaton_ca.pkg',
     info_plist={
         'NSPrincipalClass': 'NSApplication',
         'NSAppleScriptEnabled': False,
@@ -72,7 +72,7 @@ app = BUNDLE(
         'NSRequiresAquaSystemAppearance': 'No',
         'CFBundlePackageType': 'APPL',
         'CFBundleSupportedPlatforms': ['MacOSX'],
-        'CFBundleIdentifier': 'com.fake_company.test-app.pkg',
+        'CFBundleIdentifier': 'com.heatonresearch.heaton-ca.pkg',
         'CFBundleVersion': '0.0.1',
         'LSMinimumSystemVersion': '10.15',
         'LSApplicationCategoryType': 'public.app-category.utilities',
