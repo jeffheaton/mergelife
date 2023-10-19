@@ -62,11 +62,13 @@ def run_pyinstaller_build(params: argparse.Namespace) -> None:
     )
 
 
-def codesign_app_deep(entitlements: str, app_certificate: str, output_dir: str, app_name: str) -> None:
+def codesign_app_deep(entitlements: str, app_certificate: str, output_dir: str, app_name: str, app_suffix: str = None) -> None:
     """Runs the codesign command with the deep option"""
-    app_path = os.path.join(output_dir, f"{app_name}.app")
-    subprocess.run(
-        [
+    if app_suffix:
+        app_path = os.path.join(output_dir, f"{app_name}.app/{app_suffix}")
+    else:
+        app_path = os.path.join(output_dir, f"{app_name}.app")
+    cmd = [
             "codesign",
             "--force",
             "--timestamp",
@@ -79,12 +81,14 @@ def codesign_app_deep(entitlements: str, app_certificate: str, output_dir: str, 
             "--sign",
             app_certificate,
             app_path,
-        ],
-    )
+        ]
+    print(cmd)
+    subprocess.run(cmd)
 
 
 def codesign_verify(output_dir: str, app_name: str) -> None:
     """Runs the codesign verify command"""
+    print("verify")
     app_path = os.path.join(output_dir, f"{app_name}.app")
     subprocess.run(
         ["codesign", "--verify", "--verbose", app_path],
@@ -161,3 +165,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+

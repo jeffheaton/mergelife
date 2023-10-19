@@ -5,6 +5,7 @@ pyinstaller -y --clean heaton_ca.spec
 pip install pyinstaller
 pip install pyqt6
 pip install numpy
+pip install scipy
 
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate

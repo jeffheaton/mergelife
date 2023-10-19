@@ -131,6 +131,7 @@ def update_step(ml_instance):
     # Merge RGB
     data_avg = np.dot(prev_data, [THIRD, THIRD, THIRD])
     data_avg = data_avg.astype(int)
+    print("**", data_avg)
     pad_val = scipy.stats.mode(data_avg, axis=None)[0]
     pad_val = int(pad_val)
     data_cnt = convolve(data_avg, kernel, cval=pad_val, mode='constant')
