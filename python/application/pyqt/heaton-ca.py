@@ -1,49 +1,31 @@
 import os
-os.environ['QT_MAC_WANTS_LAYER'] = '1'
 import sys
 import cv2
 import random
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, \
-    QToolBar, QPushButton, QComboBox, QMessageBox, \
-    QMenu, QMenuBar, QWidget, QVBoxLayout, QLabel, \
-    QGraphicsView, QGraphicsScene
-from PyQt6 import QtWidgets
-from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtGui import QAction
-from PyQt6.QtCore import QTimer, QRectF
-from PyQt6.QtGui import QBrush, QColor
-from mergelife import new_ml_instance, update_step
 import numpy as np
-
-CELL_SIZE = 5
-INITIAL_GRID_WIDTH = 200
-INITIAL_GRID_HEIGHT = 100
-
-RULES = [
-    "e542-5f79-9341-f31e-6c6b-7f08-8773-7068",
-    "a07f-c000-0000-0000-0000-0000-ff80-807f",
-    "ea44-55df-9025-bead-5f6e-45ca-6168-275a"
-]
-
-RULE_STRING = "ea44-55df-9025-bead-5f6e-45ca-6168-275a"  # One of the known MergeLife rule strings. You can replace this.
+from PyQt6.QtCore import Qt, QTimer, QRectF
+from PyQt6.QtGui import QImage, QPixmap, QBrush, QColor, QAction
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QToolBar, QPushButton,
+    QComboBox, QMessageBox, QMenu, QMenuBar, QWidget,
+    QVBoxLayout, QLabel, QGraphicsView, QGraphicsScene,
+    QTabWidget, QSpinBox, QVBoxLayout, QHBoxLayout
+)
+from mergelife import new_ml_instance, update_step
+from tab_simulate import show_simulator
 
 class HeatonCA(QMainWindow):
     def __init__(self):
         super().__init__()
         self.running = False
         self.setWindowTitle("HeatonCA")
-        self.setGeometry(100, 100, 
-            INITIAL_GRID_WIDTH * CELL_SIZE, 
-            INITIAL_GRID_HEIGHT * CELL_SIZE)
+        self.setGeometry(100, 100, 1000, 500)
         
         self.render_buffer = None
         self.display_buffer = None
 
         self.setup_mac_menu()
         self.initUI()
-        self.changeRule(RULE_STRING)
-
 
     def setup_mac_menu(self):
         # Create a main menu bar
@@ -56,80 +38,41 @@ class HeatonCA(QMainWindow):
 
         # Create the app menu and add it to the menu bar
         app_menu = QMenu("My App", self)
-        self.menubar.addMenu(app_menu)
+  
 
         # Add items to the app menu
-        about_action = QAction("About My App", self)
+        about_action = QAction("About HeatonCA", self)
         app_menu.addAction(about_action)
+        self.about_menu = QMenu("About", self)
+        about_action.triggered.connect(self.show_about)
 
-        preferences_action = QAction("Preferences...", self)
+
+        preferences_action = QAction("Settings...", self)
         app_menu.addAction(preferences_action)
+        preferences_action.triggered.connect(self.show_properties)
 
         exit_action = QAction("Quit", self)
         exit_action.triggered.connect(self.close)
         app_menu.addAction(exit_action)
 
+        self.simulator_menu = QMenu("Simulator", self)
+        simulator_action = QAction("Show Simulator", self)
+        simulator_action.triggered.connect(self.show_simulator)
+        self.simulator_menu.addAction(simulator_action)
+
+        self.menubar.addMenu(app_menu)
+        self.menubar.addMenu(self.simulator_menu)
+
     def initUI(self):
-
-        # Initialize central widget and layout
-        central_widget = QWidget(self)
-        self.layout = QVBoxLayout(central_widget)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-        self.setCentralWidget(central_widget)
-
-        # QGraphicsView and QGraphicsScene
-        self.scene = QGraphicsScene()
-        self.view = QGraphicsView(self.scene, self)
-        self.layout.addWidget(self.view)
-
-        # Toolbar
-        toolbar = QToolBar(self)
-        self.addToolBar(toolbar)
-
-        # Start Button
-        self.btn_start = QPushButton("Start", self)
-        self.btn_start.clicked.connect(self.startGame)
-        toolbar.addWidget(self.btn_start)
-
-        # Stop Button
-        self.btn_stop = QPushButton("Stop", self)
-        self.btn_stop.clicked.connect(self.stopGame)
-        toolbar.addWidget(self.btn_stop)
-        self.btn_stop.setEnabled(False)
-
-        # Combo Box
-        self.combo = QComboBox(self)
-        self.combo.addItems(RULES)
-        self.combo.currentTextChanged.connect(self.changeRule)
-        toolbar.addWidget(self.combo)
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        self.setCentralWidget(self.tab_widget)
 
         # Configure the resize timer
         self.resize_timer = QTimer(self)
         self.resize_timer.timeout.connect(self.finished_resizing)
         self.resize_timer.setInterval(300)  # 300 milliseconds
-
-        # Animation timer
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.nextGeneration)
-        self.timer.start(10)
-
-
-    def nextGeneration(self):
-        if self.running:
-            update_step(self.ml)
-            self.updateUIGrid()
-        
-
-    def startGame(self):
-        self.btn_start.setEnabled(False)
-        self.btn_stop.setEnabled(True)
-        self.running = True
-
-    def stopGame(self):
-        self.btn_start.setEnabled(True)
-        self.btn_stop.setEnabled(False)
-        self.running = False
 
     def displayMessageBox(self, text):
         msg = QMessageBox(self)
@@ -138,7 +81,7 @@ class HeatonCA(QMainWindow):
 
     def resizeEvent(self, event):
         """This method is called whenever the window is resized."""
-        self.stopGame()
+        #self.stopGame()
         self.resize_timer.start()  # Restart the timer every time this event is triggered
         self.last_size = event.size()  # Store the latest size
         super().resizeEvent(event)
@@ -146,46 +89,56 @@ class HeatonCA(QMainWindow):
     def finished_resizing(self):
         """This method will be called approximately 300ms after the last resize event."""
 
-        self.changeRule(RULE_STRING)
-        self.updateUIGrid()
+        #self.changeRule(RULE_STRING)
+        #self.updateUIGrid()
 
         self.resize_timer.stop()
 
-    def changeRule(self, ruleText):
-        size = self.size()
-        width = size.width()
-        height = size.height()
+    def close_tab(self, index):
+        self.tab_widget.removeTab(index)
+
+    def show_about(self):
+        if not self.is_tab_open("About"):
+            label = QLabel("<a href='http://example.com'>Visit our website!</a>", self)
+            label.setOpenExternalLinks(True)
+            self.add_tab(label, "About")
+
+    def is_tab_open(self, title):
+        for index in range(self.tab_widget.count()):
+            if self.tab_widget.tabText(index) == title:
+                self.tab_widget.setCurrentIndex(index)
+                return True
+        return False
     
-        self.grid_width = int(width / CELL_SIZE)
-        self.grid_height = int(height / CELL_SIZE)
-    
-        self.ml = new_ml_instance(
-            self.grid_height,
-            self.grid_width,
-            ruleText)
-                
-        self.render_buffer = np.zeros((self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE, 3), 
-                                      dtype=np.uint8)
+    def add_tab(self, widget, title):
+        self.tab_widget.addTab(widget, title)
+        self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
         
-        height, width, channel = self.render_buffer.shape
-        bytes_per_line = 3 * width
+    def show_properties(self):
+        if not self.is_tab_open("Properties"):
+            widget = QWidget()
+            layout = QVBoxLayout()
+            cell_size_label = QLabel("Cell Size (1-25):", widget)
+            cell_size_spinbox = QSpinBox(widget)
+            cell_size_spinbox.setRange(1, 25)
+            animation_speed_label = QLabel("Animation Speed (1-30 FPS):", widget)
+            animation_speed_spinbox = QSpinBox(widget)
+            animation_speed_spinbox.setRange(1, 30)
+            save_button = QPushButton("Save", widget)
+            cancel_button = QPushButton("Cancel", widget)
+            button_layout = QHBoxLayout()
+            button_layout.addWidget(save_button)
+            button_layout.addWidget(cancel_button)
+            layout.addWidget(cell_size_label)
+            layout.addWidget(cell_size_spinbox)
+            layout.addWidget(animation_speed_label)
+            layout.addWidget(animation_speed_spinbox)
+            layout.addLayout(button_layout)
+            widget.setLayout(layout)
+            self.add_tab(widget, "Properties")
 
-        self.display_buffer = QImage(self.render_buffer.data, self.grid_width * CELL_SIZE, self.grid_height * CELL_SIZE, 3 * self.grid_width * CELL_SIZE, QImage.Format.Format_RGB888)
-        self.pixmap_buffer = self.scene.addPixmap(QPixmap.fromImage(self.display_buffer))
-
-    def updateUIGrid(self):
-        grid = self.ml['lattice'][0]['data']
-        for x in range(self.grid_width):
-            for y in range(self.grid_height):
-                color = grid[y][x]
-                self.render_buffer[y*CELL_SIZE:(y+1)*CELL_SIZE, x*CELL_SIZE:(x+1)*CELL_SIZE] = color 
-
-        # Update QPixmap for the existing QGraphicsPixmapItem
-        self.pixmap_buffer.setPixmap(QPixmap.fromImage(self.display_buffer))
-        
-        self.view.fitInView(self.scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio)
-        
-
+    def show_simulator(self):
+        show_simulator(self)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
