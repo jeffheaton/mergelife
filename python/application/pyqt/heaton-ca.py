@@ -1,16 +1,18 @@
 import os
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 import sys
+import cv2
 import random
 from PyQt6.QtWidgets import QApplication, QMainWindow, \
-    QGraphicsView, QGraphicsScene, QGraphicsRectItem, \
     QToolBar, QPushButton, QComboBox, QMessageBox, \
-    QMenu, QMenuBar
-
+    QMenu, QMenuBar, QWidget, QVBoxLayout, QLabel 
+from PyQt6 import QtWidgets
+from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QTimer, QRectF
 from PyQt6.QtGui import QBrush, QColor
 from mergelife import new_ml_instance, update_step
+import numpy as np
 
 CELL_SIZE = 5
 INITIAL_GRID_WIDTH = 100
@@ -32,9 +34,13 @@ class HeatonCA(QMainWindow):
         self.setGeometry(100, 100, 
             INITIAL_GRID_WIDTH * CELL_SIZE, 
             INITIAL_GRID_HEIGHT * CELL_SIZE)
+        
+        self.render_buffer = None
+        self.display_buffer = None
 
         self.setup_mac_menu()
         self.initUI()
+        self.changeRule(RULE_STRING)
 
 
     def setup_mac_menu(self):
@@ -63,11 +69,15 @@ class HeatonCA(QMainWindow):
 
     def initUI(self):
         # Graphics View
-        self.view = QGraphicsView(self)
-        self.setCentralWidget(self.view)
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
 
-        self.scene = QGraphicsScene(self)
-        self.view.setScene(self.scene)
+        self.layout = QVBoxLayout(self.central_widget)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+        self.image_label = QLabel(self)
+        self.image_label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.layout.addWidget(self.image_label)
 
         # Toolbar
         toolbar = QToolBar(self)
@@ -118,11 +128,23 @@ class HeatonCA(QMainWindow):
         self.running = False
 
     def changeRule(self, ruleText):
+        size = self.size()
+        width = size.width()
+        height = size.height()
+    
+        self.grid_width = int(width / CELL_SIZE)
+        self.grid_height = int(height / CELL_SIZE)
+    
         self.ml = new_ml_instance(
             self.grid_height,
             self.grid_width,
             ruleText)
-        
+                
+        self.image_label.setFixedSize(self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE)
+        self.render_buffer = np.zeros((self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE, 3), 
+                                      dtype=np.uint8)
+        self.display_buffer = QImage(self.grid_width, self.grid_height, QImage.Format.Format_RGB888)  
+
     def displayMessageBox(self, text):
         msg = QMessageBox(self)
         msg.setText(text)
@@ -137,19 +159,8 @@ class HeatonCA(QMainWindow):
 
     def finished_resizing(self):
         """This method will be called approximately 300ms after the last resize event."""
-        self.grid_width = int(self.last_size.width() / CELL_SIZE)
-        self.grid_height = int(self.last_size.height() / CELL_SIZE)
 
-        self.ml = new_ml_instance(self.grid_height,self.grid_width,RULE_STRING)
-        self.grid = [[QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for y in range(self.grid_height)] for x in range(self.grid_width)]
-        self.rects = [[None for y in range(self.grid_height)] for x in range(self.grid_width)]
-
-        for x in range(self.grid_width):
-            for y in range(self.grid_height):
-                rect = QGraphicsRectItem(QRectF(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-                self.rects[x][y] = rect
-                self.scene.addItem(rect)
-                rect.setBrush(QBrush(self.grid[x][y]))
+        self.changeRule(RULE_STRING)
         self.updateUIGrid()
 
         self.resize_timer.stop()
@@ -158,8 +169,24 @@ class HeatonCA(QMainWindow):
         grid = self.ml['lattice'][0]['data']
         for x in range(self.grid_width):
             for y in range(self.grid_height):
-                color = QColor(int(grid[y][x][0]), int(grid[y][x][1]), int(grid[y][x][2]))  # assuming RGB values
-                self.rects[x][y].setBrush(QBrush(color))
+                #color = QColor(int(grid[y][x][0]), int(grid[y][x][1]), int(grid[y][x][2]))  # assuming RGB values
+                #self.rects[x][y].setBrush(QBrush(color))
+                color = grid[y][x]
+                self.render_buffer[x*CELL_SIZE:(x+1)*CELL_SIZE, y*CELL_SIZE:(y+1)*CELL_SIZE] = color 
+                
+        height, width, channel = self.render_buffer.shape
+        bytes_per_line = 3 * width
+        
+        # Convert BGR to RGB
+        img_rgb = cv2.cvtColor(self.render_buffer, cv2.COLOR_BGR2RGB)
+        
+        # Convert to QImage
+        q_image = QImage(img_rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+        
+        # Set QPixmap to QLabel
+        self.image_label.setPixmap(QPixmap.fromImage(q_image))
+        
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
