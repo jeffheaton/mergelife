@@ -17,7 +17,7 @@ from mergelife import new_ml_instance, update_step
 import numpy as np
 
 CELL_SIZE = 5
-INITIAL_GRID_WIDTH = 100
+INITIAL_GRID_WIDTH = 200
 INITIAL_GRID_HEIGHT = 100
 
 RULES = [
@@ -131,23 +131,6 @@ class HeatonCA(QMainWindow):
         self.btn_stop.setEnabled(False)
         self.running = False
 
-    def changeRule(self, ruleText):
-        size = self.size()
-        width = size.width()
-        height = size.height()
-    
-        self.grid_width = int(width / CELL_SIZE)
-        self.grid_height = int(height / CELL_SIZE)
-    
-        self.ml = new_ml_instance(
-            self.grid_height,
-            self.grid_width,
-            ruleText)
-                
-        self.render_buffer = np.zeros((self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE, 3), 
-                                      dtype=np.uint8)
-        self.display_buffer = QImage(self.grid_width, self.grid_height, QImage.Format.Format_RGB888)  
-
     def displayMessageBox(self, text):
         msg = QMessageBox(self)
         msg.setText(text)
@@ -168,28 +151,39 @@ class HeatonCA(QMainWindow):
 
         self.resize_timer.stop()
 
+    def changeRule(self, ruleText):
+        size = self.size()
+        width = size.width()
+        height = size.height()
+    
+        self.grid_width = int(width / CELL_SIZE)
+        self.grid_height = int(height / CELL_SIZE)
+    
+        self.ml = new_ml_instance(
+            self.grid_height,
+            self.grid_width,
+            ruleText)
+                
+        self.render_buffer = np.zeros((self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE, 3), 
+                                      dtype=np.uint8)
+        
+        height, width, channel = self.render_buffer.shape
+        bytes_per_line = 3 * width
+
+        self.display_buffer = QImage(self.render_buffer.data, self.grid_width * CELL_SIZE, self.grid_height * CELL_SIZE, 3 * self.grid_width * CELL_SIZE, QImage.Format.Format_RGB888)
+        self.pixmap_buffer = self.scene.addPixmap(QPixmap.fromImage(self.display_buffer))
+
     def updateUIGrid(self):
         grid = self.ml['lattice'][0]['data']
         for x in range(self.grid_width):
             for y in range(self.grid_height):
-                #color = QColor(int(grid[y][x][0]), int(grid[y][x][1]), int(grid[y][x][2]))  # assuming RGB values
-                #self.rects[x][y].setBrush(QBrush(color))
                 color = grid[y][x]
-                self.render_buffer[x*CELL_SIZE:(x+1)*CELL_SIZE, y*CELL_SIZE:(y+1)*CELL_SIZE] = color 
-                
-        height, width, channel = self.render_buffer.shape
-        bytes_per_line = 3 * width
+                self.render_buffer[y*CELL_SIZE:(y+1)*CELL_SIZE, x*CELL_SIZE:(x+1)*CELL_SIZE] = color 
+
+        # Update QPixmap for the existing QGraphicsPixmapItem
+        self.pixmap_buffer.setPixmap(QPixmap.fromImage(self.display_buffer))
         
-        # Convert BGR to RGB
-        img_rgb = cv2.cvtColor(self.render_buffer, cv2.COLOR_BGR2RGB)
-        
-        # Convert to QImage
-        q_image = QImage(img_rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
-        
-        pixmap = QPixmap.fromImage(q_image)
-        self.scene.clear()
-        self.scene.addPixmap(pixmap)
-        self.view.fitInView(self.scene.sceneRect(), mode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.view.fitInView(self.scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio)
         
 
 
