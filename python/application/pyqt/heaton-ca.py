@@ -3,9 +3,11 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 import sys
 import cv2
 import random
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow, \
     QToolBar, QPushButton, QComboBox, QMessageBox, \
-    QMenu, QMenuBar, QWidget, QVBoxLayout, QLabel 
+    QMenu, QMenuBar, QWidget, QVBoxLayout, QLabel, \
+    QGraphicsView, QGraphicsScene
 from PyQt6 import QtWidgets
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtGui import QAction
@@ -68,16 +70,18 @@ class HeatonCA(QMainWindow):
         app_menu.addAction(exit_action)
 
     def initUI(self):
-        # Graphics View
-        self.central_widget = QWidget(self)
-        self.setCentralWidget(self.central_widget)
 
-        self.layout = QVBoxLayout(self.central_widget)
+        # Initialize central widget and layout
+        central_widget = QWidget(self)
+        self.layout = QVBoxLayout(central_widget)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        self.image_label = QLabel(self)
-        self.image_label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
-        self.layout.addWidget(self.image_label)
+        self.setCentralWidget(central_widget)
+
+        # QGraphicsView and QGraphicsScene
+        self.scene = QGraphicsScene()
+        self.view = QGraphicsView(self.scene, self)
+        self.layout.addWidget(self.view)
 
         # Toolbar
         toolbar = QToolBar(self)
@@ -140,7 +144,6 @@ class HeatonCA(QMainWindow):
             self.grid_width,
             ruleText)
                 
-        self.image_label.setFixedSize(self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE)
         self.render_buffer = np.zeros((self.grid_height * CELL_SIZE, self.grid_width * CELL_SIZE, 3), 
                                       dtype=np.uint8)
         self.display_buffer = QImage(self.grid_width, self.grid_height, QImage.Format.Format_RGB888)  
@@ -183,8 +186,10 @@ class HeatonCA(QMainWindow):
         # Convert to QImage
         q_image = QImage(img_rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
         
-        # Set QPixmap to QLabel
-        self.image_label.setPixmap(QPixmap.fromImage(q_image))
+        pixmap = QPixmap.fromImage(q_image)
+        self.scene.clear()
+        self.scene.addPixmap(pixmap)
+        self.view.fitInView(self.scene.sceneRect(), mode=Qt.AspectRatioMode.KeepAspectRatio)
         
 
 
