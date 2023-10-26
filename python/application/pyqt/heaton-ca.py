@@ -2,8 +2,9 @@ import os
 import sys
 import cv2
 import random
+import logging
 import numpy as np
-from PyQt6.QtCore import Qt, QTimer, QRectF
+from PyQt6.QtCore import Qt, QTimer, QRectF, qInstallMessageHandler
 from PyQt6.QtGui import QImage, QPixmap, QBrush, QColor, QAction
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QToolBar, QPushButton,
@@ -13,6 +14,33 @@ from PyQt6.QtWidgets import (
 )
 from mergelife import new_ml_instance, update_step
 from tab_simulate import show_simulator
+from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
+import logging.config
+import const_values
+
+import os
+import logging
+import logging.handlers
+import os
+import datetime
+import glob
+import json
+import utl_logging
+import utl_settings
+
+logger = logging.getLogger(__name__)
+
+print(f"Logs path: {const_values.LOG_DIR}")
+print(f"Settings path: {const_values.SETTING_DIR}")
+print(f"Settings file: {const_values.SETTING_FILE}")
+
+utl_settings.load_settings()
+print(utl_settings.settings)
+utl_logging.setup_logging()
+utl_logging.delete_old_logs()
+
+logging.info("Application starting up")
+
 
 class HeatonCA(QMainWindow):
     def __init__(self):
@@ -140,10 +168,33 @@ class HeatonCA(QMainWindow):
     def show_simulator(self):
         show_simulator(self)
 
+def qt_message_handler(mode, context, message):
+    if mode == Qt.MessageType.INFO:
+        logger.info(message)
+    elif mode == Qt.MessageType.WARNING:
+        logger.warning(message)
+    elif mode == Qt.MessageType.CRITICAL:
+        logger.critical(message)
+    elif mode == Qt.MessageType.FATAL:
+        logger.fatal(message)
+    elif mode == Qt.MessageType.DEBUG:
+        logger.debug(message)
+
+# After setting up logging and before initializing QApplication
+qInstallMessageHandler(qt_message_handler)
+
+
+
 if __name__ == '__main__':
+    logger.info("Starting application")
     app = QApplication(sys.argv)
     app.setApplicationName("Heaton's Game of Life")
     window = HeatonCA()
     window.show()
-    sys.exit(app.exec())
+    logging.info("Application shutting down")
 
+    level = app.exec()
+    utl_settings.save_settings()
+    utl_logging.setup_logging()
+    utl_logging.delete_old_logs()
+    sys.exit(level)

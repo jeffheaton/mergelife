@@ -5,9 +5,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QLabel, QGraphicsView, QGraphicsScene,
     QTabWidget, QSpinBox, QVBoxLayout, QHBoxLayout
 )
+import logging
 from PyQt6.QtGui import QImage, QPixmap, QBrush, QColor, QAction
 from mergelife import new_ml_instance, update_step
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 CELL_SIZE = 5
 INITIAL_GRID_WIDTH = 200
