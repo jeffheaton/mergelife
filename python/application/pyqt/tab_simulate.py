@@ -1,12 +1,11 @@
-from PyQt6.QtCore import Qt, QTimer, QRectF
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QToolBar, QPushButton,
-    QComboBox, QMessageBox, QMenu, QMenuBar, QWidget,
-    QVBoxLayout, QLabel, QGraphicsView, QGraphicsScene,
-    QTabWidget, QSpinBox, QVBoxLayout, QHBoxLayout
+    QToolBar, QPushButton, QComboBox, QWidget,
+    QVBoxLayout, QGraphicsView, QGraphicsScene,
+    QVBoxLayout
 )
 import logging
-from PyQt6.QtGui import QImage, QPixmap, QBrush, QColor, QAction
+from PyQt6.QtGui import QImage, QPixmap
 from mergelife import new_ml_instance, update_step
 import numpy as np
 

@@ -1,16 +1,10 @@
-import os
 import sys
-import cv2
-import random
 import logging
-import numpy as np
-from PyQt6.QtCore import Qt, QTimer, QRectF, qInstallMessageHandler
-from PyQt6.QtGui import QImage, QPixmap, QBrush, QColor, QAction
+from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler
+from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QToolBar, QPushButton,
-    QComboBox, QMessageBox, QMenu, QMenuBar, QWidget,
-    QVBoxLayout, QLabel, QGraphicsView, QGraphicsScene,
-    QTabWidget, QSpinBox, QVBoxLayout, QHBoxLayout
+    QApplication, QMainWindow, QMessageBox, QMenu, 
+    QMenuBar, QLabel, QTabWidget
 )
 from mergelife import new_ml_instance, update_step
 from tab_simulate import show_simulator
@@ -18,15 +12,11 @@ from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
 import logging.config
 import const_values
 
-import os
 import logging
 import logging.handlers
-import os
-import datetime
-import glob
-import json
 import utl_logging
 import utl_settings
+import tab_settings
 
 logger = logging.getLogger(__name__)
 
@@ -143,41 +133,21 @@ class HeatonCA(QMainWindow):
         self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
         
     def show_properties(self):
-        if not self.is_tab_open("Properties"):
-            widget = QWidget()
-            layout = QVBoxLayout()
-            cell_size_label = QLabel("Cell Size (1-25):", widget)
-            cell_size_spinbox = QSpinBox(widget)
-            cell_size_spinbox.setRange(1, 25)
-            animation_speed_label = QLabel("Animation Speed (1-30 FPS):", widget)
-            animation_speed_spinbox = QSpinBox(widget)
-            animation_speed_spinbox.setRange(1, 30)
-            save_button = QPushButton("Save", widget)
-            cancel_button = QPushButton("Cancel", widget)
-            button_layout = QHBoxLayout()
-            button_layout.addWidget(save_button)
-            button_layout.addWidget(cancel_button)
-            layout.addWidget(cell_size_label)
-            layout.addWidget(cell_size_spinbox)
-            layout.addWidget(animation_speed_label)
-            layout.addWidget(animation_speed_spinbox)
-            layout.addLayout(button_layout)
-            widget.setLayout(layout)
-            self.add_tab(widget, "Properties")
+        tab_settings.show_settings(self)
 
     def show_simulator(self):
         show_simulator(self)
 
 def qt_message_handler(mode, context, message):
-    if mode == Qt.MessageType.INFO:
+    if mode == Qt.MsgType.INFO:
         logger.info(message)
-    elif mode == Qt.MessageType.WARNING:
+    elif mode == Qt.MsgType.WARNING:
         logger.warning(message)
-    elif mode == Qt.MessageType.CRITICAL:
+    elif mode == Qt.MsgType.CRITICAL:
         logger.critical(message)
-    elif mode == Qt.MessageType.FATAL:
+    elif mode == Qt.MsgType.FATAL:
         logger.fatal(message)
-    elif mode == Qt.MessageType.DEBUG:
+    elif mode == Qt.MsgType.DEBUG:
         logger.debug(message)
 
 # After setting up logging and before initializing QApplication
