@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 )
 import logging
 from PyQt6.QtGui import QImage, QPixmap
-from mergelife import new_ml_instance, update_step
+from mergelife import new_ml_instance, update_step, randomize_lattice
 import numpy as np
 from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtGui import QRegularExpressionValidator
@@ -34,13 +34,13 @@ class TabSimulate(QWidget):
         self._running = False
 
         # Initialize central widget and layout
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
 
         # Toolbar
         self._toolbar = QToolBar()
-        layout.addWidget(self._toolbar)  # Add the toolbar to the layout first
+        self._layout.addWidget(self._toolbar)  # Add the toolbar to the layout first
 
         # Start Button
         self._btn_start = QPushButton("Start")
@@ -52,6 +52,18 @@ class TabSimulate(QWidget):
         self._btn_stop.clicked.connect(self.stopGame)
         self._toolbar.addWidget(self._btn_stop)
         self._btn_stop.setEnabled(False)
+
+        # Step Button
+        self._btn_step = QPushButton("Step")
+        self._btn_step.clicked.connect(self.stepGame)
+        self._toolbar.addWidget(self._btn_step)
+        self._btn_step.setEnabled(True)
+
+        # Step Button
+        self._btn_reset = QPushButton("Reset")
+        self._btn_reset.clicked.connect(self.resetGame)
+        self._toolbar.addWidget(self._btn_reset)
+        self._btn_reset.setEnabled(True)
 
         # Combo Box
         self._combo = QComboBox()
@@ -65,11 +77,8 @@ class TabSimulate(QWidget):
         self._combo.activated.connect(self.onComboBoxActivated)
         self._toolbar.addWidget(self._combo)
 
-        # QGraphicsView and QGraphicsScene
-        self._scene = QGraphicsScene(self)
-        self._view = QGraphicsView(self._scene, self)
-        layout.addWidget(self._view)  # Add the view to the layout after the toolbar
-        self._scene.setBackgroundBrush(Qt.GlobalColor.black)
+        self._scene = None
+        self._view = None
 
         # Animation timer
         self._timer = QTimer(self)
@@ -89,6 +98,7 @@ class TabSimulate(QWidget):
         size = self.size()
         width = self.width()
         height = self.height()
+        print(f"Resize to: w:{width}, h:{height}")
         
         self._grid_width = int(width / CELL_SIZE)
         self._grid_height = int(height / CELL_SIZE)
@@ -107,6 +117,19 @@ class TabSimulate(QWidget):
         self._display_buffer = QImage(self._render_buffer.data, self._grid_width * CELL_SIZE, 
                         self._grid_height * CELL_SIZE, 3 * self._grid_width * CELL_SIZE, 
                         QImage.Format.Format_RGB888)
+        # close out old scene, if there is one
+        if self._scene:
+            self._scene.clear()
+            self._view.close()
+            self._layout.removeWidget(self._view)
+
+        # QGraphicsView and QGraphicsScene
+        self._scene = QGraphicsScene(self)
+        self._view = QGraphicsView(self._scene, self)
+        self._layout.addWidget(self._view)  # Add the view to the layout after the toolbar
+        self._scene.setBackgroundBrush(Qt.GlobalColor.black)
+
+
         self._pixmap_buffer = self._scene.addPixmap(QPixmap.fromImage(self._display_buffer))
         self.updateUIGrid()
 
@@ -130,16 +153,28 @@ class TabSimulate(QWidget):
     def startGame(self):
         self._btn_start.setEnabled(False)
         self._btn_stop.setEnabled(True)
+        self._btn_step.setEnabled(False)
         self._running = True
 
     def stopGame(self):
         self._btn_start.setEnabled(True)
         self._btn_stop.setEnabled(False)
+        self._btn_step.setEnabled(True)
         self._running = False
+
+    def stepGame(self):
+        update_step(self._ml)
+        self.updateUIGrid()
+
+    def resetGame(self):
+        randomize_lattice(self._ml)
+        if not self._running:
+            self.updateUIGrid()
 
     def on_resize(self):
         print("Simulator resize")
         self.changeRule(self._combo.currentText())
+        self._view.update()
         self.updateUIGrid()
 
     def showEvent(self, event):

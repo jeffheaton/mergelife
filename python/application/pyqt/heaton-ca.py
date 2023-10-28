@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QMenu, 
     QMenuBar, QLabel, QTabWidget
 )
-from mergelife import new_ml_instance, update_step
+
 import tab_simulate 
 from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
 import logging.config
