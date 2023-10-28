@@ -179,7 +179,6 @@ class TabSimulate(QWidget):
 
     def showEvent(self, event):
         super().showEvent(event)
-        self.changeRule(self._combo.currentText())
         self.updateUIGrid()
 
     def onComboBoxActivated(self, index):
