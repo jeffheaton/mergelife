@@ -7,6 +7,8 @@ import logging
 from PyQt6.QtGui import QImage, QPixmap
 from mergelife import new_ml_instance, update_step
 import numpy as np
+from PyQt6.QtCore import QRegularExpression
+from PyQt6.QtGui import QRegularExpressionValidator
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +55,14 @@ class TabSimulate(QWidget):
 
         # Combo Box
         self._combo = QComboBox()
+        self._combo.setEditable(True)  # Make the combo box editable
+        # Set up validation for the combo box input
+        rule_pattern = QRegularExpression(r"^[a-f0-9]{4}(-[a-f0-9]{4}){7}$")  # Regex pattern for the MergeLife rule string
+        validator = QRegularExpressionValidator(rule_pattern, self._combo)
+        self._combo.setValidator(validator)
         self._combo.addItems(RULES)
-        self._combo.currentTextChanged.connect(self.changeRule)
+        #self._combo.currentTextChanged.connect(self.changeRule)
+        self._combo.activated.connect(self.onComboBoxActivated)
         self._toolbar.addWidget(self._combo)
 
         # QGraphicsView and QGraphicsScene
@@ -81,7 +89,7 @@ class TabSimulate(QWidget):
         size = self.size()
         width = self.width()
         height = self.height()
-
+        
         self._grid_width = int(width / CELL_SIZE)
         self._grid_height = int(height / CELL_SIZE)
 
@@ -96,12 +104,15 @@ class TabSimulate(QWidget):
         height, width, channel = self._render_buffer.shape
         bytes_per_line = 3 * width
 
-        self._display_buffer = QImage(self._render_buffer.data, self._grid_width * CELL_SIZE, self._grid_height * CELL_SIZE, 3 * self._grid_width * CELL_SIZE, QImage.Format.Format_RGB888)
+        self._display_buffer = QImage(self._render_buffer.data, self._grid_width * CELL_SIZE, 
+                        self._grid_height * CELL_SIZE, 3 * self._grid_width * CELL_SIZE, 
+                        QImage.Format.Format_RGB888)
         self._pixmap_buffer = self._scene.addPixmap(QPixmap.fromImage(self._display_buffer))
         self.updateUIGrid()
 
     def updateUIGrid(self):
         grid = self._ml['lattice'][0]['data']
+        #self._render_buffer.fill(0) # maybe not needed?
         for x in range(self._grid_width):
             for y in range(self._grid_height):
                 color = grid[y][x]
@@ -128,11 +139,23 @@ class TabSimulate(QWidget):
 
     def on_resize(self):
         print("Simulator resize")
-        self.changeRule(RULE_STRING)
+        self.changeRule(self._combo.currentText())
         self.updateUIGrid()
 
     def showEvent(self, event):
         super().showEvent(event)
-        self.changeRule(RULE_STRING)
+        self.changeRule(self._combo.currentText())
         self.updateUIGrid()
+
+    def onComboBoxActivated(self, index):
+        # index is the position of the activated item in the dropdown list
+        # For editable combo boxes, the index is -1 if the user edited the text and pressed Enter.
+        if index == -1:
+            # The user edited the text and pressed Enter
+            text = self._combo.currentText()
+            if self._combo.validator().validate(text, 0)[0] == QValidator.State.Acceptable:
+                self.changeRule(text)
+        else:
+            # The user picked an item from the dropdown list
+            self.changeRule(self._combo.itemText(index))
     
