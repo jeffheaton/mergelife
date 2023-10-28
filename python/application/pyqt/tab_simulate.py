@@ -85,11 +85,9 @@ class TabSimulate(QWidget):
         self._timer.timeout.connect(self.nextGeneration)
         self._timer.start(10)
 
-        self.changeRule(RULE_STRING)
+        self._force_update = 0
 
     def on_close(self):
-        # Your custom functionality here
-        print("Simulate: The tab is closing!")
         self._timer.stop()
         self._scene.clear()
 
@@ -149,6 +147,12 @@ class TabSimulate(QWidget):
         self._view.fitInView(self._scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio)
 
     def nextGeneration(self):
+        if self._force_update>0:
+            # Not crazy about this solution, but it was the only way I could find to get the scene to
+            # correctly resize to the view.
+            self.resetGame()
+            self._force_update-=1
+
         if self._running:
             update_step(self._ml)
             self.updateUIGrid()
@@ -182,7 +186,9 @@ class TabSimulate(QWidget):
 
     def showEvent(self, event):
         super().showEvent(event)
+        self.changeRule(self._combo.currentText())
         self.updateUIGrid()
+        self._force_update = 1
 
     def onComboBoxActivated(self, index):
         # index is the position of the activated item in the dropdown list
@@ -195,4 +201,6 @@ class TabSimulate(QWidget):
         else:
             # The user picked an item from the dropdown list
             self.changeRule(self._combo.itemText(index))
+
+        self._force_update = 1
     
