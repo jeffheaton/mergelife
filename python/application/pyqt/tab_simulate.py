@@ -126,6 +126,9 @@ class TabSimulate(QWidget):
         # QGraphicsView and QGraphicsScene
         self._scene = QGraphicsScene(self)
         self._view = QGraphicsView(self._scene, self)
+        self._view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
         self._layout.addWidget(self._view)  # Add the view to the layout after the toolbar
         self._scene.setBackgroundBrush(Qt.GlobalColor.black)
 
