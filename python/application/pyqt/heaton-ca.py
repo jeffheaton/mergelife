@@ -1,13 +1,13 @@
 import sys
 import logging
-from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler
+from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler, QtMsgType
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QMenu, 
     QMenuBar, QLabel, QTabWidget
 )
 from mergelife import new_ml_instance, update_step
-from tab_simulate import show_simulator
+import tab_simulate 
 from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
 import logging.config
 import const_values
@@ -17,6 +17,7 @@ import logging.handlers
 import utl_logging
 import utl_settings
 import tab_settings
+from tab_about import AboutTab
 
 logger = logging.getLogger(__name__)
 
@@ -106,21 +107,23 @@ class HeatonCA(QMainWindow):
 
     def finished_resizing(self):
         """This method will be called approximately 300ms after the last resize event."""
-
-        #self.changeRule(RULE_STRING)
-        #self.updateUIGrid()
+        index = self.tab_widget.currentIndex()
+        if index != -1:
+            tab = self.tab_widget.widget(index)
+            tab.on_resize()
 
         self.resize_timer.stop()
 
     def close_tab(self, index):
+        tab = self.tab_widget.widget(index)
+        tab.on_close()
         self.tab_widget.removeTab(index)
+        tab.deleteLater()
 
     def show_about(self):
         if not self.is_tab_open("About"):
-            label = QLabel("<a href='http://example.com'>Visit our website!</a>", self)
-            label.setOpenExternalLinks(True)
-            self.add_tab(label, "About")
-
+            self.add_tab(AboutTab(), "About HeatonCA")
+            
     def is_tab_open(self, title):
         for index in range(self.tab_widget.count()):
             if self.tab_widget.tabText(index) == title:
@@ -133,21 +136,24 @@ class HeatonCA(QMainWindow):
         self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
         
     def show_properties(self):
-        tab_settings.show_settings(self)
+        if not window.is_tab_open("Preferences"):
+            self.add_tab(tab_settings.SettingsTab(self), "Preferences")
 
     def show_simulator(self):
-        show_simulator(self)
+        if not window.is_tab_open("Simulator"):
+            self.add_tab(tab_simulate.TabSimulate(self), "Simulator")
+
 
 def qt_message_handler(mode, context, message):
-    if mode == Qt.MsgType.INFO:
+    if mode == QtMsgType.QtInfoMsg:
         logger.info(message)
-    elif mode == Qt.MsgType.WARNING:
+    elif mode == QtMsgType.QtWarningMsg:
         logger.warning(message)
-    elif mode == Qt.MsgType.CRITICAL:
+    elif mode == QtMsgType.QtCriticalMsg:
         logger.critical(message)
-    elif mode == Qt.MsgType.FATAL:
+    elif mode == QtMsgType.QtFatalMsg:
         logger.fatal(message)
-    elif mode == Qt.MsgType.DEBUG:
+    elif mode == QtMsgType.QtDebugMsg:
         logger.debug(message)
 
 # After setting up logging and before initializing QApplication

@@ -1,8 +1,7 @@
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
     QToolBar, QPushButton, QComboBox, QWidget,
-    QVBoxLayout, QGraphicsView, QGraphicsScene,
-    QVBoxLayout
+    QVBoxLayout, QGraphicsView, QGraphicsScene
 )
 import logging
 from PyQt6.QtGui import QImage, QPixmap
@@ -21,124 +20,119 @@ RULES = [
     "ea44-55df-9025-bead-5f6e-45ca-6168-275a"
 ]
 
-RULE_STRING = "ea44-55df-9025-bead-5f6e-45ca-6168-275a"  # One of the known MergeLife rule strings. You can replace this.
+RULE_STRING = "ea44-55df-9025-bead-5f6e-45ca-6168-275a"
 
-_grid_width = None
-_grid_height = None
-_ml = None
-_render_buffer = None
-_pixmap_buffer = None
-_scene = None
-_widget = None
-_btn_start = None
-_btn_stop = None
-_combo = None
-_view = None
-_running = False
-_window = None
+import sys
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QLabel
 
-def changeRule(ruleText):
-    global _grid_width, _grid_height, _ml, _render_buffer, _pixmap_buffer, _display_buffer
-    size = _widget.size()
-    width = _widget.width()
-    height = _widget.height()
+class TabSimulate(QWidget):
+    def __init__(self, window):
+        super().__init__()
+        self._window = window
+        self._running = False
 
-    _grid_width = int(width / CELL_SIZE)
-    _grid_height = int(height / CELL_SIZE)
+        # Initialize central widget and layout
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
-    _ml = new_ml_instance(
-        _grid_height,
-        _grid_width,
-        ruleText)
-            
-    _render_buffer = np.zeros((_grid_height * CELL_SIZE, _grid_width * CELL_SIZE, 3), 
-                                    dtype=np.uint8)
+        # Toolbar
+        self._toolbar = QToolBar()
+        layout.addWidget(self._toolbar)  # Add the toolbar to the layout first
+
+        # Start Button
+        self._btn_start = QPushButton("Start")
+        self._btn_start.clicked.connect(self.startGame)
+        self._toolbar.addWidget(self._btn_start)
+
+        # Stop Button
+        self._btn_stop = QPushButton("Stop")
+        self._btn_stop.clicked.connect(self.stopGame)
+        self._toolbar.addWidget(self._btn_stop)
+        self._btn_stop.setEnabled(False)
+
+        # Combo Box
+        self._combo = QComboBox()
+        self._combo.addItems(RULES)
+        self._combo.currentTextChanged.connect(self.changeRule)
+        self._toolbar.addWidget(self._combo)
+
+        # QGraphicsView and QGraphicsScene
+        self._scene = QGraphicsScene(self)
+        self._view = QGraphicsView(self._scene, self)
+        layout.addWidget(self._view)  # Add the view to the layout after the toolbar
+        self._scene.setBackgroundBrush(Qt.GlobalColor.black)
+
+        # Animation timer
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self.nextGeneration)
+        self._timer.start(10)
+
+        self.changeRule(RULE_STRING)
+
+    def on_close(self):
+        # Your custom functionality here
+        print("Simulate: The tab is closing!")
+        self._timer.stop()
+        self._scene.clear()
+
+
+    def changeRule(self, ruleText):
+        size = self.size()
+        width = self.width()
+        height = self.height()
+
+        self._grid_width = int(width / CELL_SIZE)
+        self._grid_height = int(height / CELL_SIZE)
+
+        self._ml = new_ml_instance(
+            self._grid_height,
+            self._grid_width,
+            ruleText)
+                
+        self._render_buffer = np.zeros((self._grid_height * CELL_SIZE, self._grid_width * CELL_SIZE, 3), 
+                                        dtype=np.uint8)
+        
+        height, width, channel = self._render_buffer.shape
+        bytes_per_line = 3 * width
+
+        self._display_buffer = QImage(self._render_buffer.data, self._grid_width * CELL_SIZE, self._grid_height * CELL_SIZE, 3 * self._grid_width * CELL_SIZE, QImage.Format.Format_RGB888)
+        self._pixmap_buffer = self._scene.addPixmap(QPixmap.fromImage(self._display_buffer))
+        self.updateUIGrid()
+
+    def updateUIGrid(self):
+        grid = self._ml['lattice'][0]['data']
+        for x in range(self._grid_width):
+            for y in range(self._grid_height):
+                color = grid[y][x]
+                self._render_buffer[y*CELL_SIZE:(y+1)*CELL_SIZE, x*CELL_SIZE:(x+1)*CELL_SIZE] = color 
+
+        # Update QPixmap for the existing QGraphicsPixmapItem
+        self._pixmap_buffer.setPixmap(QPixmap.fromImage(self._display_buffer))
+        self._view.fitInView(self._scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio)
+
+    def nextGeneration(self):
+        if self._running:
+            update_step(self._ml)
+            self.updateUIGrid()
+
+    def startGame(self):
+        self._btn_start.setEnabled(False)
+        self._btn_stop.setEnabled(True)
+        self._running = True
+
+    def stopGame(self):
+        self._btn_start.setEnabled(True)
+        self._btn_stop.setEnabled(False)
+        self._running = False
+
+    def on_resize(self):
+        print("Simulator resize")
+        self.changeRule(RULE_STRING)
+        self.updateUIGrid()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.changeRule(RULE_STRING)
+        self.updateUIGrid()
     
-    height, width, channel = _render_buffer.shape
-    bytes_per_line = 3 * width
-
-    _display_buffer = QImage(_render_buffer.data, _grid_width * CELL_SIZE, _grid_height * CELL_SIZE, 3 * _grid_width * CELL_SIZE, QImage.Format.Format_RGB888)
-    _pixmap_buffer = _scene.addPixmap(QPixmap.fromImage(_display_buffer))
-    updateUIGrid()
-
-def updateUIGrid():
-    grid = _ml['lattice'][0]['data']
-    for x in range(_grid_width):
-        for y in range(_grid_height):
-            color = grid[y][x]
-            _render_buffer[y*CELL_SIZE:(y+1)*CELL_SIZE, x*CELL_SIZE:(x+1)*CELL_SIZE] = color 
-
-    # Update QPixmap for the existing QGraphicsPixmapItem
-    _pixmap_buffer.setPixmap(QPixmap.fromImage(_display_buffer))
-    _view.fitInView(_scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio)
-
-
-def nextGeneration():
-    if _running:
-        update_step(_ml)
-        updateUIGrid()
-    
-
-def startGame():
-    global _running
-    _btn_start.setEnabled(False)
-    _btn_stop.setEnabled(True)
-    _running = True
-
-def stopGame():
-    global _running
-    _btn_start.setEnabled(True)
-    _btn_stop.setEnabled(False)
-    _running = False
-
-def show_simulator(window):
-    global _scene, _window, _widget, _view, _toolbar, _btn_start, _btn_stop, _combo
-
-    if window.is_tab_open("Simulator"):
-        return
-
-    _window = window
-
-    # Initialize central widget and layout
-    _widget = QWidget()
-    layout = QVBoxLayout(_widget)
-    layout.setContentsMargins(0, 0, 0, 0)
-    layout.setSpacing(0)
-
-    # Toolbar
-    _toolbar = QToolBar()
-    layout.addWidget(_toolbar)  # Add the toolbar to the layout first
-
-    # Start Button
-    _btn_start = QPushButton("Start")
-    _btn_start.clicked.connect(startGame)
-    _toolbar.addWidget(_btn_start)
-
-    # Stop Button
-    _btn_stop = QPushButton("Stop")
-    _btn_stop.clicked.connect(stopGame)
-    _toolbar.addWidget(_btn_stop)
-    _btn_stop.setEnabled(False)
-
-    # Combo Box
-    _combo = QComboBox()
-    _combo.addItems(RULES)
-    _combo.currentTextChanged.connect(changeRule)
-    _toolbar.addWidget(_combo)
-
-    # QGraphicsView and QGraphicsScene
-    _scene = QGraphicsScene()
-    _view = QGraphicsView(_scene, _widget)
-    layout.addWidget(_view)  # Add the view to the layout after the toolbar
-    _scene.setBackgroundBrush(Qt.GlobalColor.black)
-
-    window.add_tab(_widget, "Simulator")
-
-    # Animation timer
-    _timer = QTimer(_widget)
-    _timer.timeout.connect(nextGeneration)
-    _timer.start(10)
-
-    changeRule(RULE_STRING)
-
-
