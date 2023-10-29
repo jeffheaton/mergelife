@@ -4,11 +4,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QGraphicsView, QGraphicsScene
 )
 import logging
-from PyQt6.QtGui import QImage, QPixmap, QFont, QColor, QPainter
+from PyQt6.QtGui import QImage, QPixmap, QFont, QColor, QPainter, QFontMetrics
 from mergelife import new_ml_instance, update_step, randomize_lattice
 import numpy as np
 from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtGui import QRegularExpressionValidator
+import utl_settings
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +36,33 @@ class FPSGraphicsView(QGraphicsView):
     def paintEvent(self, event):
         super().paintEvent(event)
         painter = QPainter(self.viewport())
+        
+        # Setting up text properties
+        font = QFont("Arial", 20)
+        font.setBold(True)
+        painter.setFont(font)
+        fps_text = f"Steps: {self._parent._steps:,}, FPS: {self._parent._fps}"
+        
+        # Get text dimensions
+        font_metrics = QFontMetrics(font)
+        text_width = font_metrics.horizontalAdvance(fps_text)
+        text_height = font_metrics.height()
+
+        # Rectangle properties
+        padding = 5  # You can adjust the padding if needed
+        rect_x = self.width() - text_width - 2 * padding
+        rect_y = 0
+        rect_width = text_width + 2 * padding
+        rect_height = text_height + padding
+
+        # Draw the black rectangle
+        painter.setBrush(QColor(0, 0, 0))
+        painter.setPen(QColor(0, 0, 0))  # Set rectangle border color to black
+        painter.drawRect(rect_x, rect_y, rect_width, rect_height)
+
+        # Draw the FPS text
         painter.setPen(QColor(255, 255, 255))  # Set text color to white
-        painter.setFont(QFont("Arial", 10))
-        painter.drawText(self.width() - 50, 15, f"FPS: {self._parent._fps}")
+        painter.drawText(rect_x + padding, text_height, fps_text)
 
 class TabSimulate(QWidget):
     def __init__(self, window):
@@ -98,11 +123,14 @@ class TabSimulate(QWidget):
         self._fps_timer = QTimer(self)
         self._fps_timer.timeout.connect(self.computeFPS)
         self._fps_timer.start(1000)  # Every second
+        self._target_fps = utl_settings.settings[utl_settings.FPS_KEY]
+
+        self._steps = 0
 
         # Animation timer
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.nextGeneration)
-        self._timer.start(10)
+        self._timer.start(int(1000/self._target_fps))
 
         self._force_update = 0
 
@@ -178,6 +206,7 @@ class TabSimulate(QWidget):
 
         if self._running:
             update_step(self._ml)
+            self._steps+=1
             self.updateUIGrid()
 
     def startGame(self):
@@ -193,13 +222,16 @@ class TabSimulate(QWidget):
         self._running = False
 
     def stepGame(self):
+        self._steps+=1
         update_step(self._ml)
         self.updateUIGrid()
 
     def resetGame(self):
+        self._steps=0
         randomize_lattice(self._ml)
         if not self._running:
             self.updateUIGrid()
+            
 
     def on_resize(self):
         print("Simulator resize")
@@ -221,11 +253,13 @@ class TabSimulate(QWidget):
             text = self._combo.currentText()
             if self._combo.validator().validate(text, 0)[0] == QValidator.State.Acceptable:
                 self.changeRule(text)
+                self._force_update = 1
+                self._steps = 0
         else:
             # The user picked an item from the dropdown list
             self.changeRule(self._combo.itemText(index))
-
-        self._force_update = 1
+            self._force_update = 1
+            self._steps = 0
 
 
     def computeFPS(self):
