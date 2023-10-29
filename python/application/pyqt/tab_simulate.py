@@ -7,13 +7,12 @@ import logging
 from PyQt6.QtGui import QImage, QPixmap, QFont, QColor, QPainter, QFontMetrics
 from mergelife import new_ml_instance, update_step, randomize_lattice
 import numpy as np
-from PyQt6.QtCore import QRegularExpression
+from PyQt6.QtCore import QRegularExpression, QDateTime
 from PyQt6.QtGui import QRegularExpressionValidator
 import utl_settings
 
 logger = logging.getLogger(__name__)
 
-CELL_SIZE = 5
 INITIAL_GRID_WIDTH = 200
 INITIAL_GRID_HEIGHT = 100
 
@@ -128,11 +127,15 @@ class TabSimulate(QWidget):
         self._steps = 0
 
         # Animation timer
+        self._last_event_time = QDateTime.currentMSecsSinceEpoch()
+        self._timer_interval = 16  # for example, roughly 60fps
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.nextGeneration)
-        self._timer.start(int(1000/self._target_fps))
+        self._timer.start(self._timer_interval)
 
         self._force_update = 0
+        self._cell_size = utl_settings.settings[utl_settings.CELL_SIZE_KEY]
+        if self._cell_size<1: self._cell_size = 1
 
     def on_close(self):
         self._timer.stop()
@@ -143,24 +146,23 @@ class TabSimulate(QWidget):
         size = self.size()
         width = self.width()
         height = self.height()
-        print(f"Resize to: w:{width}, h:{height}")
         
-        self._grid_width = int(width / CELL_SIZE)
-        self._grid_height = int(height / CELL_SIZE)
+        self._grid_width = int(width / self._cell_size)
+        self._grid_height = int(height / self._cell_size)
 
         self._ml = new_ml_instance(
             self._grid_height,
             self._grid_width,
             ruleText)
                 
-        self._render_buffer = np.zeros((self._grid_height * CELL_SIZE, self._grid_width * CELL_SIZE, 3), 
+        self._render_buffer = np.zeros((self._grid_height * self._cell_size, self._grid_width * self._cell_size, 3), 
                                         dtype=np.uint8)
         
         height, width, channel = self._render_buffer.shape
         bytes_per_line = 3 * width
 
-        self._display_buffer = QImage(self._render_buffer.data, self._grid_width * CELL_SIZE, 
-                        self._grid_height * CELL_SIZE, 3 * self._grid_width * CELL_SIZE, 
+        self._display_buffer = QImage(self._render_buffer.data, self._grid_width * self._cell_size, 
+                        self._grid_height * self._cell_size, 3 * self._grid_width * self._cell_size, 
                         QImage.Format.Format_RGB888)
         # close out old scene, if there is one
         if self._scene:
@@ -188,7 +190,7 @@ class TabSimulate(QWidget):
         for x in range(self._grid_width):
             for y in range(self._grid_height):
                 color = grid[y][x]
-                self._render_buffer[y*CELL_SIZE:(y+1)*CELL_SIZE, x*CELL_SIZE:(x+1)*CELL_SIZE] = color 
+                self._render_buffer[y*self._cell_size:(y+1)*self._cell_size, x*self._cell_size:(x+1)*self._cell_size] = color 
 
         # Update QPixmap for the existing QGraphicsPixmapItem
         self._pixmap_buffer.setPixmap(QPixmap.fromImage(self._display_buffer))
@@ -198,16 +200,26 @@ class TabSimulate(QWidget):
         self._frame_count += 1
 
     def nextGeneration(self):
+        current_time = QDateTime.currentMSecsSinceEpoch()
+        elapsed_time = current_time - self._last_event_time
+
         if self._force_update>0:
             # Not crazy about this solution, but it was the only way I could find to get the scene to
             # correctly resize to the view.
             self.resetGame()
             self._force_update-=1
 
-        if self._running:
-            update_step(self._ml)
-            self._steps+=1
-            self.updateUIGrid()
+        if elapsed_time < self._timer_interval * 10:  # if not too much time has passed since last event
+            if self._running:
+                update_step(self._ml)
+                self._steps+=1
+                self.updateUIGrid()
+
+        self._last_event_time = current_time
+
+
+
+
 
     def startGame(self):
         self._btn_start.setEnabled(False)
