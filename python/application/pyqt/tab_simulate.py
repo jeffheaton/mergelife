@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QGraphicsView, QGraphicsScene
 )
 import logging
-from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtGui import QImage, QPixmap, QFont, QColor, QPainter
 from mergelife import new_ml_instance, update_step, randomize_lattice
 import numpy as np
 from PyQt6.QtCore import QRegularExpression
@@ -26,6 +26,18 @@ RULE_STRING = "ea44-55df-9025-bead-5f6e-45ca-6168-275a"
 
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QLabel
+
+class FPSGraphicsView(QGraphicsView):
+    def __init__(self, scene, parent=None):
+        super().__init__(scene, parent)
+        self._parent = parent
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self.viewport())
+        painter.setPen(QColor(255, 255, 255))  # Set text color to white
+        painter.setFont(QFont("Arial", 10))
+        painter.drawText(self.width() - 50, 15, f"FPS: {self._parent._fps}")
 
 class TabSimulate(QWidget):
     def __init__(self, window):
@@ -80,6 +92,13 @@ class TabSimulate(QWidget):
         self._scene = None
         self._view = None
 
+        # FPS
+        self._frame_count = 0
+        self._fps = 0
+        self._fps_timer = QTimer(self)
+        self._fps_timer.timeout.connect(self.computeFPS)
+        self._fps_timer.start(1000)  # Every second
+
         # Animation timer
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.nextGeneration)
@@ -123,7 +142,8 @@ class TabSimulate(QWidget):
 
         # QGraphicsView and QGraphicsScene
         self._scene = QGraphicsScene(self)
-        self._view = QGraphicsView(self._scene, self)
+        #self._view = QGraphicsView(self._scene, self)
+        self._view = FPSGraphicsView(self._scene, self)
         self._view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
@@ -145,6 +165,9 @@ class TabSimulate(QWidget):
         # Update QPixmap for the existing QGraphicsPixmapItem
         self._pixmap_buffer.setPixmap(QPixmap.fromImage(self._display_buffer))
         self._view.fitInView(self._scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio)
+
+        # FPS
+        self._frame_count += 1
 
     def nextGeneration(self):
         if self._force_update>0:
@@ -203,4 +226,11 @@ class TabSimulate(QWidget):
             self.changeRule(self._combo.itemText(index))
 
         self._force_update = 1
+
+
+    def computeFPS(self):
+        self._fps = self._frame_count
+        self._frame_count = 0
+        self._view.viewport().update()  # Trigger a redraw to show the updated FPS
+
     
