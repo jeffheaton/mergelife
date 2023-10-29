@@ -135,11 +135,13 @@ class TabSimulate(QWidget):
 
         self._force_update = 0
         self._cell_size = utl_settings.settings[utl_settings.CELL_SIZE_KEY]
+        
         if self._cell_size<1: self._cell_size = 1
 
     def on_close(self):
         self._timer.stop()
         self._scene.clear()
+        logger.info("Closed simulator tab")
 
 
     def changeRule(self, ruleText):
@@ -172,8 +174,11 @@ class TabSimulate(QWidget):
 
         # QGraphicsView and QGraphicsScene
         self._scene = QGraphicsScene(self)
-        #self._view = QGraphicsView(self._scene, self)
-        self._view = FPSGraphicsView(self._scene, self)
+        if utl_settings.get_bool(utl_settings.FPS_OVERLAY):
+            self._view = FPSGraphicsView(self._scene, self)
+        else:
+            self._view = QGraphicsView(self._scene, self)
+        
         self._view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
@@ -216,10 +221,6 @@ class TabSimulate(QWidget):
                 self.updateUIGrid()
 
         self._last_event_time = current_time
-
-
-
-
 
     def startGame(self):
         self._btn_start.setEnabled(False)
