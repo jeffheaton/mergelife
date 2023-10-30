@@ -68,6 +68,7 @@ class TabSimulate(QWidget):
         super().__init__()
         self._window = window
         self._running = False
+        self._force_rule = False
 
         # Initialize central widget and layout
         self._layout = QVBoxLayout(self)
@@ -207,6 +208,11 @@ class TabSimulate(QWidget):
     def nextGeneration(self):
         current_time = QDateTime.currentMSecsSinceEpoch()
         elapsed_time = current_time - self._last_event_time
+
+        if self._force_rule:
+            self.changeRule(self._force_rule)
+            self._force_rule = None
+            self.startGame()
 
         if self._force_update>0:
             # Not crazy about this solution, but it was the only way I could find to get the scene to

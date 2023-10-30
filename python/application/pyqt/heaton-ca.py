@@ -162,11 +162,26 @@ class HeatonCA(QMainWindow):
                 continue
             index += 1
 
+    def find_simulator_tab(self):
+        index = 0
+        while index < self._tab_widget.count():
+            if self._tab_widget.tabText(index) == SIMULATOR_NAME:
+                return self._tab_widget.widget(index)
+            index += 1
+        return None
+
     def close_current_tab(self):
         # Close the tab
         index = self._tab_widget.indexOf(self._tab_widget.currentWidget())
         if index != -1:
             self.close_tab(index)
+
+    def display_rule(self, rule):
+        self.close_simulator_tabs()
+        sim = tab_simulate.TabSimulate(self)
+        self.add_tab(sim, SIMULATOR_NAME)
+        sim._force_rule = rule
+
 
 
 def qt_message_handler(mode, context, message):

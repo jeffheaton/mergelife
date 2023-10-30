@@ -131,6 +131,7 @@ class GalleryTab(QWidget):
 
     def image_clicked(self, caption):
         print(caption)
+        self._window.display_rule(caption)
 
     def on_close(self):
         pass
