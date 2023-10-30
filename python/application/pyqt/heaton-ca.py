@@ -17,6 +17,7 @@ import logging.handlers
 import utl_logging
 import utl_settings
 import tab_settings
+import tab_gallery
 from tab_about import AboutTab
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,9 @@ class HeatonCA(QMainWindow):
         simulator_action = QAction("Show Simulator", self)
         simulator_action.triggered.connect(self.show_simulator)
         self.simulator_menu.addAction(simulator_action)
+        gallery_action = QAction("Show Gallery", self)
+        gallery_action.triggered.connect(self.show_gallery)
+        self.simulator_menu.addAction(gallery_action)
 
         self.menubar.addMenu(app_menu)
         self.menubar.addMenu(self.simulator_menu)
@@ -143,6 +147,10 @@ class HeatonCA(QMainWindow):
     def show_simulator(self):
         if not window.is_tab_open("Simulator"):
             self.add_tab(tab_simulate.TabSimulate(self), SIMULATOR_NAME)
+
+    def show_gallery(self):
+        if not window.is_tab_open("Gallery"):
+            self.add_tab(tab_gallery.GalleryTab(self), "Gallery")
 
     def close_simulator_tabs(self):
         logger.info("Closing any simulator tabs due to config change")
