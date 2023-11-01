@@ -102,6 +102,12 @@ class TabSimulate(QWidget):
         self._toolbar.addWidget(self._btn_reset)
         self._btn_reset.setEnabled(True)
 
+        # Rule Button
+        self._btn_rule = QPushButton("Rule:")
+        self._btn_rule.clicked.connect(self.displayRule)
+        self._toolbar.addWidget(self._btn_rule)
+        self._btn_rule.setEnabled(True)
+
         # Combo Box
         self._combo = QComboBox()
         self._combo.setEditable(True)  # Make the combo box editable
@@ -146,7 +152,7 @@ class TabSimulate(QWidget):
 
 
     def changeRule(self, ruleText):
-        size = self.size()
+        self._combo.setCurrentText(ruleText)
         width = self.width()
         height = self.height()
         
@@ -285,5 +291,9 @@ class TabSimulate(QWidget):
         self._fps = self._frame_count
         self._frame_count = 0
         self._view.viewport().update()  # Trigger a redraw to show the updated FPS
+
+    def displayRule(self):
+        self._window.show_rule(self._combo.currentText())
+        
 
     

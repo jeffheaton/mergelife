@@ -19,6 +19,7 @@ import utl_settings
 import tab_settings
 import tab_gallery
 from tab_about import AboutTab
+from tab_rule import RuleTab
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,10 @@ class HeatonCA(QMainWindow):
     def show_about(self):
         if not self.is_tab_open("About"):
             self.add_tab(AboutTab(), "About HeatonCA")
+
+    def show_rule(self, rule):
+        if not self.is_tab_open("Rule"):
+            self.add_tab(RuleTab(rule), "Rule")
             
     def is_tab_open(self, title):
         for index in range(self._tab_widget.count()):
