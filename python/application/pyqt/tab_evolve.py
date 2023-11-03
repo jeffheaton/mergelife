@@ -158,8 +158,9 @@ class EvolveTab(QWidget):
         
 
     def on_close(self):
-        # Your custom functionality here
-        print("The tab is closing!")
+        logger.info("Closed Evolve tab.")
+        if self._evolve:
+            self._evolve.stop()
 
     def on_resize(self):
         pass

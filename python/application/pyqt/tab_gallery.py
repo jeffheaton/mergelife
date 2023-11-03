@@ -130,7 +130,6 @@ class GalleryTab(QWidget):
             self.layout.addWidget(container, row, col)
 
     def image_clicked(self, caption):
-        print(caption)
         self._window.display_rule(caption)
 
     def on_close(self):

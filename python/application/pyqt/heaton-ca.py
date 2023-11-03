@@ -1,10 +1,10 @@
 import sys
 import logging
 from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler, QtMsgType
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QMenu, 
-    QMenuBar, QLabel, QTabWidget
+    QMenuBar, QLabel, QTabWidget, QLineEdit
 )
 
 import tab_simulate 
@@ -21,16 +21,19 @@ import tab_gallery
 from tab_about import AboutTab
 from tab_rule import RuleTab
 from tab_evolve import EvolveTab
+import webbrowser
 
 logger = logging.getLogger(__name__)
 
 SIMULATOR_NAME = "Simulator"
+APP_NAME = "HeatonCA"
 
 class HeatonCA(QMainWindow):
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
+        self._app = app
         self.running = False
-        self.setWindowTitle("HeatonCA")
+        self.setWindowTitle(APP_NAME)
         self.setGeometry(100, 100, 1000, 500)
         
         self.render_buffer = None
@@ -49,11 +52,11 @@ class HeatonCA(QMainWindow):
         self.menubar = QMenuBar() #self.menuBar()
 
         # Create the app menu and add it to the menu bar
-        app_menu = QMenu("My App", self)
+        app_menu = QMenu(APP_NAME, self)
   
 
         # Add items to the app menu
-        about_action = QAction("About HeatonCA", self)
+        about_action = QAction(f"About {APP_NAME}", self)
         app_menu.addAction(about_action)
         self.about_menu = QMenu("About", self)
         about_action.triggered.connect(self.show_about)
@@ -67,6 +70,30 @@ class HeatonCA(QMainWindow):
         exit_action.triggered.connect(self.close)
         app_menu.addAction(exit_action)
 
+        # File menu
+        self._file_menu = QMenu('File', self)
+        
+        # Close Window action
+        closeAction = QAction('Close Window', self)
+        closeAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Close))
+        closeAction.triggered.connect(self.close)
+        self._file_menu.addAction(closeAction)
+
+        # Edit menu
+        self._edit_menu = QMenu('Edit', self)
+        cutAction = QAction('Cut', self)
+        cutAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Cut))
+        self._edit_menu.addAction(cutAction)
+
+        copyAction = QAction('Copy', self)
+        copyAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Copy))
+        self._edit_menu.addAction(copyAction)
+
+        pasteAction = QAction('Paste', self)
+        pasteAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Paste))
+        self._edit_menu.addAction(pasteAction)
+
+        # Simulate menu
         self.simulator_menu = QMenu("Simulator", self)
         simulator_action = QAction("Show Simulator", self)
         simulator_action.triggered.connect(self.show_simulator)
@@ -80,8 +107,18 @@ class HeatonCA(QMainWindow):
         evolve_action.triggered.connect(self.show_evolve)
         self.simulator_menu.addAction(evolve_action)
 
+        # Help menu
+        self._help_menu = QMenu("Help", self)
+        tutorial_action = QAction("Tutorial", self)
+        tutorial_action.triggered.connect(self.open_tutorial)
+        self._help_menu.addAction(tutorial_action)
+
+        #
         self.menubar.addMenu(app_menu)
+        self.menubar.addMenu(self._file_menu)
+        self.menubar.addMenu(self._edit_menu)
         self.menubar.addMenu(self.simulator_menu)
+        self.menubar.addMenu(self._help_menu)
 
     def initUI(self):
         self._tab_widget = QTabWidget()
@@ -186,6 +223,8 @@ class HeatonCA(QMainWindow):
         self.add_tab(sim, SIMULATOR_NAME)
         sim._force_rule = rule
 
+    def open_tutorial(self):
+        webbrowser.open('http://www.heatonresearch.com/mergelife')
 
 
 def qt_message_handler(mode, context, message):
@@ -199,6 +238,8 @@ def qt_message_handler(mode, context, message):
         logger.fatal(message)
     elif mode == QtMsgType.QtDebugMsg:
         logger.debug(message)
+
+
 
 # After setting up logging and before initializing QApplication
 qInstallMessageHandler(qt_message_handler)
@@ -218,7 +259,7 @@ if __name__ == '__main__':
     
     app = QApplication(sys.argv)
     app.setApplicationName("Heaton's Game of Life")
-    window = HeatonCA()
+    window = HeatonCA(app)
     window.show()
     level = app.exec()
     utl_settings.save_settings()
