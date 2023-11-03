@@ -38,7 +38,7 @@ def setup_logging():
 
     # Create a file handler to write log messages to the file
     file_handler = logging.handlers.TimedRotatingFileHandler(log_filename, when="midnight", interval=1, backupCount=7)
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     
     # Create a formatter to format the log messages
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')

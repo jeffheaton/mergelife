@@ -19,6 +19,13 @@ STOP_STAGE_RUNNING = 0
 STOP_STAGE_STOPPING = 1
 STOP_STAGE_STOPPED = 2
 
+STATUS_RUN = "run"
+STATUS_EVAL = "eval"
+STATUS_EVAL_MIN = "eval_min"
+STATUS_RULE = "rule"
+STATUS_SCORE = "score"
+STATUS_STATUS = "status"
+
 
 
 _manager = None 
@@ -91,7 +98,7 @@ class Evolve:
         logger.info("Evolve worker shut down")
 
 
-    def report(self, config, inputQueue, genome):
+    def report(self, config, inputQueue, genome, stats):
         requestStop = False
         self.evalCount += 1
         self.totalEvalCount += 1
@@ -106,15 +113,22 @@ class Evolve:
 
         now = time.time()
 
-        if requestStop or (now - self.timeLastUpdate > 60):
+        if requestStop or (now - self.timeLastUpdate > 10):
             elapsed = now - self.startTime
             perSec = self.totalEvalCount / elapsed
             perMin = int(perSec * 60.0)
             logger.info("Run  #{}, Eval #{}: {}, evals/min={}".format(self.runCount, self.evalCount, self.bestGenome, perMin))
             self.timeLastUpdate = now
 
+            stats[STATUS_RUN] = self.runCount
+            stats[STATUS_EVAL] = self.evalCount
+            stats[STATUS_EVAL_MIN] = perMin
+            stats[STATUS_RULE] = self.bestGenome['rule']
+            stats[STATUS_SCORE] = self.bestGenome['score']
+            stats[STATUS_STATUS] = "Searching"
+
         if requestStop:
-            logger.info("No improvement for {}, stopping...".format(config['config']['patience']))
+            logger.info(f"No improvement for {config['config']['patience']}, stopping run.")
 
             if self.bestGenome['score'] > config['config']['scoreThreshold']:
                 self.render(config, self.bestGenome['rule'])
@@ -131,10 +145,10 @@ class Evolve:
             queue.put({'score': None, 'rule': mergelife.random_update_rule(), 'run': self.runCount})
         self.waitingCount += config['config']['populationSize']
 
-    def evolve(self, config, stop_mode):
+    def evolve(self, config, stop_mode, stats):
         cpus = mp.cpu_count()
 
-        logger.info("Forking for {}".format(cpus))
+        self._display_status(f"Using {cpus} CPU cores")
         processes = []
         self.startTime = time.time()
         self.timeLastUpdate = self.startTime
@@ -160,11 +174,11 @@ class Evolve:
             if g['run'] == self.runCount:
                 if len(self.population) < config['config']['populationSize']:
                     self.population.append(g)
-                    self.report(config, inputQueue, g)
+                    self.report(config, inputQueue, g, stats)
                 else:
                     target_idx = self.select_tournament(cycles, operator.lt)
                     self.population[target_idx] = g
-                    self.report(config, inputQueue, g)
+                    self.report(config, inputQueue, g, stats)
 
             if self.waitingCount < cpus * 2:
                 if np.random.uniform() < config['config']['crossover']:
@@ -195,6 +209,11 @@ class Evolve:
             p['process'].join()
         stop_mode.value=STOP_STAGE_STOPPED
         logger.info("Evolve shutting down")
+        self._display_status("Done.")
+
+    def _display_status(self, str):
+        self.stats[STATUS_STATUS] = str
+        logger.info(str)
 
     def render(self, config, ruleText):
         width = config['config']['cols']
@@ -208,15 +227,16 @@ class Evolve:
 
         filename = os.path.join("/Users/jeff/Documents/HeatonCA/", ruleText + ".png")
         mergelife.save_image(ml_inst, filename)
-        print("Saved {}".format(filename))
+        self._display_status(f"Saved {filename}")
 
     def start(self, config):
         global _manager
         _manager = mp.Manager()
         self.stop_mode = _manager.Value('i', 0)
-        self.main_process = mp.Process(target=self.evolve, args=(config,self.stop_mode))
+        self.stats = _manager.dict()
+        self.main_process = mp.Process(target=self.evolve, args=(config,self.stop_mode,self.stats))
         self.main_process.start()
 
     def stop(self):
-        logging.info("Requesting evolve process to stop")
+        self._display_status("Stopping...")
         self.stop_mode.value = STOP_STAGE_STOPPING

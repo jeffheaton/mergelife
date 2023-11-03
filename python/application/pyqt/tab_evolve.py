@@ -108,15 +108,21 @@ class EvolveTab(QWidget):
         grid_layout.addWidget(current_score_label, 4, 0)
         grid_layout.addWidget(self._current_score_value, 4, 1)
 
+        status_label = QLabel("Status:")
+        self._status_value = QLineEdit()
+        self._status_value.setReadOnly(True)
+        grid_layout.addWidget(status_label, 5, 0)
+        grid_layout.addWidget(self._status_value, 5, 1)
+
         output_dir_label = QLabel("Output Directory:")
         self._output_dir_value = QLineEdit()
         default_path = os.path.expanduser("~/Documents/HeatonCA")
         self._output_dir_value.setText(default_path)
         self._browse_button = QPushButton("Browse...")
         self._browse_button.clicked.connect(self.browse_directory)
-        grid_layout.addWidget(output_dir_label, 5, 0)
-        grid_layout.addWidget(self._output_dir_value, 5, 1)
-        grid_layout.addWidget(self._browse_button, 5, 2)
+        grid_layout.addWidget(output_dir_label, 6, 0)
+        grid_layout.addWidget(self._output_dir_value, 6, 1)
+        grid_layout.addWidget(self._browse_button, 6, 2)
 
         # Extend the fields all the way to the right
         grid_layout.setColumnStretch(1, 1)
@@ -181,9 +187,18 @@ class EvolveTab(QWidget):
 
     def timer_event(self):
         if self._evolve:
+            stats = self._evolve.stats
+            self._run_number_value.setText(str(stats.get(ml_evolve.STATUS_RUN,"")))
+            self._eval_number_value.setText(str(stats.get(ml_evolve.STATUS_EVAL,"")))
+            self._evals_per_min_value.setText(str(stats.get(ml_evolve.STATUS_EVAL_MIN,"")))
+            self._current_rule_value.setText(str(stats.get(ml_evolve.STATUS_RULE,"")))
+            self._current_score_value.setText(str(stats.get(ml_evolve.STATUS_SCORE,"")))
+            self._status_value.setText(str(stats.get(ml_evolve.STATUS_STATUS,"")))
+
             if self._evolve.stop_mode.value==ml_evolve.STOP_STAGE_STOPPED:
                 self._start_button.setEnabled(True)
                 self._stop_button.setEnabled(False)
                 self._output_dir_value.setReadOnly(False)
                 self._browse_button.setEnabled(True)
                 self._evolve.stop_mode.value=ml_evolve.STOP_STAGE_RUNNING
+                
