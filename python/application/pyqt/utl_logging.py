@@ -49,6 +49,6 @@ def setup_logging():
 
     # Add a stream handler (console handler) for console output
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)

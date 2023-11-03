@@ -7,6 +7,7 @@ pip install pyqt6
 pip install numpy
 pip install scipy
 pip install opencv-python-headless
+pip install pillow
 
 python3.11 -m venv .venv
 source .venv/bin/activate

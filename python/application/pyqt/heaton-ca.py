@@ -20,21 +20,11 @@ import tab_settings
 import tab_gallery
 from tab_about import AboutTab
 from tab_rule import RuleTab
+from tab_evolve import EvolveTab
 
 logger = logging.getLogger(__name__)
 
 SIMULATOR_NAME = "Simulator"
-
-print(f"Logs path: {const_values.LOG_DIR}")
-print(f"Settings path: {const_values.SETTING_DIR}")
-print(f"Settings file: {const_values.SETTING_FILE}")
-
-utl_settings.load_settings()
-utl_logging.setup_logging()
-utl_logging.delete_old_logs()
-
-logging.info("Application starting up")
-
 
 class HeatonCA(QMainWindow):
     def __init__(self):
@@ -81,9 +71,14 @@ class HeatonCA(QMainWindow):
         simulator_action = QAction("Show Simulator", self)
         simulator_action.triggered.connect(self.show_simulator)
         self.simulator_menu.addAction(simulator_action)
+
         gallery_action = QAction("Show Gallery", self)
         gallery_action.triggered.connect(self.show_gallery)
         self.simulator_menu.addAction(gallery_action)
+
+        evolve_action = QAction("Evolve", self)
+        evolve_action.triggered.connect(self.show_evolve)
+        self.simulator_menu.addAction(evolve_action)
 
         self.menubar.addMenu(app_menu)
         self.menubar.addMenu(self.simulator_menu)
@@ -129,6 +124,10 @@ class HeatonCA(QMainWindow):
     def show_about(self):
         if not self.is_tab_open("About"):
             self.add_tab(AboutTab(), "About HeatonCA")
+
+    def show_evolve(self):
+        if not self.is_tab_open("Evolve"):
+            self.add_tab(EvolveTab(), "Evolve")
 
     def show_rule(self, rule):
         if not self.is_tab_open("Rule"):
@@ -207,7 +206,16 @@ qInstallMessageHandler(qt_message_handler)
 
 
 if __name__ == '__main__':
-    logger.info("Starting application")
+    print(f"Logs path: {const_values.LOG_DIR}")
+    print(f"Settings path: {const_values.SETTING_DIR}")
+    print(f"Settings file: {const_values.SETTING_FILE}")
+
+    utl_settings.load_settings()
+    utl_logging.setup_logging()
+    utl_logging.delete_old_logs()
+
+    logging.info("Application starting up")
+    
     app = QApplication(sys.argv)
     app.setApplicationName("Heaton's Game of Life")
     window = HeatonCA()
@@ -218,3 +226,6 @@ if __name__ == '__main__':
     utl_logging.delete_old_logs()
     logging.info("Application shutting down")
     sys.exit(level)
+else:
+    utl_settings.load_settings()
+    utl_logging.setup_logging()
