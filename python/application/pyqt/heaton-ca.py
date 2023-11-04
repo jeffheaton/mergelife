@@ -22,6 +22,7 @@ from tab_about import AboutTab
 from tab_rule import RuleTab
 from tab_evolve import EvolveTab
 import webbrowser
+import tab_splash
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +30,8 @@ SIMULATOR_NAME = "Simulator"
 APP_NAME = "HeatonCA"
 
 class HeatonCA(QMainWindow):
-    def __init__(self, app):
+    def __init__(self):
         super().__init__()
-        self._app = app
         self.running = False
         self.setWindowTitle(APP_NAME)
         self.setGeometry(100, 100, 1000, 500)
@@ -131,14 +131,23 @@ class HeatonCA(QMainWindow):
         self.resize_timer.timeout.connect(self.finished_resizing)
         self.resize_timer.setInterval(300)  # 300 milliseconds
 
+        # Configure the resize timer
+        self._background_timer = QTimer(self)
+        self._background_timer.timeout.connect(self.background_timer)
+        self._background_timer.setInterval(1000)  # 1 second
+        self._background_timer.start()
+
     def displayMessageBox(self, text):
         msg = QMessageBox(self)
         msg.setText(text)
         msg.exec()
 
+    def background_timer(self):
+        if self._tab_widget.count() == 0:
+            window.add_tab(tab_splash.SplashTab(window), "Welcome to HeatonCA")
+
     def resizeEvent(self, event):
         """This method is called whenever the window is resized."""
-        #self.stopGame()
         self.resize_timer.start()  # Restart the timer every time this event is triggered
         self.last_size = event.size()  # Store the latest size
         super().resizeEvent(event)
@@ -190,6 +199,7 @@ class HeatonCA(QMainWindow):
             self.add_tab(tab_simulate.TabSimulate(self), SIMULATOR_NAME)
 
     def show_gallery(self):
+        print("boo")
         if not window.is_tab_open("Gallery"):
             self.add_tab(tab_gallery.GalleryTab(self), "Gallery")
 
@@ -259,8 +269,9 @@ if __name__ == '__main__':
     
     app = QApplication(sys.argv)
     app.setApplicationName("Heaton's Game of Life")
-    window = HeatonCA(app)
+    window = HeatonCA()
     window.show()
+    
     level = app.exec()
     utl_settings.save_settings()
     utl_logging.setup_logging()
