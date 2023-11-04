@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler, QtMsgType
 from PyQt6.QtGui import QAction, QKeySequence
@@ -23,6 +24,7 @@ from tab_rule import RuleTab
 from tab_evolve import EvolveTab
 import webbrowser
 import tab_splash
+import utl_env
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +268,13 @@ if __name__ == '__main__':
     utl_logging.delete_old_logs()
 
     logging.info("Application starting up")
+    s = utl_env.get_system_name()
+    logging.info(f"System: {s}")
+    logging.info(f"Pyinstaller: {utl_env.is_pyinstaller_bundle()}")
+    z=os.path.expanduser("~")
+    logging.info(f"User: {z}")
+    if s=="osx":
+        logging.info(f"Sandbox mode: {utl_env.is_sandboxed()}")
     
     app = QApplication(sys.argv)
     app.setApplicationName("Heaton's Game of Life")

@@ -1,7 +1,11 @@
 import sys
+import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QLabel, QGridLayout, QPushButton, QSizePolicy
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
+import utl_env
+
+IMAGE_FILENAME = utl_env.get_resource_path('data/heaton_ca_title.png')
 
 class SplashTab(QWidget):
     def __init__(self, window):
@@ -9,12 +13,8 @@ class SplashTab(QWidget):
 
         self._window = window
 
-        # Main window properties
-        self.setWindowTitle("Image with Buttons")
-        self.setGeometry(100, 100, 800, 600)
-
         # Load image from the provided path
-        self.original_pixmap = QPixmap("/Users/jeff/Desktop/heaton_ca.png")
+        self.original_pixmap = QPixmap(IMAGE_FILENAME)
 
         # Create main layout
         main_layout = QVBoxLayout()

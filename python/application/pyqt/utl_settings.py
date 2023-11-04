@@ -27,6 +27,7 @@ def save_settings():
         global settings
         with open(const_values.SETTING_FILE, "wb") as fp:
             plistlib.dump(settings, fp)
+        print("here")
     except Exception as e:
         logger.exception("Caught an exception saving settings")
 

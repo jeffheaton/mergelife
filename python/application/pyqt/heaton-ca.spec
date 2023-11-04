@@ -3,8 +3,7 @@
 
 block_cipher = None
 
-added_files = [
-]
+added_files = [('data/', 'data')]
 
 a = Analysis(
     ['heaton-ca.py'],
