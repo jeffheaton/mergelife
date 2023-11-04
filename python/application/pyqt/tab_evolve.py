@@ -166,18 +166,35 @@ class EvolveTab(QWidget):
         pass
 
     def browse_directory(self):
-        # Get the selected directory from the file dialog
-        dir_path = QFileDialog.getExistingDirectory(self, "Select Output Directory", self._output_dir_value.text())
+        # Get the selected directory from the file dialog - , self._output_dir_value.text()
+        dir_path = QFileDialog.getExistingDirectory(self, "Select Output Directory")
         # Update the directory text box if a directory was chosen
         if dir_path:
             self._output_dir_value.setText(dir_path)
 
     def action_start(self):
+        path = self._output_dir_value.text()
+
+        logger.info("Checking if output directory exists")
+        if not os.path.exists(path):
+            self._status_value.setText("Output directory does not exist")
+            return
+        
+        logger.info("Checking if output directory is a directory")
+        if not os.path.isdir(path):
+            self._status_value.setText("Must specify a valid output directory (not a directory)")
+            return
+        
+        logger.info("Checking for write access to directory")
+        if not os.access(path, os.W_OK):
+            self._status_value.setText("Must have write access to output directory")
+            return
+        
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(True)
         self._output_dir_value.setReadOnly(True)
         self._browse_button.setEnabled(False)
-        self._evolve = ml_evolve.Evolve()
+        self._evolve = ml_evolve.Evolve(path)
         self._evolve.start(config)
         logging.info("Evolve started")
 

@@ -31,7 +31,7 @@ STATUS_STATUS = "status"
 _manager = None 
 
 class Evolve:
-    def __init__(self):
+    def __init__(self, output_path):
         self.bestGenome = None
         self.evalCount = 0
         self.startTime = 0
@@ -41,6 +41,7 @@ class Evolve:
         self.noImprovement = 0
         self.waitingCount = 0
         self.population = []
+        self._output_path = output_path
 
     def hms_string(self, sec_elapsed):
         h = int(sec_elapsed / (60 * 60))
@@ -84,17 +85,25 @@ class Evolve:
 
 
     def subprocessScore(self, inputQueue, outputQueue, config, stop_state):
-        while stop_state.value==STOP_STAGE_RUNNING:
-            genome = inputQueue.get()
-            rule_str = genome['rule']
+        try:
+            while stop_state.value==STOP_STAGE_RUNNING:
+                genome = inputQueue.get()
+                rule_str = genome['rule']
 
-            width = config['config']['cols']
-            height = config['config']['rows']
+                width = config['config']['cols']
+                height = config['config']['rows']
 
-            ml_inst = mergelife.new_ml_instance(height, width, rule_str)
-            result = mergelife.objective_function(ml_inst, config['config']['evalCycles'], config['objective'])
-            outputQueue.put({'rule': rule_str, 'score': result['score'], 'run': genome['run']})
-        outputQueue.put("STOP")
+                ml_inst = mergelife.new_ml_instance(height, width, rule_str)
+                result = mergelife.objective_function(ml_inst, config['config']['evalCycles'], config['objective'])
+                outputQueue.put({'rule': rule_str, 'score': result['score'], 'run': genome['run']})
+        except Exception as e:
+            logger.info("Forced close shutdown for evolve")
+
+        try:
+            outputQueue.put("STOP")
+        except:
+            logger.info("Forced close shutdown, unable to communicate completion")
+
         logger.info("Evolve worker shut down")
 
 
@@ -120,12 +129,15 @@ class Evolve:
             logger.info("Run  #{}, Eval #{}: {}, evals/min={}".format(self.runCount, self.evalCount, self.bestGenome, perMin))
             self.timeLastUpdate = now
 
-            stats[STATUS_RUN] = self.runCount
-            stats[STATUS_EVAL] = self.evalCount
-            stats[STATUS_EVAL_MIN] = perMin
-            stats[STATUS_RULE] = self.bestGenome['rule']
-            stats[STATUS_SCORE] = self.bestGenome['score']
-            stats[STATUS_STATUS] = "Searching"
+            try:
+                stats[STATUS_RUN] = self.runCount
+                stats[STATUS_EVAL] = self.evalCount
+                stats[STATUS_EVAL_MIN] = perMin
+                stats[STATUS_RULE] = self.bestGenome['rule']
+                stats[STATUS_SCORE] = self.bestGenome['score']
+                stats[STATUS_STATUS] = "Searching"
+            except Exception as e:
+                logger.info("Force evolve stop: can't update status")
 
         if requestStop:
             logger.info(f"No improvement for {config['config']['patience']}, stopping run.")
@@ -166,44 +178,49 @@ class Evolve:
         self.randomPopulation(config, inputQueue)
         self.population = []
 
-        while stop_mode.value==STOP_STAGE_RUNNING:
-            g = outputQueue.get()
-            if g=="STOP": break
-            self.waitingCount -= 1
+        try:
+            while stop_mode.value==STOP_STAGE_RUNNING:
+                g = outputQueue.get()
+                if g=="STOP": break
+                self.waitingCount -= 1
 
-            if g['run'] == self.runCount:
-                if len(self.population) < config['config']['populationSize']:
-                    self.population.append(g)
-                    self.report(config, inputQueue, g, stats)
-                else:
-                    target_idx = self.select_tournament(cycles, operator.lt)
-                    self.population[target_idx] = g
-                    self.report(config, inputQueue, g, stats)
+                if g['run'] == self.runCount:
+                    if len(self.population) < config['config']['populationSize']:
+                        self.population.append(g)
+                        self.report(config, inputQueue, g, stats)
+                    else:
+                        target_idx = self.select_tournament(cycles, operator.lt)
+                        self.population[target_idx] = g
+                        self.report(config, inputQueue, g, stats)
 
-            if self.waitingCount < cpus * 2:
-                if np.random.uniform() < config['config']['crossover']:
-                    # Crossover
-                    parent1_idx = self.select_tournament(cycles, operator.gt)
-                    parent2_idx = parent1_idx
-                    while parent1_idx == parent2_idx:
-                        parent2_idx = self.select_tournament(cycles, operator.gt)
+                if self.waitingCount < cpus * 2:
+                    if np.random.uniform() < config['config']['crossover']:
+                        # Crossover
+                        parent1_idx = self.select_tournament(cycles, operator.gt)
+                        parent2_idx = parent1_idx
+                        while parent1_idx == parent2_idx:
+                            parent2_idx = self.select_tournament(cycles, operator.gt)
 
-                    parent1 = self.population[parent1_idx]['rule']
-                    parent2 = self.population[parent2_idx]['rule']
+                        parent1 = self.population[parent1_idx]['rule']
+                        parent2 = self.population[parent2_idx]['rule']
 
-                    if parent1 != parent2:
-                        child1, child2 = self.crossover(parent1, parent2, cycles)
-                        inputQueue.put({'rule': child1, 'score': None, 'run': self.runCount})
-                        inputQueue.put({'rule': child2, 'score': None, 'run': self.runCount})
-                        self.waitingCount += 2
+                        if parent1 != parent2:
+                            child1, child2 = self.crossover(parent1, parent2, cycles)
+                            inputQueue.put({'rule': child1, 'score': None, 'run': self.runCount})
+                            inputQueue.put({'rule': child2, 'score': None, 'run': self.runCount})
+                            self.waitingCount += 2
 
-                else:
-                    # Mutate
-                    parent_idx = self.select_tournament(cycles, operator.gt)
-                    parent = self.population[parent_idx]['rule']
-                    child = self.mutate(parent)
-                    inputQueue.put({'rule': child, 'score': None, 'run': self.runCount})
-                    self.waitingCount += 1
+                    else:
+                        # Mutate
+                        parent_idx = self.select_tournament(cycles, operator.gt)
+                        parent = self.population[parent_idx]['rule']
+                        child = self.mutate(parent)
+                        inputQueue.put({'rule': child, 'score': None, 'run': self.runCount})
+                        self.waitingCount += 1
+        except Exception as e:
+            logger.error("Abrupt exit to evolve",e)
+            return
+        
         logger.info("Stopped evolve main loop, waiting for subprocesses to stop")
         for p in processes:
             p['process'].join()
@@ -225,7 +242,7 @@ class Evolve:
         for i in range(steps):
             mergelife.update_step(ml_inst)
 
-        filename = os.path.join("/Users/jeff/Documents/HeatonCA/", ruleText + ".png")
+        filename = os.path.join(self._output_path, ruleText + ".png")
         mergelife.save_image(ml_inst, filename)
         self._display_status(f"Saved {filename}")
 
@@ -240,3 +257,5 @@ class Evolve:
     def stop(self):
         self._display_status("Stopping...")
         self.stop_mode.value = STOP_STAGE_STOPPING
+
+

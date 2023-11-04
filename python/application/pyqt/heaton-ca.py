@@ -96,18 +96,18 @@ class HeatonCA(QMainWindow):
         self._edit_menu.addAction(pasteAction)
 
         # Simulate menu
-        self.simulator_menu = QMenu("Simulator", self)
-        simulator_action = QAction("Show Simulator", self)
-        simulator_action.triggered.connect(self.show_simulator)
-        self.simulator_menu.addAction(simulator_action)
+        #self.simulator_menu = QMenu("Simulator", self)
+        #simulator_action = QAction("Show Simulator", self)
+        #simulator_action.triggered.connect(self.show_simulator)
+        #self.simulator_menu.addAction(simulator_action)
 
-        gallery_action = QAction("Show Gallery", self)
-        gallery_action.triggered.connect(self.show_gallery)
-        self.simulator_menu.addAction(gallery_action)
+        #gallery_action = QAction("Show Gallery", self)
+        #gallery_action.triggered.connect(self.show_gallery)
+        #self.simulator_menu.addAction(gallery_action)
 
-        evolve_action = QAction("Evolve", self)
-        evolve_action.triggered.connect(self.show_evolve)
-        self.simulator_menu.addAction(evolve_action)
+        #evolve_action = QAction("Evolve", self)
+        #evolve_action.triggered.connect(self.show_evolve)
+        #self.simulator_menu.addAction(evolve_action)
 
         # Help menu
         self._help_menu = QMenu("Help", self)
@@ -119,7 +119,7 @@ class HeatonCA(QMainWindow):
         self.menubar.addMenu(app_menu)
         self.menubar.addMenu(self._file_menu)
         self.menubar.addMenu(self._edit_menu)
-        self.menubar.addMenu(self.simulator_menu)
+        #self.menubar.addMenu(self.simulator_menu)
         self.menubar.addMenu(self._help_menu)
 
     def initUI(self):
