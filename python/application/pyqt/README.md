@@ -1,6 +1,7 @@
-pyinstaller -y -F --icon heaton_ca.png --onefile --windowed heaton_ca.py
+pyinstaller -y -F --icon heaton_ca_icon.png --onefile --windowed heaton-ca.py
 
-pyinstaller -y --clean heaton_ca.spec
+pyinstaller -y --clean heaton-ca-osx.spec
+pyinstaller -y --clean heaton-ca-win.spec
 
 pip install pyinstaller
 pip install pyqt6
