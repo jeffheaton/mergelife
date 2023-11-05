@@ -41,8 +41,28 @@ class HeatonCA(QMainWindow):
         self.render_buffer = None
         self.display_buffer = None
 
-        self.setup_mac_menu()
+        if utl_env.get_system_name()=='osx':
+            self.setup_mac_menu()
+        else:
+            self.setup_menu()
         self.initUI()
+
+    def setup_menu(self):
+        # Create the File menu
+        file_menu = self.menuBar().addMenu('File')
+
+        # Create a "Exit" action
+        exit_action = QAction('Exit', self)
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+
+        # Create the Edit menu
+        edit_menu = self.menuBar().addMenu('Edit')
+
+        # Create an "About" action
+        about_action = QAction('About', self)
+        about_action.triggered.connect(self.show_about)
+        edit_menu.addAction(about_action)
 
     def setup_mac_menu(self):
         # Create a main menu bar

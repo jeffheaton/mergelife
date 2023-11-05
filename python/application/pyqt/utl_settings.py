@@ -25,8 +25,12 @@ def init_settings():
 def save_settings():
     try:
         global settings
-        with open(const_values.SETTING_FILE, "wb") as fp:
-            plistlib.dump(settings, fp)
+        if utl_env.get_system_name()=='osx':
+            with open(const_values.SETTING_FILE, "wb") as fp:
+                plistlib.dump(settings, fp)
+        else:
+            with open(file_path, "w") as fp:
+                json.dump(settings, fp)
         print("here")
     except Exception as e:
         logger.exception("Caught an exception saving settings")
@@ -40,8 +44,12 @@ def load_settings():
         if not os.path.exists(const_values.SETTING_FILE):
             init_settings()
         else:
-            with open(const_values.SETTING_FILE, "rb") as fp:
-                settings = plistlib.load(fp)
+            if utl_env.get_system_name()=='osx':
+                with open(const_values.SETTING_FILE, "rb") as fp:
+                    settings = plistlib.load(fp)
+            else:
+                with open(const_values.SETTING_FILE, "r") as fp:
+                    SETTINGS = json.load(fp)
     except Exception as e:
         logger.exception("Caught an exception loading settings")
 
