@@ -182,7 +182,7 @@ class HeatonCA(QMainWindow):
                 tab = self._tab_widget.widget(index)
                 tab.on_resize()
         except Exception as e:
-            logger.error("Error during resize", e)
+            logger.error("Error during resize", exc_info=True)
 
         self.resize_timer.stop()
 
@@ -193,28 +193,28 @@ class HeatonCA(QMainWindow):
             self._tab_widget.removeTab(index)
             tab.deleteLater()
         except Exception as e:
-            logger.error("Error during tab close", e)
+            logger.error("Error during tab close", exc_info=True)
 
     def show_about(self):
         try:
             if not self.is_tab_open("About"):
                 self.add_tab(AboutTab(), "About HeatonCA")
         except Exception as e:
-            logger.error("Error during about open", e)
+            logger.error("Error during about open", exc_info=True)
 
     def show_evolve(self):
         try:
             if not self.is_tab_open("Evolve"):
                 self.add_tab(EvolveTab(), "Evolve")
         except Exception as e:
-            logger.error("Error during evolve open", e)
+            logger.error("Error during evolve open", exc_info=True)
 
     def show_rule(self, rule):
         try:
             if not self.is_tab_open("Rule"):
                 self.add_tab(RuleTab(rule), "Rule")
         except Exception as e:
-            logger.error("Error during show rule", e)
+            logger.error("Error during show rule", exc_info=True)
             
     def is_tab_open(self, title):
         for index in range(self._tab_widget.count()):
@@ -232,21 +232,21 @@ class HeatonCA(QMainWindow):
             if not window.is_tab_open("Preferences"):
                 self.add_tab(tab_settings.SettingsTab(self), "Preferences")
         except Exception as e:
-            logger.error("Error during show properties", e)
+            logger.error("Error during show properties", exc_info=True)
 
     def show_simulator(self):
         try:
             if not window.is_tab_open("Simulator"):
                 self.add_tab(tab_simulate.TabSimulate(self), SIMULATOR_NAME)
         except Exception as e:
-            logger.error("Error during resize", e)
+            logger.error("Error during resize", exc_info=True)
 
     def show_gallery(self):
         try:
             if not window.is_tab_open("Gallery"):
                 self.add_tab(tab_gallery.GalleryTab(self), "Gallery")
         except Exception as e:
-            logger.error("Error during show gallery", e)
+            logger.error("Error during show gallery", exc_info=True)
 
     def close_simulator_tabs(self):
         try:
@@ -259,7 +259,7 @@ class HeatonCA(QMainWindow):
                     continue
                 index += 1
         except Exception as e:
-            logger.error("Error forcing simulator close", e)
+            logger.error("Error forcing simulator close", exc_info=True)
 
     def find_simulator_tab(self):
         index = 0
@@ -328,12 +328,12 @@ if __name__ == '__main__':
         window = HeatonCA()
         window.show()
     except Exception as e:
-        logger.error("Error during startup", e)
+        logger.error("Error during startup", exc_info=True)
     
     try:
         level = app.exec()
     except Exception as e:
-        logger.error("Error running app", e)
+        logger.error("Error running app", exc_info=True)
 
     try:
         utl_settings.save_settings()
@@ -342,5 +342,5 @@ if __name__ == '__main__':
         logging.info("Application shutting down")
         sys.exit(level)
     except Exception as e:
-        logger.error("Error shutting down resize", e)
+        logger.error("Error shutting down app", exc_info=True)
 

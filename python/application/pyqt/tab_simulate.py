@@ -129,7 +129,7 @@ class TabSimulate(QWidget):
         self._fps_timer = QTimer(self)
         self._fps_timer.timeout.connect(self.computeFPS)
         self._fps_timer.start(1000)  # Every second
-        self._target_fps = utl_settings.settings[utl_settings.FPS_KEY]
+        self._target_fps = utl_settings.settings.get(utl_settings.FPS_KEY, 30)
 
         self._steps = 0
 
@@ -141,7 +141,7 @@ class TabSimulate(QWidget):
         self._timer.start(self._timer_interval)
 
         self._force_update = 0
-        self._cell_size = utl_settings.settings[utl_settings.CELL_SIZE_KEY]
+        self._cell_size = utl_settings.settings.get(utl_settings.CELL_SIZE_KEY, 5)
         
         if self._cell_size<1: self._cell_size = 1
 

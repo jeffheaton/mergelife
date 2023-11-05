@@ -3,6 +3,7 @@ import const_values
 import os
 import plistlib
 import logging
+import utl_env
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,10 @@ def save_settings():
             with open(const_values.SETTING_FILE, "wb") as fp:
                 plistlib.dump(settings, fp)
         else:
-            with open(file_path, "w") as fp:
+            with open(const_values.SETTING_FILE, "w") as fp:
                 json.dump(settings, fp)
-        print("here")
     except Exception as e:
-        logger.exception("Caught an exception saving settings")
+        logging.error("Caught an exception saving settings", exc_info=True)
 
 # Load settings from a JSON file
 def load_settings():
@@ -51,7 +51,7 @@ def load_settings():
                 with open(const_values.SETTING_FILE, "r") as fp:
                     SETTINGS = json.load(fp)
     except Exception as e:
-        logger.exception("Caught an exception loading settings")
+        logging.error("Caught an exception loading settings", exc_info=True)
 
 def get_bool(key):
     result = settings.get(key,False)
