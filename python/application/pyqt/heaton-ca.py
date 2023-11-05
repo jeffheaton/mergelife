@@ -156,30 +156,45 @@ class HeatonCA(QMainWindow):
 
     def finished_resizing(self):
         """This method will be called approximately 300ms after the last resize event."""
-        index = self._tab_widget.currentIndex()
-        if index != -1:
-            tab = self._tab_widget.widget(index)
-            tab.on_resize()
+        try:
+            index = self._tab_widget.currentIndex()
+            if index != -1:
+                tab = self._tab_widget.widget(index)
+                tab.on_resize()
+        except Exception as e:
+            logger.error("Error during resize", e)
 
         self.resize_timer.stop()
 
     def close_tab(self, index):
-        tab = self._tab_widget.widget(index)
-        tab.on_close()
-        self._tab_widget.removeTab(index)
-        tab.deleteLater()
+        try:
+            tab = self._tab_widget.widget(index)
+            tab.on_close()
+            self._tab_widget.removeTab(index)
+            tab.deleteLater()
+        except Exception as e:
+            logger.error("Error during tab close", e)
 
     def show_about(self):
-        if not self.is_tab_open("About"):
-            self.add_tab(AboutTab(), "About HeatonCA")
+        try:
+            if not self.is_tab_open("About"):
+                self.add_tab(AboutTab(), "About HeatonCA")
+        except Exception as e:
+            logger.error("Error during about open", e)
 
     def show_evolve(self):
-        if not self.is_tab_open("Evolve"):
-            self.add_tab(EvolveTab(), "Evolve")
+        try:
+            if not self.is_tab_open("Evolve"):
+                self.add_tab(EvolveTab(), "Evolve")
+        except Exception as e:
+            logger.error("Error during evolve open", e)
 
     def show_rule(self, rule):
-        if not self.is_tab_open("Rule"):
-            self.add_tab(RuleTab(rule), "Rule")
+        try:
+            if not self.is_tab_open("Rule"):
+                self.add_tab(RuleTab(rule), "Rule")
+        except Exception as e:
+            logger.error("Error during show rule", e)
             
     def is_tab_open(self, title):
         for index in range(self._tab_widget.count()):
@@ -193,27 +208,38 @@ class HeatonCA(QMainWindow):
         self._tab_widget.setCurrentIndex(self._tab_widget.count() - 1)
         
     def show_properties(self):
-        if not window.is_tab_open("Preferences"):
-            self.add_tab(tab_settings.SettingsTab(self), "Preferences")
+        try:
+            if not window.is_tab_open("Preferences"):
+                self.add_tab(tab_settings.SettingsTab(self), "Preferences")
+        except Exception as e:
+            logger.error("Error during show properties", e)
 
     def show_simulator(self):
-        if not window.is_tab_open("Simulator"):
-            self.add_tab(tab_simulate.TabSimulate(self), SIMULATOR_NAME)
+        try:
+            if not window.is_tab_open("Simulator"):
+                self.add_tab(tab_simulate.TabSimulate(self), SIMULATOR_NAME)
+        except Exception as e:
+            logger.error("Error during resize", e)
 
     def show_gallery(self):
-        print("boo")
-        if not window.is_tab_open("Gallery"):
-            self.add_tab(tab_gallery.GalleryTab(self), "Gallery")
+        try:
+            if not window.is_tab_open("Gallery"):
+                self.add_tab(tab_gallery.GalleryTab(self), "Gallery")
+        except Exception as e:
+            logger.error("Error during show gallery", e)
 
     def close_simulator_tabs(self):
-        logger.info("Closing any simulator tabs due to config change")
-        index = 0
-        while index < self._tab_widget.count():
-            if self._tab_widget.tabText(index) == SIMULATOR_NAME:
-                self.close_tab(index)
-                # Since we've removed a tab, the indices shift, so we don't increase the index in this case
-                continue
-            index += 1
+        try:
+            logger.info("Closing any simulator tabs due to config change")
+            index = 0
+            while index < self._tab_widget.count():
+                if self._tab_widget.tabText(index) == SIMULATOR_NAME:
+                    self.close_tab(index)
+                    # Since we've removed a tab, the indices shift, so we don't increase the index in this case
+                    continue
+                index += 1
+        except Exception as e:
+            logger.error("Error forcing simulator close", e)
 
     def find_simulator_tab(self):
         index = 0
@@ -263,30 +289,38 @@ if __name__ == '__main__':
     print(f"Settings path: {const_values.SETTING_DIR}")
     print(f"Settings file: {const_values.SETTING_FILE}")
 
-    utl_settings.load_settings()
-    utl_logging.setup_logging()
-    utl_logging.delete_old_logs()
+    try:
+        utl_settings.load_settings()
+        utl_logging.setup_logging()
+        utl_logging.delete_old_logs()
 
-    logging.info("Application starting up")
-    s = utl_env.get_system_name()
-    logging.info(f"System: {s}")
-    logging.info(f"Pyinstaller: {utl_env.is_pyinstaller_bundle()}")
-    z=os.path.expanduser("~")
-    logging.info(f"User: {z}")
-    if s=="osx":
-        logging.info(f"Sandbox mode: {utl_env.is_sandboxed()}")
+        logging.info("Application starting up")
+        s = utl_env.get_system_name()
+        logging.info(f"System: {s}")
+        logging.info(f"Pyinstaller: {utl_env.is_pyinstaller_bundle()}")
+        z=os.path.expanduser("~")
+        logging.info(f"User: {z}")
+        if s=="osx":
+            logging.info(f"Sandbox mode: {utl_env.is_sandboxed()}")
+        
+        app = QApplication(sys.argv)
+        app.setApplicationName("Heaton's Game of Life")
+        window = HeatonCA()
+        window.show()
+    except Exception as e:
+        logger.error("Error during startup", e)
     
-    app = QApplication(sys.argv)
-    app.setApplicationName("Heaton's Game of Life")
-    window = HeatonCA()
-    window.show()
-    
-    level = app.exec()
-    utl_settings.save_settings()
-    utl_logging.setup_logging()
-    utl_logging.delete_old_logs()
-    logging.info("Application shutting down")
-    sys.exit(level)
-else:
-    utl_settings.load_settings()
-    utl_logging.setup_logging()
+    try:
+        level = app.exec()
+    except Exception as e:
+        logger.error("Error running app", e)
+
+    try:
+        utl_settings.save_settings()
+        utl_logging.setup_logging()
+        utl_logging.delete_old_logs()
+        logging.info("Application shutting down")
+        sys.exit(level)
+    except Exception as e:
+        logger.error("Error shutting down resize", e)
+

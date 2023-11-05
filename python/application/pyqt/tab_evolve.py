@@ -1,25 +1,25 @@
 import logging
 import sys
 import os
-from PyQt6.QtCore import QDir, QTimer
+from PyQt6.QtCore import QDir, QTimer,QThread
 from PyQt6.QtWidgets import (QFileDialog, QGridLayout, QHBoxLayout, QLabel, 
                              QLineEdit, QPushButton, QVBoxLayout, QWidget)
 import ml_evolve
-
+import time
 
 logger = logging.getLogger(__name__)
 
 config = {
     "config": {
-        "rows": 100,
-        "cols": 100,
+        "rows": 50,
+        "cols": 50,
         "populationSize": 100,
         "crossover": 0.75,
         "tournamentCycles": 5,
         "zoom": 5,
         "renderSteps": 250,
         "evalCycles": 5,
-        "patience": 1000,
+        "patience": 250,
         "scoreThreshold": 3.5,
         "maxRuns": 1000000
     },
@@ -67,6 +67,28 @@ config = {
     ]
 }
 
+class Worker(QThread):
+    def __init__(self, report_target, path):
+        super().__init__()
+        self._report_target = report_target
+        self.is_running = True
+        self._evolve = ml_evolve.Evolve(report_target=report_target, path=path)
+        
+    def run(self):
+        i = 1
+        while self.is_running:
+            # Your CPU-bound process code goes here
+            # For demonstration, let's just print a message
+            print(f"Processing... {i}")
+            self._evolve.evolve(config)
+            time.sleep(1)
+            i+=1
+        self._report_target.stop_complete()
+
+    def stop(self):
+        self._evolve.requestStop = True
+        self.is_running = False
+
 class EvolveTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -108,11 +130,23 @@ class EvolveTab(QWidget):
         grid_layout.addWidget(current_score_label, 4, 0)
         grid_layout.addWidget(self._current_score_value, 4, 1)
 
+        no_improve_label = QLabel("No improve/Max allowed:")
+        self._no_improve_value = QLineEdit()
+        self._no_improve_value.setReadOnly(True)
+        grid_layout.addWidget(no_improve_label, 5, 0)
+        grid_layout.addWidget(self._no_improve_value, 5, 1)
+
+        rules_found_label = QLabel("Rules found:")
+        self._rules_found_value = QLineEdit()
+        self._rules_found_value.setReadOnly(True)
+        grid_layout.addWidget(rules_found_label, 6, 0)
+        grid_layout.addWidget(self._rules_found_value, 6, 1)
+
         status_label = QLabel("Status:")
         self._status_value = QLineEdit()
         self._status_value.setReadOnly(True)
-        grid_layout.addWidget(status_label, 5, 0)
-        grid_layout.addWidget(self._status_value, 5, 1)
+        grid_layout.addWidget(status_label, 7, 0)
+        grid_layout.addWidget(self._status_value, 7, 1)
 
         output_dir_label = QLabel("Output Directory:")
         self._output_dir_value = QLineEdit()
@@ -120,9 +154,9 @@ class EvolveTab(QWidget):
         self._output_dir_value.setText(default_path)
         self._browse_button = QPushButton("Browse...")
         self._browse_button.clicked.connect(self.browse_directory)
-        grid_layout.addWidget(output_dir_label, 6, 0)
-        grid_layout.addWidget(self._output_dir_value, 6, 1)
-        grid_layout.addWidget(self._browse_button, 6, 2)
+        grid_layout.addWidget(output_dir_label, 8, 0)
+        grid_layout.addWidget(self._output_dir_value, 8, 1)
+        grid_layout.addWidget(self._browse_button, 8, 2)
 
         # Extend the fields all the way to the right
         grid_layout.setColumnStretch(1, 1)
@@ -150,12 +184,6 @@ class EvolveTab(QWidget):
         # Adjust the window size to fit contents
         self.adjustSize()
 
-        # Configure the resize timer
-        self._update_timer = QTimer(self)
-        self._update_timer.timeout.connect(self.timer_event)
-        self._update_timer.setInterval(1000)  # 300 milliseconds
-        self._update_timer.start()
-        
 
     def on_close(self):
         logger.info("Closed Evolve tab.")
@@ -194,29 +222,38 @@ class EvolveTab(QWidget):
         self._stop_button.setEnabled(True)
         self._output_dir_value.setReadOnly(True)
         self._browse_button.setEnabled(False)
-        self._evolve = ml_evolve.Evolve(path)
-        self._evolve.start(config)
+
+        self.thread = Worker(report_target=self,path=path)
+        self.thread.start()
         logging.info("Evolve started")
 
     def action_stop(self):
+        self._status_value.setText("Stopping...")
+        self.thread.stop()
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(False)
-        self._evolve.stop()
+        self._output_dir_value.setReadOnly(True)
+        self._browse_button.setEnabled(False)
 
-    def timer_event(self):
-        if self._evolve:
-            stats = self._evolve.stats
-            self._run_number_value.setText(str(stats.get(ml_evolve.STATUS_RUN,"")))
-            self._eval_number_value.setText(str(stats.get(ml_evolve.STATUS_EVAL,"")))
-            self._evals_per_min_value.setText(str(stats.get(ml_evolve.STATUS_EVAL_MIN,"")))
-            self._current_rule_value.setText(str(stats.get(ml_evolve.STATUS_RULE,"")))
-            self._current_score_value.setText(str(stats.get(ml_evolve.STATUS_SCORE,"")))
-            self._status_value.setText(str(stats.get(ml_evolve.STATUS_STATUS,"")))
+    def report(self, evolve):
+        self._run_number_value.setText(f"{evolve.runCount:,}")
+        self._eval_number_value.setText(f"{evolve.evalCount:,}")
+        self._evals_per_min_value.setText(f"{evolve.perMin:,.2f}")
+        if evolve.bestGenome:
+            self._current_rule_value.setText(str(evolve.bestGenome['rule']))
+            self._current_score_value.setText(f"{evolve.bestGenome['score']:,.2f}/{evolve.score_threshold:,.2f}")
+        else:
+            self._current_rule_value.setText("")
+            self._current_score_value.setText("")
+        self._status_value.setText(evolve.status)
+        self._no_improve_value.setText(f"{evolve.noImprovement:,}/{evolve.patience:,}")
+        self._rules_found_value.setText(f"{evolve.rules_found:,}")
 
-            if self._evolve.stop_mode.value==ml_evolve.STOP_STAGE_STOPPED:
-                self._start_button.setEnabled(True)
-                self._stop_button.setEnabled(False)
-                self._output_dir_value.setReadOnly(False)
-                self._browse_button.setEnabled(True)
-                self._evolve.stop_mode.value=ml_evolve.STOP_STAGE_RUNNING
+    def stop_complete(self):
+        self._start_button.setEnabled(True)
+        self._stop_button.setEnabled(False)
+        self._output_dir_value.setReadOnly(False)
+        self._browse_button.setEnabled(True)
+        self._status_value.setText("Stopped")
+        
                 

@@ -3,6 +3,7 @@ import utl_env
 
 BUNDLE_ID = "com.heatonresearch.heaton-ca"
 APP_ID = BUNDLE_ID.split('.')[-1]
+VERSION = "1.0.0"
 
 if utl_env.is_sandboxed():
     LOG_DIR = os.path.join(os.path.expanduser("~"), "logs")

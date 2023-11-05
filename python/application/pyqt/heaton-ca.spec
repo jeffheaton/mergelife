@@ -44,7 +44,7 @@ exe = EXE(
     target_arch='arm64', # universal2
     codesign_identity=None,
     entitlements_file=None,
-    icon='heaton-ca.icns'
+    icon='heaton_ca_icon.icns'
 )
 
 
@@ -62,7 +62,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='HeatonCA.app',
-    icon='heaton-ca.icns',
+    icon='heaton_ca_icon.icns',
     bundle_identifier='com.heatonresearch.heaton-ca',
     info_plist={
         'NSPrincipalClass': 'NSApplication',
@@ -72,8 +72,8 @@ app = BUNDLE(
         'CFBundlePackageType': 'APPL',
         'CFBundleSupportedPlatforms': ['MacOSX'],
         'CFBundleIdentifier': 'com.heatonresearch.heaton-ca',
-        'CFBundleVersion': '0.0.1',
-        'CFBundleShortVersionString': '0.0.1',
+        'CFBundleVersion': '1.0.0',
+        'CFBundleShortVersionString': '1.0.0',
         'LSMinimumSystemVersion': '12.0',
         'LSApplicationCategoryType': 'public.app-category.utilities',
         'ITSAppUsesNonExemptEncryption': False,
