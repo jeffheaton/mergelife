@@ -150,13 +150,10 @@ class EvolveTab(QWidget):
 
         output_dir_label = QLabel("Output Directory:")
         self._output_dir_value = QLineEdit()
-        default_path = os.path.expanduser("~/Documents/HeatonCA")
-        self._output_dir_value.setText(default_path)
-        self._browse_button = QPushButton("Browse...")
-        self._browse_button.clicked.connect(self.browse_directory)
+        self._output_dir_value.setText("")
+        self._output_dir_value.setReadOnly(True)
         grid_layout.addWidget(output_dir_label, 8, 0)
         grid_layout.addWidget(self._output_dir_value, 8, 1)
-        grid_layout.addWidget(self._browse_button, 8, 2)
 
         # Extend the fields all the way to the right
         grid_layout.setColumnStretch(1, 1)
@@ -193,15 +190,10 @@ class EvolveTab(QWidget):
     def on_resize(self):
         pass
 
-    def browse_directory(self):
-        # Get the selected directory from the file dialog - , self._output_dir_value.text()
-        dir_path = QFileDialog.getExistingDirectory(self, "Select Output Directory")
-        # Update the directory text box if a directory was chosen
-        if dir_path:
-            self._output_dir_value.setText(dir_path)
-
     def action_start(self):
-        path = self._output_dir_value.text()
+        path = QFileDialog.getExistingDirectory(self, "Select Output Directory")
+        if path:
+            self._output_dir_value.setText(path)
 
         logger.info("Checking if output directory exists")
         if not os.path.exists(path):
@@ -220,7 +212,6 @@ class EvolveTab(QWidget):
         
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(True)
-        self._output_dir_value.setReadOnly(True)
         self._browse_button.setEnabled(False)
 
         self.thread = Worker(report_target=self,path=path)
@@ -232,7 +223,6 @@ class EvolveTab(QWidget):
         self.thread.stop()
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(False)
-        self._output_dir_value.setReadOnly(True)
         self._browse_button.setEnabled(False)
 
     def report(self, evolve):
@@ -252,7 +242,6 @@ class EvolveTab(QWidget):
     def stop_complete(self):
         self._start_button.setEnabled(True)
         self._stop_button.setEnabled(False)
-        self._output_dir_value.setReadOnly(False)
         self._browse_button.setEnabled(True)
         self._status_value.setText("Stopped")
         
