@@ -212,7 +212,6 @@ class EvolveTab(QWidget):
         
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(True)
-        self._browse_button.setEnabled(False)
 
         self.thread = Worker(report_target=self,path=path)
         self.thread.start()
@@ -223,7 +222,6 @@ class EvolveTab(QWidget):
         self.thread.stop()
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(False)
-        self._browse_button.setEnabled(False)
 
     def report(self, evolve):
         self._run_number_value.setText(f"{evolve.runCount:,}")
@@ -242,7 +240,6 @@ class EvolveTab(QWidget):
     def stop_complete(self):
         self._start_button.setEnabled(True)
         self._stop_button.setEnabled(False)
-        self._browse_button.setEnabled(True)
         self._status_value.setText("Stopped")
         
                 
