@@ -282,7 +282,7 @@ class HeatonCA(QMainWindow):
         sim._force_rule = rule
 
     def open_tutorial(self):
-        webbrowser.open('http://www.heatonresearch.com/mergelife')
+        webbrowser.open('https://www.heatonresearch.com/mergelife/heaton-ca.html')
 
 
 def qt_message_handler(mode, context, message):

@@ -75,17 +75,22 @@ class Worker(QThread):
         self._evolve = ml_evolve.Evolve(report_target=report_target, path=path)
         
     def run(self):
-        i = 1
-        while self.is_running:
-            # Your CPU-bound process code goes here
-            # For demonstration, let's just print a message
-            print(f"Processing... {i}")
-            self._evolve.evolve(config)
-            time.sleep(1)
-            i+=1
-        self._report_target.stop_complete()
+        try:
+            i = 1
+            while self.is_running:
+                # Your CPU-bound process code goes here
+                # For demonstration, let's just print a message
+                print(f"Processing... {i}")
+                self._evolve.evolve(config)
+                time.sleep(1)
+                i+=1
+            self._report_target.stop_complete()
+        except Exception as e:
+            logger.error("Error during startup", exc_info=True)
+        
 
     def stop(self):
+        logging.info("Requesting evolve to stop")
         self._evolve.requestStop = True
         self.is_running = False
 
@@ -218,10 +223,14 @@ class EvolveTab(QWidget):
         logging.info("Evolve started")
 
     def action_stop(self):
-        self._status_value.setText("Stopping...")
-        self.thread.stop()
-        self._start_button.setEnabled(False)
-        self._stop_button.setEnabled(False)
+        try:
+            logger.info("Stop requested for evolve")
+            self._status_value.setText("Stopping...")
+            self.thread.stop()
+            self._start_button.setEnabled(False)
+            self._stop_button.setEnabled(False)
+        except Exception as e:
+            logger.error("Error during stop", exc_info=True)
 
     def report(self, evolve):
         self._run_number_value.setText(f"{evolve.runCount:,}")
@@ -238,6 +247,7 @@ class EvolveTab(QWidget):
         self._rules_found_value.setText(f"{evolve.rules_found:,}")
 
     def stop_complete(self):
+        logger.info("Stop complete")
         self._start_button.setEnabled(True)
         self._stop_button.setEnabled(False)
         self._status_value.setText("Stopped")

@@ -33,7 +33,7 @@ class Evolve:
         self._report_target = report_target
         self.rules_found = 0
         self.score_threshold = 0
-        self.patience = 0
+        self.patience = 250
         self._perf_count = 0
 
    
@@ -112,18 +112,26 @@ class Evolve:
         if self.bestGenome is None or genome['score'] > self.bestGenome['score']:
             self.bestGenome = genome
             self.noImprovement = 0
+            
+            if self.bestGenome['score'] > self.score_threshold:
+                self.rules_found += 1
+                logging.info(f"New top genome: {genome}, above threshold, saving")
+                if not self.render(config, self.bestGenome['rule']):
+                    self._display_status("Failed to write CA")
+            else:
+                logging.info(f"New top genome: {genome}, not above threshold")
         else:
             self.noImprovement += 1
 
             if self.noImprovement > self.patience:
                 self.requestStop = True
-
+                
     def randomPopulation(self, config, queue):
         self.population = []
         self.bestGenome = None
         sz = config['config']['populationSize']
         i = 0
-        while i<sz and not self.requestStop:
+        while (i<sz) and (not self.requestStop):
             self._display_status(f"Generating new population: {i+1}/{sz}")
             rule = mergelife.random_update_rule()
             self.add_genome(config, rule)
@@ -131,12 +139,11 @@ class Evolve:
 
     def evolve(self, config):
         cycles = config['config']['evalCycles']
-        self.requestStop = False
-        self.randomPopulation(config, self._input_queue)
+        self.patience = config['config']['patience']
         self.requestStop = False
         self.timeLastUpdate = time.time()
         self.score_threshold = config['config']['scoreThreshold']
-        self.patience = config['config']['patience']
+        self.randomPopulation(config, self._input_queue)
         self._display_status("Running...")
         
         while not self.requestStop:
@@ -165,12 +172,6 @@ class Evolve:
 
         
         self._display_status(f"No improvement for {config['config']['patience']}, stopping run.")
-
-        if self.bestGenome['score'] > self.score_threshold:
-            self.rules_found += 1
-            if not self.render(config, self.bestGenome['rule']):
-                self._display_status("Failed to write CA")
-                self.requestStop = True
 
 
 

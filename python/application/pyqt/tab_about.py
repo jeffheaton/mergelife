@@ -29,8 +29,7 @@ Log path: {const_values.LOG_DIR}
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
     def on_close(self):
-        # Your custom functionality here
-        print("The tab is closing!")
+        pass
 
     def on_resize(self):
         pass
