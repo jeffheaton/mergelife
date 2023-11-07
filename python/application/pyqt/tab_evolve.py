@@ -1,5 +1,4 @@
 import logging
-import sys
 import os
 from PyQt6.QtCore import QDir, QTimer,QThread
 from PyQt6.QtWidgets import (QFileDialog, QGridLayout, QHBoxLayout, QLabel, 
