@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QMenuBar, QLabel, QTabWidget, QLineEdit
 )
 
-import jth_ui.tab_simulate as tab_simulate 
+import tab_simulate
 from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
 import logging.config
 import const_values
@@ -16,7 +16,7 @@ import const_values
 import logging
 import logging.handlers
 import jth_ui.utl_logging as utl_logging
-import jth_ui.utl_settings as utl_settings
+import utl_settings as utl_settings
 import tab_settings
 import tab_gallery
 from tab_about import AboutTab

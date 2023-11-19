@@ -4,7 +4,7 @@ from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtGui import QRegularExpressionValidator
 from PyQt6.QtWidgets import QComboBox, QPushButton, QToolBar
 
-import jth_ui.utl_settings as utl_settings
+import utl_settings
 from mergelife.mergelife import new_ml_instance, randomize_lattice, update_step
 from jth_ui.tab_graphic import TabGraphic
 
@@ -35,6 +35,7 @@ class TabSimulate(TabGraphic):
         self.init_animate(target_fps=utl_settings.settings.get(utl_settings.FPS_KEY, 30))
 
         self._cell_size = utl_settings.settings.get(utl_settings.CELL_SIZE_KEY, 5)
+        print(f"Cell size: {self._cell_size}")
         if self._cell_size < 1:
             self._cell_size = 1
 

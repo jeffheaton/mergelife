@@ -9,10 +9,10 @@ from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QMenu, QMenuBar, QTabWidget
 
 import const_values
-import jth_ui.tab_simulate as tab_simulate
 import jth_ui.utl_env as utl_env
 import tab_gallery
 import tab_settings
+import tab_simulate
 import tab_splash
 from jth_ui.app_jth import MainWindowJTH, app_shutdown, app_startup
 from tab_about import AboutTab
