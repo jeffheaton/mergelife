@@ -25,6 +25,7 @@ elif utl_env.get_system_name()=='windows':
 else:
     pass
 
-
+APP_NAME = "HeatonCA"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
+

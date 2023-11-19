@@ -1,49 +1,42 @@
-import sys
-import os
 import logging
-from PyQt6.QtCore import Qt, QTimer, qInstallMessageHandler, QtMsgType
-from PyQt6.QtGui import QAction, QKeySequence
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QMessageBox, QMenu, 
-    QMenuBar, QLabel, QTabWidget, QLineEdit
-)
-
-import jth_ui.tab_simulate as tab_simulate 
-from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
 import logging.config
-import const_values
-
-import logging
 import logging.handlers
-import jth_ui.utl_logging as utl_logging
-import jth_ui.utl_settings as utl_settings
-import tab_settings
-import tab_gallery
-from tab_about import AboutTab
-from tab_rule import RuleTab
-from tab_evolve import EvolveTab
+import sys
 import webbrowser
-import tab_splash
+
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtWidgets import QMenu, QMenuBar, QTabWidget
+
+import const_values
+import jth_ui.tab_simulate as tab_simulate
 import jth_ui.utl_env as utl_env
+import tab_gallery
+import tab_settings
+import tab_splash
+from jth_ui.app_jth import MainWindowJTH, app_shutdown, app_startup
+from tab_about import AboutTab
+from tab_evolve import EvolveTab
+from tab_rule import RuleTab
 
 logger = logging.getLogger(__name__)
 
 SIMULATOR_NAME = "Simulator"
-APP_NAME = "HeatonCA"
 
-class HeatonCA(QMainWindow):
-    def __init__(self):
+
+class HeatonCA(MainWindowJTH):
+    def __init__(self, app_name):
         super().__init__()
         self.running = False
-        self.setWindowTitle(APP_NAME)
+        self.setWindowTitle(app_name)
         self.setGeometry(100, 100, 1000, 500)
-        
+
         self.render_buffer = None
         self.display_buffer = None
 
-        self._drop_ext = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+        self._drop_ext = (".png", ".jpg", ".jpeg", ".bmp", ".gif")
 
-        if utl_env.get_system_name()=='osx':
+        if utl_env.get_system_name() == "osx":
             self.setup_mac_menu()
         else:
             self.setup_menu()
@@ -54,40 +47,38 @@ class HeatonCA(QMainWindow):
 
     def setup_menu(self):
         # Create the File menu
-        file_menu = self.menuBar().addMenu('File')
+        file_menu = self.menuBar().addMenu("File")
 
         # Create a "Exit" action
-        exit_action = QAction('Exit', self)
+        exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
         # Create the Edit menu
-        edit_menu = self.menuBar().addMenu('Edit')
+        edit_menu = self.menuBar().addMenu("Edit")
 
         # Create an "About" action
-        about_action = QAction('About', self)
+        about_action = QAction("About", self)
         about_action.triggered.connect(self.show_about)
         edit_menu.addAction(about_action)
 
     def setup_mac_menu(self):
         # Create a main menu bar
-        #if platform.uname().system.startswith('Darw') :
+        # if platform.uname().system.startswith('Darw') :
         #    self.menubar = QMenuBar() # parentless menu bar for Mac OS
-        #else:
+        # else:
         #    self.menubar = self.menuBar() # refer to the default one
 
-        self.menubar = QMenuBar() #self.menuBar()
+        self.menubar = QMenuBar()  # self.menuBar()
 
         # Create the app menu and add it to the menu bar
-        app_menu = QMenu(APP_NAME, self)
-  
+        app_menu = QMenu(const_values.APP_NAME, self)
 
         # Add items to the app menu
-        about_action = QAction(f"About {APP_NAME}", self)
+        about_action = QAction(f"About {const_values.APP_NAME}", self)
         app_menu.addAction(about_action)
         self.about_menu = QMenu("About", self)
         about_action.triggered.connect(self.show_about)
-
 
         preferences_action = QAction("Settings...", self)
         app_menu.addAction(preferences_action)
@@ -98,41 +89,41 @@ class HeatonCA(QMainWindow):
         app_menu.addAction(exit_action)
 
         # File menu
-        self._file_menu = QMenu('File', self)
-        
+        self._file_menu = QMenu("File", self)
+
         # Close Window action
-        closeAction = QAction('Close Window', self)
+        closeAction = QAction("Close Window", self)
         closeAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Close))
         closeAction.triggered.connect(self.close)
         self._file_menu.addAction(closeAction)
 
         # Edit menu
-        self._edit_menu = QMenu('Edit', self)
-        cutAction = QAction('Cut', self)
+        self._edit_menu = QMenu("Edit", self)
+        cutAction = QAction("Cut", self)
         cutAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Cut))
         self._edit_menu.addAction(cutAction)
 
-        copyAction = QAction('Copy', self)
+        copyAction = QAction("Copy", self)
         copyAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Copy))
         self._edit_menu.addAction(copyAction)
 
-        pasteAction = QAction('Paste', self)
+        pasteAction = QAction("Paste", self)
         pasteAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Paste))
         self._edit_menu.addAction(pasteAction)
 
         # Simulate menu
-        #self.simulator_menu = QMenu("Simulator", self)
-        #simulator_action = QAction("Show Simulator", self)
-        #simulator_action.triggered.connect(self.show_simulator)
-        #self.simulator_menu.addAction(simulator_action)
+        # self.simulator_menu = QMenu("Simulator", self)
+        # simulator_action = QAction("Show Simulator", self)
+        # simulator_action.triggered.connect(self.show_simulator)
+        # self.simulator_menu.addAction(simulator_action)
 
-        #gallery_action = QAction("Show Gallery", self)
-        #gallery_action.triggered.connect(self.show_gallery)
-        #self.simulator_menu.addAction(gallery_action)
+        # gallery_action = QAction("Show Gallery", self)
+        # gallery_action.triggered.connect(self.show_gallery)
+        # self.simulator_menu.addAction(gallery_action)
 
-        #evolve_action = QAction("Evolve", self)
-        #evolve_action.triggered.connect(self.show_evolve)
-        #self.simulator_menu.addAction(evolve_action)
+        # evolve_action = QAction("Evolve", self)
+        # evolve_action.triggered.connect(self.show_evolve)
+        # self.simulator_menu.addAction(evolve_action)
 
         # Help menu
         self._help_menu = QMenu("Help", self)
@@ -144,7 +135,7 @@ class HeatonCA(QMainWindow):
         self.menubar.addMenu(app_menu)
         self.menubar.addMenu(self._file_menu)
         self.menubar.addMenu(self._edit_menu)
-        #self.menubar.addMenu(self.simulator_menu)
+        # self.menubar.addMenu(self.simulator_menu)
         self.menubar.addMenu(self._help_menu)
 
     def initUI(self):
@@ -164,41 +155,9 @@ class HeatonCA(QMainWindow):
         self._background_timer.setInterval(1000)  # 1 second
         self._background_timer.start()
 
-    def displayMessageBox(self, text):
-        msg = QMessageBox(self)
-        msg.setText(text)
-        msg.exec()
-
     def background_timer(self):
         if self._tab_widget.count() == 0:
             window.add_tab(tab_splash.SplashTab(window), "Welcome to HeatonCA")
-
-    def resizeEvent(self, event):
-        """This method is called whenever the window is resized."""
-        self.resize_timer.start()  # Restart the timer every time this event is triggered
-        self.last_size = event.size()  # Store the latest size
-        super().resizeEvent(event)
-
-    def finished_resizing(self):
-        """This method will be called approximately 300ms after the last resize event."""
-        try:
-            index = self._tab_widget.currentIndex()
-            if index != -1:
-                tab = self._tab_widget.widget(index)
-                tab.on_resize()
-        except Exception as e:
-            logger.error("Error during resize", exc_info=True)
-
-        self.resize_timer.stop()
-
-    def close_tab(self, index):
-        try:
-            tab = self._tab_widget.widget(index)
-            tab.on_close()
-            self._tab_widget.removeTab(index)
-            tab.deleteLater()
-        except Exception as e:
-            logger.error("Error during tab close", exc_info=True)
 
     def show_about(self):
         try:
@@ -220,18 +179,7 @@ class HeatonCA(QMainWindow):
                 self.add_tab(RuleTab(rule), "Rule")
         except Exception as e:
             logger.error("Error during show rule", exc_info=True)
-            
-    def is_tab_open(self, title):
-        for index in range(self._tab_widget.count()):
-            if self._tab_widget.tabText(index) == title:
-                self._tab_widget.setCurrentIndex(index)
-                return True
-        return False
-    
-    def add_tab(self, widget, title):
-        self._tab_widget.addTab(widget, title)
-        self._tab_widget.setCurrentIndex(self._tab_widget.count() - 1)
-        
+
     def show_properties(self):
         try:
             if not window.is_tab_open("Preferences"):
@@ -274,12 +222,6 @@ class HeatonCA(QMainWindow):
             index += 1
         return None
 
-    def close_current_tab(self):
-        # Close the tab
-        index = self._tab_widget.indexOf(self._tab_widget.currentWidget())
-        if index != -1:
-            self.close_tab(index)
-
     def display_rule(self, rule):
         self.close_simulator_tabs()
         sim = tab_simulate.TabSimulate(self)
@@ -287,87 +229,27 @@ class HeatonCA(QMainWindow):
         sim._force_rule = rule
 
     def open_tutorial(self):
-        webbrowser.open('https://www.heatonresearch.com/mergelife/heaton-ca.html')
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            urls = event.mimeData().urls()
-            if urls and urls[0].isLocalFile():
-                file_path = urls[0].toLocalFile()
-                if file_path.lower().endswith(self._drop_ext):
-                    event.accept()
-                    return
-        event.ignore()
-
-    def dropEvent(self, event):
-        if event.mimeData().hasUrls():
-            event.setDropAction(Qt.DropAction.CopyAction)
-            urls = event.mimeData().urls()
-
-            if urls and urls[0].isLocalFile():
-                file_path = urls[0].toLocalFile()
-                logger.info(f"Accepted drag and drop: {file_path}")
-                event.accept()
-            else:
-                event.ignore()
+        webbrowser.open("https://www.heatonresearch.com/mergelife/heaton-ca.html")
 
 
-def qt_message_handler(mode, context, message):
-    if mode == QtMsgType.QtInfoMsg:
-        logger.info(message)
-    elif mode == QtMsgType.QtWarningMsg:
-        logger.warning(message)
-    elif mode == QtMsgType.QtCriticalMsg:
-        logger.critical(message)
-    elif mode == QtMsgType.QtFatalMsg:
-        logger.fatal(message)
-    elif mode == QtMsgType.QtDebugMsg:
-        logger.debug(message)
-
-
-
-# After setting up logging and before initializing QApplication
-qInstallMessageHandler(qt_message_handler)
-
-
-
-if __name__ == '__main__':
-    print(f"Logs path: {const_values.LOG_DIR}")
-    print(f"Settings path: {const_values.SETTING_DIR}")
-    print(f"Settings file: {const_values.SETTING_FILE}")
+if __name__ == "__main__":
+    level = 1
 
     try:
-        utl_settings.load_settings()
-        utl_logging.setup_logging()
-        utl_logging.delete_old_logs()
-
-        logging.info("Application starting up")
-        s = utl_env.get_system_name()
-        logging.info(f"System: {s}")
-        logging.info(f"Pyinstaller: {utl_env.is_pyinstaller_bundle()}")
-        z=os.path.expanduser("~")
-        logging.info(f"User: {z}")
-        if s=="osx":
-            logging.info(f"Sandbox mode: {utl_env.is_sandboxed()}")
-        
-        app = QApplication(sys.argv)
-        app.setApplicationName("Heaton's Game of Life")
-        window = HeatonCA()
+        app = app_startup(const_values.APP_NAME)
+        window = HeatonCA(const_values.APP_NAME)
         window.show()
     except Exception as e:
         logger.error("Error during startup", exc_info=True)
-    
+        sys.exit(level)
+
     try:
         level = app.exec()
     except Exception as e:
         logger.error("Error running app", exc_info=True)
 
     try:
-        utl_settings.save_settings()
-        utl_logging.setup_logging()
-        utl_logging.delete_old_logs()
-        logging.info("Application shutting down")
+        app_shutdown()
         sys.exit(level)
     except Exception as e:
         logger.error("Error shutting down app", exc_info=True)
-
