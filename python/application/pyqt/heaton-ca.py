@@ -41,11 +41,16 @@ class HeatonCA(QMainWindow):
         self.render_buffer = None
         self.display_buffer = None
 
+        self._drop_ext = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+
         if utl_env.get_system_name()=='osx':
             self.setup_mac_menu()
         else:
             self.setup_menu()
         self.initUI()
+
+        # Enable the main window to accept drops
+        self.setAcceptDrops(True)
 
     def setup_menu(self):
         # Create the File menu
@@ -283,6 +288,28 @@ class HeatonCA(QMainWindow):
 
     def open_tutorial(self):
         webbrowser.open('https://www.heatonresearch.com/mergelife/heaton-ca.html')
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if urls and urls[0].isLocalFile():
+                file_path = urls[0].toLocalFile()
+                if file_path.lower().endswith(self._drop_ext):
+                    event.accept()
+                    return
+        event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.setDropAction(Qt.DropAction.CopyAction)
+            urls = event.mimeData().urls()
+
+            if urls and urls[0].isLocalFile():
+                file_path = urls[0].toLocalFile()
+                logger.info(f"Accepted drag and drop: {file_path}")
+                event.accept()
+            else:
+                event.ignore()
 
 
 def qt_message_handler(mode, context, message):
