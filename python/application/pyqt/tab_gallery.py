@@ -4,7 +4,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QScrollArea, QWidget, QGridLayout, QLabel, QVBoxLayout, QSizePolicy
 from PyQt6.QtGui import QPixmap, QImageReader, QImage
 from PyQt6.QtCore import Qt
-from mergelife import new_ml_instance, update_step, randomize_lattice
+from mergelife.mergelife import new_ml_instance, update_step, randomize_lattice
 import numpy as np
 
 

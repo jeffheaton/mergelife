@@ -3,7 +3,7 @@ import os
 from PyQt6.QtCore import QDir, QTimer,QThread
 from PyQt6.QtWidgets import (QFileDialog, QGridLayout, QHBoxLayout, QLabel, 
                              QLineEdit, QPushButton, QVBoxLayout, QWidget)
-import ml_evolve
+import mergelife.ml_evolve as ml_evolve
 import time
 
 logger = logging.getLogger(__name__)

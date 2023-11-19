@@ -1,6 +1,6 @@
 import os
 import appdirs
-import utl_env
+import jth_ui.utl_env as utl_env
 
 BUNDLE_ID = "com.heatonresearch.heaton-ca"
 APP_ID = BUNDLE_ID.split('.')[-1]

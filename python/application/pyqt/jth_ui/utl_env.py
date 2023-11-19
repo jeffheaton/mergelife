@@ -5,13 +5,13 @@ import platform
 def is_sandboxed():
     return 'APP_SANDBOX_CONTAINER_ID' in os.environ
 
-def get_resource_path(relative_path):
+def get_resource_path(relative_path,base_path):
     """ Get the path to a resource, supporting both normal and bundled (PyInstaller) modes."""
     if getattr(sys, 'frozen', False):
         # If the application is run as a bundle (via PyInstaller)
         base_path = sys._MEIPASS
     else:
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        base_path = os.path.dirname(base_path)
 
     return os.path.join(base_path, relative_path)
 

@@ -3,7 +3,7 @@ import scipy
 import numpy as np
 from scipy.ndimage import convolve
 import logging
-import dp
+import mergelife.dp as dp
 from PIL import Image
 
 logger = logging.getLogger(__name__)

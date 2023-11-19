@@ -1,9 +1,10 @@
 import json
-import const_values
+import logging
 import os
 import plistlib
-import logging
-import utl_env
+
+import const_values
+import jth_ui.utl_env as utl_env
 
 logger = logging.getLogger(__name__)
 
@@ -14,19 +15,17 @@ FPS_OVERLAY = "fps_overlay"
 
 settings = {}
 
+
 def init_settings():
     global settings
-    settings = {
-        CELL_SIZE_KEY: 5,
-        FPS_KEY: 30,
-        FPS_OVERLAY: True
-    }
+    settings = {CELL_SIZE_KEY: 5, FPS_KEY: 30, FPS_OVERLAY: True}
+
 
 # Save settings to a JSON file
 def save_settings():
     try:
         global settings
-        if utl_env.get_system_name()=='osx':
+        if utl_env.get_system_name() == "osx":
             with open(const_values.SETTING_FILE, "wb") as fp:
                 plistlib.dump(settings, fp)
         else:
@@ -34,6 +33,7 @@ def save_settings():
                 json.dump(settings, fp)
     except Exception as e:
         logging.error("Caught an exception saving settings", exc_info=True)
+
 
 # Load settings from a JSON file
 def load_settings():
@@ -44,7 +44,7 @@ def load_settings():
         if not os.path.exists(const_values.SETTING_FILE):
             init_settings()
         else:
-            if utl_env.get_system_name()=='osx':
+            if utl_env.get_system_name() == "osx":
                 with open(const_values.SETTING_FILE, "rb") as fp:
                     settings = plistlib.load(fp)
             else:
@@ -53,13 +53,16 @@ def load_settings():
     except Exception as e:
         logging.error("Caught an exception loading settings", exc_info=True)
 
+
 def get_bool(key):
-    result = settings.get(key,False)
-    if not result: result = False
+    result = settings.get(key, False)
+    if not result:
+        result = False
     return result
+
 
 def get_int(key):
-    result = settings.get(key,1)
-    if not result: result = 1
+    result = settings.get(key, 1)
+    if not result:
+        result = 1
     return result
-

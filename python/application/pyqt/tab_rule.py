@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, 
 from PyQt6.QtWidgets import QTableWidgetItem, QVBoxLayout, QTableWidget
 from PyQt6.QtGui import QColor, QFont
 import random
-import mergelife
+import mergelife.mergelife as mergelife
 import ctypes
 
 class RuleTab(QWidget):

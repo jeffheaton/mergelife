@@ -1,5 +1,5 @@
 import logging
-import utl_settings
+import jth_ui.utl_settings as utl_settings
 from PyQt6.QtWidgets import (
     QPushButton, QWidget, QFormLayout, QLabel, 
     QSpinBox, QVBoxLayout, QHBoxLayout, QCheckBox

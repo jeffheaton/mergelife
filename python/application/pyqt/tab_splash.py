@@ -3,9 +3,11 @@ import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QLabel, QGridLayout, QPushButton, QSizePolicy
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
-import utl_env
+import jth_ui.utl_env as utl_env
 
-IMAGE_FILENAME = utl_env.get_resource_path('data/heaton_ca_title.png')
+IMAGE_FILENAME = utl_env.get_resource_path(
+    'data/heaton_ca_title.png',
+    base_path=os.path.abspath(__file__))
 
 class SplashTab(QWidget):
     def __init__(self, window):

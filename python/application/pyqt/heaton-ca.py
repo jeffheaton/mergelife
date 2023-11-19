@@ -8,15 +8,15 @@ from PyQt6.QtWidgets import (
     QMenuBar, QLabel, QTabWidget, QLineEdit
 )
 
-import tab_simulate 
+import jth_ui.tab_simulate as tab_simulate 
 from PyQt6.QtCore import QCoreApplication, Qt, qInstallMessageHandler
 import logging.config
 import const_values
 
 import logging
 import logging.handlers
-import utl_logging
-import utl_settings
+import jth_ui.utl_logging as utl_logging
+import jth_ui.utl_settings as utl_settings
 import tab_settings
 import tab_gallery
 from tab_about import AboutTab
@@ -24,7 +24,7 @@ from tab_rule import RuleTab
 from tab_evolve import EvolveTab
 import webbrowser
 import tab_splash
-import utl_env
+import jth_ui.utl_env as utl_env
 
 logger = logging.getLogger(__name__)
 
