@@ -10,6 +10,7 @@ import numpy as np
 from PyQt6.QtCore import QRegularExpression, QDateTime
 from PyQt6.QtGui import QRegularExpressionValidator
 import utl_settings
+from tab_graphic import TabGraphic
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +64,9 @@ class FPSGraphicsView(QGraphicsView):
         painter.setPen(QColor(255, 255, 255))  # Set text color to white
         painter.drawText(rect_x + padding, text_height, fps_text)
 
-class TabSimulate(QWidget):
+class TabSimulate(TabGraphic):
     def __init__(self, window):
-        super().__init__()
-        self._window = window
+        super().__init__(window)
         self._running = False
         self._force_rule = False
 
