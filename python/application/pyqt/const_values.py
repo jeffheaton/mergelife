@@ -7,7 +7,7 @@ APP_ID = BUNDLE_ID.split('.')[-1]
 APP_NAME = "HeatonCA"
 APP_AUTHOR = "HeatonResearch"
 COPYRIGHT = "Copyright 2023 by Jeff Heaton, released under the <a href='https://opensource.org/license/mit/'>MIT License</a>"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 if utl_env.get_system_name()=='osx':
     if utl_env.is_sandboxed():

@@ -1,4 +1,5 @@
 .venv
+working/
 dist/
 *.code-workspace
 .vscode

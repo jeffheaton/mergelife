@@ -4,7 +4,7 @@ added_files = [('data/', 'data')]
 
 a = Analysis(
     ['heaton-ca.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=added_files,
     hiddenimports=[],

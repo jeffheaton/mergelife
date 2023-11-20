@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, 
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 import jth_ui.utl_env as utl_env
+import const_values
 
 IMAGE_FILENAME = utl_env.get_resource_path(
     'data/heaton_ca_title.png',
@@ -59,7 +60,7 @@ class SplashTab(QWidget):
         self.setLayout(main_layout)
 
         # Version label
-        self.version_label = QLabel("v1.0.0", self)
+        self.version_label = QLabel(f"v{const_values.VERSION}", self)
         self.version_label.setStyleSheet("background-color: black; color: white; padding: 5px;")
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight)
      

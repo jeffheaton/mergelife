@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+import os
+version = os.getenv('version')
 
 block_cipher = None
 
@@ -7,7 +8,7 @@ added_files = [('data/', 'data')]
 
 a = Analysis(
     ['heaton-ca.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=added_files,
     hiddenimports=[],
@@ -72,8 +73,8 @@ app = BUNDLE(
         'CFBundlePackageType': 'APPL',
         'CFBundleSupportedPlatforms': ['MacOSX'],
         'CFBundleIdentifier': 'com.heatonresearch.heaton-ca',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleShortVersionString': '1.0.0',
+        'CFBundleVersion': version,
+        'CFBundleShortVersionString': version,
         'LSMinimumSystemVersion': '12.0',
         'LSApplicationCategoryType': 'public.app-category.utilities',
         'ITSAppUsesNonExemptEncryption': False,
