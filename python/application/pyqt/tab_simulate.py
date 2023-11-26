@@ -4,9 +4,9 @@ from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtGui import QRegularExpressionValidator
 from PyQt6.QtWidgets import QComboBox, QPushButton, QToolBar
 
-import utl_settings
-from mergelife.mergelife import new_ml_instance, randomize_lattice, update_step
+import heaton_ca_app
 from jth_ui.tab_graphic import TabGraphic
+from mergelife.mergelife import new_ml_instance, randomize_lattice, update_step
 
 logger = logging.getLogger(__name__)
 
@@ -21,20 +21,18 @@ RULES = [
 
 RULE_STRING = "ea44-55df-9025-bead-5f6e-45ca-6168-275a"
 
-import sys
-
-from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QTabWidget
-
 
 class TabSimulate(TabGraphic):
     def __init__(self, window):
         super().__init__(window=window)
-
+        self.init_graphics()
         self.init_toolbar()
         self.init_fps()
-        self.init_animate(target_fps=utl_settings.settings.get(utl_settings.FPS_KEY, 30))
+        self.init_animate(
+            target_fps=self._window.app.settings.get(heaton_ca_app.FPS_KEY, 30)
+        )
 
-        self._cell_size = utl_settings.settings.get(utl_settings.CELL_SIZE_KEY, 5)
+        self._cell_size = self._window.app.settings.get(heaton_ca_app.CELL_SIZE_KEY, 5)
         print(f"Cell size: {self._cell_size}")
         if self._cell_size < 1:
             self._cell_size = 1
@@ -101,7 +99,7 @@ class TabSimulate(TabGraphic):
         self.create_graphic(
             render_height,
             render_width,
-            fps_overlay=utl_settings.get_bool(utl_settings.FPS_OVERLAY),
+            fps_overlay=self._window.app.get_bool(heaton_ca_app.FPS_OVERLAY),
         )
         self.updateUIGrid()
 

@@ -2,7 +2,7 @@ rm -rf ./working
 mkdir ./working
 cp ./entitlements.plist ./working
 cp ./heaton_ca_icon.icns ./working
-cp ./heaton-ca-osx.spec ./working
+cp ./heaton-ca-macos.spec ./working
 cp ./build.py ./working
 cp ./build.sh ./working
 cp ../../*.py ./working
@@ -14,7 +14,7 @@ cd ./working
 python build.py \
     --app_name "HeatonCA" \
     --version "$version" \
-    --spec_file "heaton-ca-osx.spec" \
+    --spec_file "heaton-ca-macos.spec" \
     --entitlements "entitlements.plist" \
     --provisioning_profile "$provisionprofile" \
     --app_certificate "$app_certificate" \

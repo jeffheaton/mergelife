@@ -53,14 +53,18 @@ class TabGraphic(QWidget):
         self._running = False
         self._force_rule = False
         self._force_update = 0
-
-        # Initialize central widget and layout
-        self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
+        self._frame_count = 0
         self._scene = None
         self._view = None
+
+    def init_graphics(self, layout=None):
+        if layout is None:
+            # Initialize central widget and layout
+            self._layout = QVBoxLayout(self)
+            self._layout.setContentsMargins(0, 0, 0, 0)
+            self._layout.setSpacing(0)
+        else:
+            self._layout = layout
 
     def init_fps(self):
         # FPS
@@ -74,7 +78,7 @@ class TabGraphic(QWidget):
     def init_animate(self, target_fps):
         # Animation timer
         self._target_fps = target_fps
-        self._timer_interval = int(1000/self._target_fps)
+        self._timer_interval = int(1000 / self._target_fps)
         self._last_event_time = QDateTime.currentMSecsSinceEpoch()
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._timer_proc)
@@ -86,11 +90,13 @@ class TabGraphic(QWidget):
         self._scene.clear()
         logger.info("Closed graphic tab")
 
-    def create_graphic(self, height, width, fps_overlay=False):
-        self._render_buffer = np.zeros((height, width, 3), dtype=np.uint8)
+    def create_graphic(self, height=None, width=None, buffer=None, fps_overlay=False):
+        if buffer is None:
+            self._render_buffer = np.zeros((height, width, 3), dtype=np.uint8)
+        else:
+            self._render_buffer = buffer
 
-        height, width, channel = self._render_buffer.shape
-        bytes_per_line = 3 * width
+        height, width, _ = self._render_buffer.shape
 
         self._display_buffer = QImage(
             self._render_buffer.data,
@@ -124,12 +130,14 @@ class TabGraphic(QWidget):
             QPixmap.fromImage(self._display_buffer)
         )
 
-    def update_graphic(self):
+    def update_graphic(self, resize=True):
         # Update QPixmap for the existing QGraphicsPixmapItem
         self._pixmap_buffer.setPixmap(QPixmap.fromImage(self._display_buffer))
-        self._view.fitInView(
-            self._scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio
-        )
+
+        if resize:
+            self._view.fitInView(
+                self._scene.sceneRect(), mode=Qt.AspectRatioMode.IgnoreAspectRatio
+            )
 
         # FPS
         self._frame_count += 1

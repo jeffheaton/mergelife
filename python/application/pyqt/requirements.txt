@@ -1,7 +1,7 @@
-pip install pyinstaller==6.1.0
-pip install pyqt6==6.5.3
-pip install numpy==1.26.1
-pip install scipy==1.11.3
-pip install opencv-python-headless==4.8.1.78
-pip install pillow==10.1.0
-pip install appdirs==1.4.4
+pyinstaller==6.1.0
+pyqt6==6.5.3
+numpy==1.26.1
+scipy==1.11.3
+opencv-python-headless==4.8.1.78
+pillow==10.1.0
+appdirs==1.4.4
