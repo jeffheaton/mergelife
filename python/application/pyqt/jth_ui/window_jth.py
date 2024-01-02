@@ -14,9 +14,10 @@ class MainWindowJTH(QMainWindow):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.open_extensions = (
-            "Images (*.jpg *.jpeg *.png *.tiff);;Videos (*.mp4 *.mov)"
-        )
+        self.open_extensions = "All Files (*.*)"
+
+        # Enable the main window to accept drops
+        self.setAcceptDrops(True)
 
     def resizeEvent(self, event):
         """This method is called whenever the window is resized."""
@@ -45,9 +46,9 @@ class MainWindowJTH(QMainWindow):
         except Exception as e:
             logger.error("Error during tab close", exc_info=True)
 
-    def displayMessageBox(self, text):
+    def display_message_box(self, text):
         msg = QMessageBox(self)
-        msg.setText(text)
+        msg.setText(str(text))
         msg.exec()
 
     def is_tab_open(self, title):
@@ -91,8 +92,27 @@ class MainWindowJTH(QMainWindow):
                 event.ignore()
 
     def open_file(self, file_path):
-        folder = os.path.dirname(file_path)
-        self.app.state[app_jth.STATE_LAST_FOLDER] = folder
+        try:
+            folder = os.path.dirname(file_path)
+            self.app.state[app_jth.STATE_LAST_FOLDER] = folder
+        except FileNotFoundError as e:
+            logger.error("Error during load (FileNotFoundError)", exc_info=True)
+            self.display_message_box("Unable to load file. (FileNotFoundError)")
+        except PermissionError as e:
+            logger.error("Error during load (PermissionError)", exc_info=True)
+            self.display_message_box("Unable to load file. (PermissionError)")
+        except IsADirectoryError as e:
+            logger.error("Error during load (IsADirectoryError)", exc_info=True)
+            self.display_message_box("Unable to load file. (IsADirectoryError)")
+        except FileExistsError as e:
+            logger.error("Error during load (FileExistsError)", exc_info=True)
+            self.display_message_box("Unable to load file. (FileExistsError)")
+        except OSError as e:
+            logger.error("Error during load (OSError)", exc_info=True)
+            self.display_message_box("Unable to load file. (OSError)")
+        except Exception as e:
+            logger.error("Error during load", exc_info=True)
+            self.display_message_box("Unable to load file.")
 
     def open_action(self):
         home_directory = os.path.expanduser("~")

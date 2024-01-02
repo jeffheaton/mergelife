@@ -21,7 +21,7 @@ C:\Users\jeffh\AppData\Local\Programs\Python\Python312
 .\.venv\Scripts\activate.bat
 
 Version:
-    build.sh
-    const_values.py
-    build.spec
-    heaton-ca-osx.spec
+build.sh
+const_values.py
+build.spec
+heaton-ca-osx.spec

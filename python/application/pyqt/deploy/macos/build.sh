@@ -1,3 +1,18 @@
+
+if [ -z "${app_certificate}" ]; then
+    echo "Error: Environment variable app_certificate is not set."
+    exit 1  # Exit with a non-zero value to indicate an error
+fi
+
+# Environment
+cd ../..
+rm -rf ./venv || true
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cd deploy/macos
+
+# Build it
 rm -rf ./working
 mkdir ./working
 cp ./entitlements.plist ./working
@@ -11,13 +26,24 @@ cp -r ../../jth_ui ./working/jth_ui
 cp -r ../../mergelife ./working/mergelife
 
 cd ./working
-python build.py \
-    --app_name "HeatonCA" \
-    --version "$version" \
-    --spec_file "heaton-ca-macos.spec" \
-    --entitlements "entitlements.plist" \
-    --provisioning_profile "$provisionprofile" \
-    --app_certificate "$app_certificate" \
-    --installer_certificate "$installer_certificate" \
-    --output_dir "dist"
-cd ..
+
+echo "** Pyinstaller **"
+pyinstaller --clean --noconfirm --distpath dist --workpath build heaton-ca-macos.spec
+
+echo "** Sign Deep **"
+codesign --force --timestamp --deep --verbose --options runtime --sign "${app_certificate}" dist/HeatonCA.app
+
+echo "** Sign nested **"
+#codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/protoc
+#codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/protoc-3.13.0.0
+#codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/torch_shm_manager
+
+echo "** Sign App **"
+cp $provisionprofile dist/HeatonCA.app/Contents/embedded.provisionprofile
+codesign --force --timestamp --verbose --options runtime --entitlements entitlements.plist --sign "${app_certificate}" dist/Heaton-CA.app/Contents/MacOS/heaton-ca
+
+echo "** Verify Sign **"
+codesign --verify --verbose dist/HeatonCA.app
+
+echo "** Package **"
+productbuild --component dist/HeatonCA.app /Applications --sign "${installer_certificate}" --version "${version}" dist/Heaton-CA.pkg

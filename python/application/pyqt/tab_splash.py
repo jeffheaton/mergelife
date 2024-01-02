@@ -81,8 +81,8 @@ class SplashTab(QWidget):
         self.version_label.setAlignment(Qt.AlignmentFlag.AlignRight)
 
     def on_close(self):
+        pass
         # Your custom functionality here
-        print("The tab is closing!")
 
     def on_resize(self):
         pass

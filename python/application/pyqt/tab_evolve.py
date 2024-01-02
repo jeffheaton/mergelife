@@ -1,8 +1,16 @@
 import logging
 import os
-from PyQt6.QtCore import QDir, QTimer,QThread
-from PyQt6.QtWidgets import (QFileDialog, QGridLayout, QHBoxLayout, QLabel, 
-                             QLineEdit, QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtCore import QDir, QTimer, QThread
+from PyQt6.QtWidgets import (
+    QFileDialog,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 import mergelife.ml_evolve as ml_evolve
 import time
 
@@ -20,7 +28,7 @@ config = {
         "evalCycles": 5,
         "patience": 250,
         "scoreThreshold": 3.5,
-        "maxRuns": 1000000
+        "maxRuns": 1000000,
     },
     "objective": [
         {
@@ -29,7 +37,7 @@ config = {
             "max": 1000,
             "weight": 1,
             "min_weight": -1,
-            "max_weight": 1
+            "max_weight": 1,
         },
         {
             "stat": "foreground",
@@ -37,7 +45,7 @@ config = {
             "max": 0.1,
             "weight": 1,
             "min_weight": -0.1,
-            "max_weight": -1
+            "max_weight": -1,
         },
         {
             "stat": "active",
@@ -45,7 +53,7 @@ config = {
             "max": 0.1,
             "weight": 1,
             "min_weight": -1,
-            "max_weight": -1
+            "max_weight": -1,
         },
         {
             "stat": "rect",
@@ -53,7 +61,7 @@ config = {
             "max": 0.25,
             "weight": 2,
             "min_weight": -2,
-            "max_weight": 2
+            "max_weight": 2,
         },
         {
             "stat": "mage",
@@ -61,10 +69,11 @@ config = {
             "max": 10,
             "weight": 0,
             "min_weight": -5,
-            "max_weight": 0
-        }
-    ]
+            "max_weight": 0,
+        },
+    ],
 }
+
 
 class Worker(QThread):
     def __init__(self, report_target, path):
@@ -72,33 +81,30 @@ class Worker(QThread):
         self._report_target = report_target
         self.is_running = True
         self._evolve = ml_evolve.Evolve(report_target=report_target, path=path)
-        
+
     def run(self):
         try:
             i = 1
             while self.is_running:
-                # Your CPU-bound process code goes here
-                # For demonstration, let's just print a message
-                print(f"Processing... {i}")
                 self._evolve.evolve(config)
                 time.sleep(1)
-                i+=1
+                i += 1
             self._report_target.stop_complete()
         except Exception as e:
             logger.error("Error during startup", exc_info=True)
-        
 
     def stop(self):
         logging.info("Requesting evolve to stop")
         self._evolve.requestStop = True
         self.is_running = False
 
+
 class EvolveTab(QWidget):
     def __init__(self):
         super().__init__()
         self._evolve = None
 
-# Main layout
+        # Main layout
         main_layout = QVBoxLayout(self)
 
         # Grid layout for labels and fields
@@ -175,7 +181,7 @@ class EvolveTab(QWidget):
         # Add grid layout and buttons layout to the main layout
         main_layout.addLayout(grid_layout)
         main_layout.addLayout(buttons_layout)
-        
+
         # Push all items to the top
         main_layout.addStretch()
 
@@ -184,7 +190,6 @@ class EvolveTab(QWidget):
 
         # Adjust the window size to fit contents
         self.adjustSize()
-
 
     def on_close(self):
         logger.info("Closed Evolve tab.")
@@ -203,21 +208,23 @@ class EvolveTab(QWidget):
         if not os.path.exists(path):
             self._status_value.setText("Output directory does not exist")
             return
-        
+
         logger.info("Checking if output directory is a directory")
         if not os.path.isdir(path):
-            self._status_value.setText("Must specify a valid output directory (not a directory)")
+            self._status_value.setText(
+                "Must specify a valid output directory (not a directory)"
+            )
             return
-        
+
         logger.info("Checking for write access to directory")
         if not os.access(path, os.W_OK):
             self._status_value.setText("Must have write access to output directory")
             return
-        
+
         self._start_button.setEnabled(False)
         self._stop_button.setEnabled(True)
 
-        self.thread = Worker(report_target=self,path=path)
+        self.thread = Worker(report_target=self, path=path)
         self.thread.start()
         logging.info("Evolve started")
 
@@ -236,8 +243,10 @@ class EvolveTab(QWidget):
         self._eval_number_value.setText(f"{evolve.evalCount:,}")
         self._evals_per_min_value.setText(f"{evolve.perMin:,.2f}")
         if evolve.bestGenome:
-            self._current_rule_value.setText(str(evolve.bestGenome['rule']))
-            self._current_score_value.setText(f"{evolve.bestGenome['score']:,.2f}/{evolve.score_threshold:,.2f}")
+            self._current_rule_value.setText(str(evolve.bestGenome["rule"]))
+            self._current_score_value.setText(
+                f"{evolve.bestGenome['score']:,.2f}/{evolve.score_threshold:,.2f}"
+            )
         else:
             self._current_rule_value.setText("")
             self._current_score_value.setText("")
@@ -250,5 +259,3 @@ class EvolveTab(QWidget):
         self._start_button.setEnabled(True)
         self._stop_button.setEnabled(False)
         self._status_value.setText("Stopped")
-        
-                

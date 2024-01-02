@@ -4,6 +4,7 @@ import numpy as np
 from PyQt6.QtCore import QDateTime, Qt, QTimer
 from PyQt6.QtGui import QColor, QFont, QFontMetrics, QImage, QPainter, QPixmap
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsView, QVBoxLayout, QWidget
+from jth_ui.overlay import OverlayGraphicsView
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,9 @@ class TabGraphic(QWidget):
         self._frame_count = 0
         self._scene = None
         self._view = None
+        self._render_buffer = None
+        self._steps = 0
+        self._timer = None
 
     def init_graphics(self, layout=None):
         if layout is None:
@@ -76,6 +80,8 @@ class TabGraphic(QWidget):
         self._steps = 0
 
     def init_animate(self, target_fps):
+        if self._timer:
+            self.stop_animate()
         # Animation timer
         self._target_fps = target_fps
         self._timer_interval = int(1000 / self._target_fps)
@@ -85,12 +91,20 @@ class TabGraphic(QWidget):
         self._timer.start(self._timer_interval)
         self._force_update = 0
 
+    def stop_animate(self):
+        if self._timer:
+            self._timer.stop()
+            self._running = False
+            self._timer = None
+
     def on_close(self):
         self._timer.stop()
         self._scene.clear()
         logger.info("Closed graphic tab")
 
-    def create_graphic(self, height=None, width=None, buffer=None, fps_overlay=False):
+    def create_graphic(
+        self, height=None, width=None, buffer=None, fps_overlay=False, msg_overlay=False
+    ):
         if buffer is None:
             self._render_buffer = np.zeros((height, width, 3), dtype=np.uint8)
         else:
@@ -113,7 +127,9 @@ class TabGraphic(QWidget):
 
         # QGraphicsView and QGraphicsScene
         self._scene = QGraphicsScene(self)
-        if fps_overlay:
+        if msg_overlay:
+            self._view = OverlayGraphicsView(self._scene, self)
+        elif fps_overlay:
             self._view = FPSGraphicsView(self._scene, self)
         else:
             self._view = QGraphicsView(self._scene, self)
@@ -157,11 +173,11 @@ class TabGraphic(QWidget):
 
         self._last_event_time = current_time
 
-    def timer_step():
+    def timer_step(self):
         """Called for every frame, regardless of if running."""
         pass
 
-    def running_step():
+    def running_step(self):
         """Called for every frame, only if running."""
         pass
 

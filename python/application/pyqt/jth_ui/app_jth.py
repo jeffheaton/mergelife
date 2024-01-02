@@ -6,26 +6,31 @@ import logging.config
 import logging.handlers
 import os
 import platform
+import plistlib
 import sys
 
 import appdirs
-from PyQt6.QtCore import Qt, QtMsgType, qInstallMessageHandler
+from PyQt6.QtCore import Qt, QtMsgType, QUrl, qInstallMessageHandler, QEvent
+from PyQt6.QtGui import QDesktopServices, QFileOpenEvent
 from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
 
 logger = logging.getLogger(__name__)
 
 STATE_LAST_FOLDER = "last_folder"
+STATE_LAST_FILES = "recent"
 
 
-class AppJTH:
+class AppJTH(QApplication):
     def __init__(self, app_name, app_author, copyright, version, bundle_id):
+        super().__init__(sys.argv)
+        self.file_open_request = None
         self.BUNDLE_ID = bundle_id
         self.APP_NAME = app_name
         self.APP_AUTHOR = app_author
         self.COPYRIGHT = copyright
         self.VERSION = version
         self.APP_ID = self.BUNDLE_ID.split(".")[-1]
-
+        self.settings = {}
         if self.get_system_name() == "osx":
             if self.is_sandboxed():
                 self.LOG_DIR = os.path.join(os.path.expanduser("~"), "logs")
@@ -45,7 +50,7 @@ class AppJTH:
             )
             self.LOG_DIR = os.path.join(base_dir, "logs")
             self.SETTING_DIR = os.path.join(base_dir, "preferences")
-            self.SETTING_FILE = os.path.join(self.SETTING_DIR, f"{APP_ID}.json")
+            self.SETTING_FILE = os.path.join(self.SETTING_DIR, f"{self.APP_ID}.json")
             self.STATE_FILE = os.path.join(self.SETTING_DIR, "state.json")
         else:
             pass
@@ -67,15 +72,14 @@ class AppJTH:
         if s == "osx":
             logging.info(f"Sandbox mode: {self.is_sandboxed()}")
 
-        self.app = QApplication(sys.argv)
-        self.app.setApplicationName(app_name)
+        self.setApplicationName(app_name)
 
         self.load_state()
 
     def exec(self):
         try:
             logger.info("Starting app main loop")
-            self.app.exec()
+            super().exec()
             logger.info("Exited app main loop")
         except Exception as e:
             logger.error("Error running app", exc_info=True)
@@ -118,7 +122,7 @@ class AppJTH:
                 os.remove(file)
 
     # Define the logging configuration
-    def setup_logging(self):
+    def setup_logging(self, level=logging.INFO):
         os.makedirs(self.LOG_DIR, exist_ok=True)
 
         # Create the directory if it doesn't exist
@@ -134,27 +138,32 @@ class AppJTH:
         log_filename = os.path.join(self.LOG_DIR, f"{date_str}.log")
 
         # Set up logging
-        logger = logging.getLogger()
-        logger.setLevel(logging.DEBUG)
+        self._logger = logging.getLogger()
+        self._logger.setLevel(level)
 
         # Create a file handler to write log messages to the file
-        file_handler = logging.handlers.TimedRotatingFileHandler(
+        self._file_handler = logging.handlers.TimedRotatingFileHandler(
             log_filename, when="midnight", interval=1, backupCount=7
         )
-        file_handler.setLevel(logging.INFO)
+        self._file_handler.setLevel(level)
 
         # Create a formatter to format the log messages
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        file_handler.setFormatter(formatter)
+        self._file_handler.setFormatter(formatter)
 
         # Add the handler to the logger
-        logger.addHandler(file_handler)
+        logger.addHandler(self._file_handler)
 
         # Add a stream handler (console handler) for console output
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
+        self._console_handler = logging.StreamHandler()
+        self._console_handler.setLevel(level)
+        self._console_handler.setFormatter(formatter)
+        logger.addHandler(self._console_handler)
+
+    def change_log_level(self, level):
+        self._console_handler.setLevel(level)
+        self._logger.setLevel(level)
+        self._file_handler.setLevel(level)
 
     def shutdown(self):
         self.save_state()
@@ -181,4 +190,58 @@ class AppJTH:
     def init_state(self):
         home_directory = os.path.expanduser("~")
         documents_path = os.path.join(home_directory, "Documents")
-        self.state = {STATE_LAST_FOLDER: documents_path}
+        self.state = {STATE_LAST_FOLDER: documents_path, STATE_LAST_FILES: []}
+
+    def init_settings(self):
+        self.settings = {}
+
+    # Save settings to a JSON file
+    def save_settings(self):
+        try:
+            if self.get_system_name() == "osx":
+                logger.info("Saved MacOS settings")
+                with open(self.SETTING_FILE, "wb") as fp:
+                    plistlib.dump(self.settings, fp)
+            else:
+                logger.info("Saved Windows settings")
+                with open(self.SETTING_FILE, "w") as fp:
+                    json.dump(self.settings, fp)
+        except Exception as e:
+            logging.error("Caught an exception saving settings", exc_info=True)
+
+    def load_settings(self):
+        try:
+            os.makedirs(self.SETTING_DIR, exist_ok=True)
+
+            if not os.path.exists(self.SETTING_FILE):
+                logger.info("Resetting to default settings")
+                self.init_settings()
+            else:
+                if self.get_system_name() == "osx":
+                    with open(self.SETTING_FILE, "rb") as fp:
+                        self.settings = plistlib.load(fp)
+                    logger.info("Loaded MacOS settings")
+                else:
+                    with open(self.SETTING_FILE, "r") as fp:
+                        self.settings = json.load(fp)
+                        logger.info("Loaded Windows settings")
+        except Exception as e:
+            logging.error("Caught an exception loading settings", exc_info=True)
+
+    def open_logs(self):
+        # Convert the file path to a QUrl object
+        file_url = QUrl.fromLocalFile(self.LOG_DIR)
+
+        # Open the file location in the default file explorer
+        QDesktopServices.openUrl(file_url)
+
+    def event(self, event):
+        try:
+            if event.type() == QEvent.Type.FileOpen:
+                file_path = event.file()
+                self.file_open_request = file_path
+                logger.info(f"MacOS open file request: {file_path}")
+                return True
+            return super().event(event)
+        except Exception as e:
+            logger.error("Error during application event", exc_info=True)
