@@ -1,5 +1,5 @@
 pyinstaller==6.1.0
-pyqt6==6.5.3
+pyqt6==6.6.1
 numpy==1.26.1
 scipy==1.11.3
 opencv-python-headless==4.8.1.78

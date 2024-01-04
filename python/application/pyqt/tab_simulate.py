@@ -33,7 +33,6 @@ class TabSimulate(TabGraphic):
         )
 
         self._cell_size = self._window.app.settings.get(heaton_ca_app.CELL_SIZE_KEY, 5)
-        print(f"Cell size: {self._cell_size}")
         if self._cell_size < 1:
             self._cell_size = 1
 
@@ -99,7 +98,7 @@ class TabSimulate(TabGraphic):
         self.create_graphic(
             render_height,
             render_width,
-            fps_overlay=self._window.app.get_bool(heaton_ca_app.FPS_OVERLAY),
+            fps_overlay=self._window.app.settings.get(heaton_ca_app.FPS_OVERLAY),
         )
         self.updateUIGrid()
 

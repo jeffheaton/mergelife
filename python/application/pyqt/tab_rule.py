@@ -78,7 +78,6 @@ class RuleTab(QWidget):
 
             self.table.setItem(i, 5, QTableWidgetItem(f"0x{abs(o1):02x} ({o1})"))
             self.table.setItem(i, 6, QTableWidgetItem(f"0x{abs(o2):02x} ({o2})"))
-            print(limit, pct, cidx)
             low = limit
 
         # Resize rows to content

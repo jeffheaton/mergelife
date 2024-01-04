@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QCheckBox,
 )
 import heaton_ca_app
+from jth_ui import utl_settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +51,18 @@ class SettingsTab(QWidget):
         self.setLayout(layout)
 
         window.add_tab(self, "Settings")
+
+        settings = self._window.app.settings
+        print(settings)
+
         self._cell_size_spinbox.setValue(
-            self._window.app.get_int(heaton_ca_app.CELL_SIZE_KEY)
+            int(settings.get(heaton_ca_app.CELL_SIZE_KEY, 5))
         )
         self._animation_speed_spinbox.setValue(
-            self._window.app.get_int(heaton_ca_app.FPS_KEY)
+            int(settings.get(heaton_ca_app.FPS_KEY,30))
         )
         self._display_fps_checkbox.setChecked(
-            self._window.app.get_bool(heaton_ca_app.FPS_OVERLAY)
+            bool(settings.get(heaton_ca_app.FPS_OVERLAY, 1))
         )
 
     def on_close(self):
@@ -74,13 +79,16 @@ class SettingsTab(QWidget):
         pass
 
     def save_values(self):
-        self._window.app.settings[heaton_ca_app.CELL_SIZE_KEY] = int(
+        settings = self._window.app.settings
+
+        settings[heaton_ca_app.CELL_SIZE_KEY] = int(
             self._cell_size_spinbox.value()
         )
-        self._window.app.settings[heaton_ca_app.FPS_KEY] = int(
+        settings[heaton_ca_app.FPS_KEY] = int(
             self._animation_speed_spinbox.value()
         )
-        self._window.app.settings[heaton_ca_app.FPS_OVERLAY] = bool(
+        settings[heaton_ca_app.FPS_OVERLAY] = bool(
             self._display_fps_checkbox.isChecked()
         )
         self._window.app.save_settings()
+

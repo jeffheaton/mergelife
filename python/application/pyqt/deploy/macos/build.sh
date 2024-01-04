@@ -1,4 +1,3 @@
-
 if [ -z "${app_certificate}" ]; then
     echo "Error: Environment variable app_certificate is not set."
     exit 1  # Exit with a non-zero value to indicate an error

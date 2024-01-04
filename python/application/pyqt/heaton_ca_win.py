@@ -33,66 +33,51 @@ class WindowHeatonCA(MainWindowJTH):
 
         self._drop_ext = (".png", ".jpg", ".jpeg", ".bmp", ".gif")
 
-        if self.app.get_system_name() == "osx":
-            self.setup_mac_menu()
-        else:
-            self.setup_menu()
+        self.setup_menu()
         self.initUI()
 
         # Enable the main window to accept drops
         self.setAcceptDrops(True)
 
     def setup_menu(self):
-        # Create the File menu
-        file_menu = self.menuBar().addMenu("File")
-
-        # Create a "Exit" action
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
-
-        # Create the Edit menu
-        edit_menu = self.menuBar().addMenu("Edit")
-
-        # Create an "About" action
-        about_action = QAction("About", self)
-        about_action.triggered.connect(self.show_about)
-        edit_menu.addAction(about_action)
-
-    def setup_mac_menu(self):
-        # Create a main menu bar
-        # if platform.uname().system.startswith('Darw') :
-        #    self.menubar = QMenuBar() # parentless menu bar for Mac OS
-        # else:
-        #    self.menubar = self.menuBar() # refer to the default one
-
-        self.menubar = QMenuBar()  # self.menuBar()
-
-        # Create the app menu and add it to the menu bar
-        app_menu = QMenu(self.app.APP_NAME, self)
+        self.menubar = self.menuBar()
 
         # Add items to the app menu
-        about_action = QAction(f"About {self.app.APP_NAME}", self)
-        app_menu.addAction(about_action)
-        self.about_menu = QMenu("About", self)
-        about_action.triggered.connect(self.show_about)
+        if self.app.get_system_name() == "osx":
+            # Create the app menu and add it to the menu bar
+            app_menu = QMenu(self.app.APP_NAME, self)
+            about_action = QAction(f"About {self.app.APP_NAME}", self)
+            app_menu.addAction(about_action)
+            self.about_menu = QMenu("About", self)
+            about_action.triggered.connect(self.show_about)
 
-        preferences_action = QAction("Settings...", self)
-        app_menu.addAction(preferences_action)
-        preferences_action.triggered.connect(self.show_properties)
+            preferences_action = QAction("Settings...", self)
+            app_menu.addAction(preferences_action)
+            preferences_action.triggered.connect(self.show_properties)
 
-        exit_action = QAction("Quit", self)
-        exit_action.triggered.connect(self.close)
-        app_menu.addAction(exit_action)
+            exit_action = QAction("Quit", self)
+            exit_action.triggered.connect(self.close)
+            app_menu.addAction(exit_action)
 
         # File menu
         self._file_menu = QMenu("File", self)
 
-        # Close Window action
-        closeAction = QAction("Close Window", self)
-        closeAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Close))
-        closeAction.triggered.connect(self.close)
-        self._file_menu.addAction(closeAction)
+        if self.app.get_system_name() == "osx":
+            # Close Window action
+            closeAction = QAction("Close Window", self)
+            closeAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Close))
+            closeAction.triggered.connect(self.close)
+            self._file_menu.addAction(closeAction)
+        else:
+            preferences_action = QAction("Settings...", self)
+            self._file_menu.addAction(preferences_action)
+            preferences_action.triggered.connect(self.show_properties)
+
+            # Create a "Exit" action
+            exit_action = QAction("Exit", self)
+            exit_action.triggered.connect(self.close)
+            self._file_menu.addAction(exit_action)
+
 
         # Edit menu
         self._edit_menu = QMenu("Edit", self)
@@ -108,31 +93,21 @@ class WindowHeatonCA(MainWindowJTH):
         pasteAction.setShortcut(QKeySequence(QKeySequence.StandardKey.Paste))
         self._edit_menu.addAction(pasteAction)
 
-        # Simulate menu
-        # self.simulator_menu = QMenu("Simulator", self)
-        # simulator_action = QAction("Show Simulator", self)
-        # simulator_action.triggered.connect(self.show_simulator)
-        # self.simulator_menu.addAction(simulator_action)
-
-        # gallery_action = QAction("Show Gallery", self)
-        # gallery_action.triggered.connect(self.show_gallery)
-        # self.simulator_menu.addAction(gallery_action)
-
-        # evolve_action = QAction("Evolve", self)
-        # evolve_action.triggered.connect(self.show_evolve)
-        # self.simulator_menu.addAction(evolve_action)
-
         # Help menu
         self._help_menu = QMenu("Help", self)
         tutorial_action = QAction("Tutorial", self)
         tutorial_action.triggered.connect(self.open_tutorial)
         self._help_menu.addAction(tutorial_action)
 
+        if self.app.get_system_name() == "windows":
+            about_action = QAction("About", self)
+            about_action.triggered.connect(self.show_about)
+            self._help_menu.addAction(about_action)
         #
-        self.menubar.addMenu(app_menu)
+        if self.app.get_system_name() == "osx":
+            self.menubar.addMenu(app_menu)
         self.menubar.addMenu(self._file_menu)
         self.menubar.addMenu(self._edit_menu)
-        # self.menubar.addMenu(self.simulator_menu)
         self.menubar.addMenu(self._help_menu)
 
     def initUI(self):

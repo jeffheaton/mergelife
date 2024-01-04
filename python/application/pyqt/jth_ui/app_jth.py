@@ -10,9 +10,9 @@ import plistlib
 import sys
 
 import appdirs
-from PyQt6.QtCore import Qt, QtMsgType, QUrl, qInstallMessageHandler, QEvent
-from PyQt6.QtGui import QDesktopServices, QFileOpenEvent
-from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
+from PyQt6.QtCore import QUrl, QEvent
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtWidgets import QApplication
 
 logger = logging.getLogger(__name__)
 
@@ -223,10 +223,12 @@ class AppJTH(QApplication):
                     logger.info("Loaded MacOS settings")
                 else:
                     with open(self.SETTING_FILE, "r") as fp:
+                        print(self.SETTING_FILE)
                         self.settings = json.load(fp)
                         logger.info("Loaded Windows settings")
         except Exception as e:
             logging.error("Caught an exception loading settings", exc_info=True)
+            self.init_settings()
 
     def open_logs(self):
         # Convert the file path to a QUrl object
