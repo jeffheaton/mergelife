@@ -19,10 +19,12 @@ Copy-Item ./heaton-ca-windows.spec ./working
 Copy-Item ../../*.py ./working
 Copy-Item heaton_ca_icon.png ./working/heaton_ca_icon.png
 Copy-Item -Recurse ../../data ./working
+Copy-Item -Recurse ../../mergelife ./working
 Copy-Item -Recurse ../../jth_ui ./working
 
 Set-Location ./working
 
 Write-Host "** Pyinstaller **"
-#pyinstaller --clean --noconfirm --distpath dist --workpath build heaton-ca-macos.spec
+pyinstaller --clean --noconfirm --distpath dist --workpath build heaton-ca-windows.spec
 
+cd ..
