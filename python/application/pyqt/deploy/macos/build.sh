@@ -4,6 +4,7 @@ if [ -z "${app_certificate}" ]; then
 fi
 
 # Environment
+cd ../..
 rm -rf ./venv || true
 python3.11 -m venv venv
 source venv/bin/activate
