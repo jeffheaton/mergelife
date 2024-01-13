@@ -39,7 +39,7 @@ echo "** Sign nested **"
 #codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/torch_shm_manager
 
 echo "** Sign App **"
-codesign --force --timestamp --verbose --options runtime --entitlements entitlements.plist --sign "${app_certificate}" dist/Heaton-CA.app/Contents/MacOS/heaton-ca
+codesign --force --timestamp --verbose --options runtime --entitlements entitlements.plist --sign "${app_certificate}" dist/HeatonCA.app/Contents/MacOS/heaton-ca
 
 echo "** Verify Sign **"
 codesign --verify --verbose dist/HeatonCA.app
