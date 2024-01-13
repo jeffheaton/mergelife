@@ -29,6 +29,7 @@ echo "** Pyinstaller **"
 pyinstaller --clean --noconfirm --distpath dist --workpath build heaton-ca-macos.spec
 
 echo "** Sign Deep **"
+cp $provisionprofile dist/HeatonCA.app/Contents/embedded.provisionprofile
 codesign --force --timestamp --deep --verbose --options runtime --sign "${app_certificate}" dist/HeatonCA.app
 
 echo "** Sign nested **"
@@ -37,7 +38,6 @@ echo "** Sign nested **"
 #codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/torch_shm_manager
 
 echo "** Sign App **"
-cp $provisionprofile dist/HeatonCA.app/Contents/embedded.provisionprofile
 codesign --force --timestamp --verbose --options runtime --entitlements entitlements.plist --sign "${app_certificate}" dist/Heaton-CA.app/Contents/MacOS/heaton-ca
 
 echo "** Verify Sign **"
