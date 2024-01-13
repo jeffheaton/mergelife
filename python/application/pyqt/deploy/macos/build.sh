@@ -44,5 +44,10 @@ codesign --force --timestamp --verbose --options runtime --entitlements entitlem
 echo "** Verify Sign **"
 codesign --verify --verbose dist/HeatonCA.app
 
+# Set permissions, sometimes the transport app will complain about this
+echo "** Set Permissions **"
+find dist/HeatonCA.app -type f -exec chmod a=u {} \;
+find dist/HeatonCA.app -type d -exec chmod a=u {} \;
+
 echo "** Package **"
 productbuild --component dist/HeatonCA.app /Applications --sign "${installer_certificate}" --version "${version}" dist/HeatonCA.pkg
