@@ -53,7 +53,13 @@ class AppJTH(QApplication):
             self.SETTING_FILE = os.path.join(self.SETTING_DIR, f"{self.APP_ID}.json")
             self.STATE_FILE = os.path.join(self.SETTING_DIR, "state.json")
         else:
-            pass
+            home_dir = os.path.expanduser("~")
+            base_dir = os.path.join(home_dir, self.APP_ID)
+            os.makedirs(base_dir, exist_ok=True)
+            self.LOG_DIR = os.path.join(base_dir, "logs")
+            self.SETTING_DIR = os.path.join(base_dir, "preferences")
+            self.SETTING_FILE = os.path.join(self.SETTING_DIR, f"{self.APP_ID}.json")
+            self.STATE_FILE = os.path.join(self.SETTING_DIR, "state.json")
 
         print(f"Logs path: {self.LOG_DIR}")
         print(f"Settings path: {self.SETTING_DIR}")
