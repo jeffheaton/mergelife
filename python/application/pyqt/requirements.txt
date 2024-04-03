@@ -3,5 +3,5 @@ pyqt6==6.6.1
 numpy==1.26.1
 scipy==1.11.3
 opencv-python-headless==4.8.1.78
-pillow==10.1.0
+pillow==10.3.0
 appdirs==1.4.4
