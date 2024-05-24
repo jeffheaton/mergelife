@@ -1,6 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
+import platform
+import sys
+
 version = os.getenv('version')
+
+# Accessing the environment variable
+arch = os.environ.get('arch')
+
+# Setting the target_arch based on the environment variable or detection logic
+if not arch:
+    arch = platform.machine()
+
+if arch not in ['arm64', 'x86_64']:
+    raise ValueError("Unsupported architecture: " + arch)
 
 block_cipher = None
 
@@ -42,7 +55,7 @@ exe = EXE(
     runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
-    target_arch='arm64', # universal2
+    target_arch=arch,
     codesign_identity=None,
     entitlements_file=None,
     icon='heaton_ca_icon.icns'
@@ -62,7 +75,7 @@ coll = COLLECT(
 
 app = BUNDLE(
     coll,
-    name='HeatonCA.app',
+    name=f'HeatonCA-{arch}.app',
     icon='heaton_ca_icon.icns',
     bundle_identifier='com.heatonresearch.heaton-ca',
     info_plist={
@@ -75,7 +88,7 @@ app = BUNDLE(
         'CFBundleIdentifier': 'com.heatonresearch.heaton-ca',
         'CFBundleVersion': version,
         'CFBundleShortVersionString': version,
-        "UIRequiredDeviceCapabilities":["arm64"],
+        "UIRequiredDeviceCapabilities":[arch],
         'LSMinimumSystemVersion': '12.0',
         'LSApplicationCategoryType': 'public.app-category.utilities',
         'ITSAppUsesNonExemptEncryption': False,

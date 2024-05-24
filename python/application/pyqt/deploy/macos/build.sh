@@ -30,8 +30,9 @@ echo "** Pyinstaller **"
 pyinstaller --clean --noconfirm --distpath dist --workpath build heaton-ca-macos.spec
 
 echo "** Sign Deep **"
-cp $provisionprofile dist/HeatonCA.app/Contents/embedded.provisionprofile
-codesign --force --timestamp --deep --verbose --options runtime --sign "${app_certificate}" dist/HeatonCA.app
+appname="HeatonCA-${arch}.app"
+cp $provisionprofile dist/${appname}/Contents/embedded.provisionprofile
+codesign --force --timestamp --deep --verbose --options runtime --sign "${app_certificate}" dist/${appname}
 
 echo "** Sign nested **"
 #codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/protoc
@@ -39,15 +40,15 @@ echo "** Sign nested **"
 #codesign --force --timestamp --verbose --options runtime --entitlements entitlements-nest.plist --sign "${app_certificate}" dist/Dynaface.app/Contents/Frameworks/torch/bin/torch_shm_manager
 
 echo "** Sign App **"
-codesign --force --timestamp --verbose --options runtime --entitlements entitlements.plist --sign "${app_certificate}" dist/HeatonCA.app/Contents/MacOS/heaton-ca
+codesign --force --timestamp --verbose --options runtime --entitlements entitlements.plist --sign "${app_certificate}" dist/${appname}/Contents/MacOS/heaton-ca
 
 echo "** Verify Sign **"
-codesign --verify --verbose dist/HeatonCA.app
+codesign --verify --verbose dist/${appname}
 
 # Set permissions, sometimes the transport app will complain about this
 echo "** Set Permissions **"
-find dist/HeatonCA.app -type f -exec chmod a=u {} \;
-find dist/HeatonCA.app -type d -exec chmod a=u {} \;
+find dist/${appname} -type f -exec chmod a=u {} \;
+find dist/${appname} -type d -exec chmod a=u {} \;
 
 echo "** Package **"
-productbuild --component dist/HeatonCA.app /Applications --sign "${installer_certificate}" --version "${version}" dist/HeatonCA.pkg
+productbuild --component dist/${appname} /Applications --sign "${installer_certificate}" --version "${version}" dist/HeatonCA-${arch}.pkg

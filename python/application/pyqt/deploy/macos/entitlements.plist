@@ -13,5 +13,9 @@
     <true/>
     <key>com.apple.security.files.user-selected.read-write</key>
     <true/>
+    <key>com.apple.application-identifier</key>
+    <string>9KJKLKXJ5G.com.heatonresearch.heaton-ca</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>9KJKLKXJ5G</string>
 </dict>
 </plist>
