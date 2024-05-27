@@ -24,7 +24,7 @@ class AppHeatonCA(AppJTH):
                 app_name="HeatonCA",
                 app_author="HeatonResearch",
                 copyright="Copyright 2024 by Jeff Heaton, released under the <a href='https://opensource.org/license/mit/'>MIT License</a>",
-                version="1.0.1",
+                version="1.1.0",
                 bundle_id="com.heatonresearch.heaton-ca",
             )
 
@@ -46,5 +46,3 @@ class AppHeatonCA(AppJTH):
 
     def init_settings(self):
         self.settings = {CELL_SIZE_KEY: 5, FPS_KEY: 30, FPS_OVERLAY: True}
-
-   
