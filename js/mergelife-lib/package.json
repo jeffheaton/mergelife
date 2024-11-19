@@ -6,7 +6,7 @@
   "dependencies": {
     "command-line-args": "^5.0.2",
     "command-line-usage": "^5.0.5",
-    "eslint": "^4.18.0",
+    "eslint": "^9.15.0",
     "eslint-config": "^0.3.0",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.14.0",
