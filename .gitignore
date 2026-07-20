@@ -18,3 +18,8 @@ build/
 out/
 __pycache__
 .DS_Store
+
+# c trainer build output
+c/mergelife-trainer
+c/verify
+c/src/*.o
