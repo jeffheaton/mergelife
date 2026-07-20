@@ -14,7 +14,7 @@
     "eslint-plugin-node": "^6.0.0",
     "eslint-plugin-promise": "^3.8.0",
     "jimp": "^0.16.1",
-    "npm": "^10.5.2",
+    "npm": "^12.0.1",
     "seedrandom": "^2.4.4"
   },
   "devDependencies": {
@@ -22,7 +22,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-minify": "^0.4.3",
     "eslint-plugin-standard": "^3.1.0",
-    "mocha": "^9.2.2"
+    "mocha": "^11.1.0"
   },
   "scripts": {
     "test": "mocha --require test/setup --colors",
