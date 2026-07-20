@@ -23,3 +23,16 @@ __pycache__
 c/mergelife-trainer
 c/verify
 c/src/*.o
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+.tox/
+.nox/
+
+# Claude Code settings
+.claude/
