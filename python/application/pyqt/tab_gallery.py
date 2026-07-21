@@ -1,14 +1,30 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QLabel
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QScrollArea, QWidget, QGridLayout, QLabel, QVBoxLayout, QSizePolicy
-from PyQt6.QtGui import QPixmap, QImageReader, QImage
+import os
+
+from PyQt6.QtWidgets import (
+    QScrollArea,
+    QWidget,
+    QGridLayout,
+    QLabel,
+    QVBoxLayout,
+    QSizePolicy,
+)
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
-from mergelife.mergelife import new_ml_instance, update_step, randomize_lattice
-import numpy as np
 
 
 class GalleryTab(QWidget):
+    # Where the pre-rendered previews live, relative to this file. PyInstaller
+    # bundles data/ recursively, so this path works frozen and unfrozen alike.
+    GALLERY_DIR = "data/gallery"
+
+    # Simulating these previews live used to block the UI for over a second
+    # each time the tab opened, so they are pre-rendered by
+    # tools/generate_gallery.py. These values must stay in sync with that
+    # script -- they define the size of the images it writes.
+    PREVIEW_HEIGHT = 64
+    PREVIEW_WIDTH = 100
+    PREVIEW_CELL_SIZE = 3
+
     GALLERY_RULES = [
         "e542-5f79-9341-f31e-6c6b-7f08-8773-7068",
         "a07f-c000-0000-0000-0000-0000-ff80-807f",
@@ -41,6 +57,7 @@ class GalleryTab(QWidget):
         "bf51-3628-3bcf-1ee1-5b18-7b95-7898-6a9a",
         "ef12-d680-9430-8853-a368-55f9-7451-7c44"
         ]
+
     def __init__(self, window):
         super().__init__()
         self._window = window
@@ -65,43 +82,39 @@ class GalleryTab(QWidget):
         # Continue with your images
         self.add_images(GalleryTab.GALLERY_RULES)
 
-    def rule2img(self, rule, height, width, cell_size):
-        ml = new_ml_instance(height,width,rule)
-        randomize_lattice(ml)
+    def blank_preview(self):
+        """Placeholder for a rule with no pre-rendered image.
 
-        for i in range(50):
-            update_step(ml)
+        Shows as an empty bordered cell, which is the cue to run
+        tools/generate_gallery.py for that rule.
+        """
+        pixmap = QPixmap(
+            GalleryTab.PREVIEW_WIDTH * GalleryTab.PREVIEW_CELL_SIZE,
+            GalleryTab.PREVIEW_HEIGHT * GalleryTab.PREVIEW_CELL_SIZE,
+        )
+        pixmap.fill(Qt.GlobalColor.white)
+        return pixmap
 
-
-        grid = ml['lattice'][0]['data']
-
-        render_buffer = np.zeros((height * cell_size, width * cell_size, 3), 
-            dtype=np.uint8)
-
-        for x in range(width):
-            for y in range(height):
-                color = grid[y][x]
-                render_buffer[y*cell_size:(y+1)*cell_size, x*cell_size:(x+1)*cell_size] = color 
-
-        # Update QPixmap for the existing QGraphicsPixmapItem
-        display_buffer = QImage(render_buffer.data, width * cell_size, 
-                    height * cell_size, 3 * width * cell_size, 
-                    QImage.Format.Format_RGB888)
-        return QPixmap.fromImage(display_buffer)
+    def rule2img(self, rule):
+        """Load the pre-rendered preview for a rule, or a blank if it is missing."""
+        path = self._window.app.get_resource_path(
+            relative_path=os.path.join(GalleryTab.GALLERY_DIR, f"{rule}.png"),
+            base_path=os.path.abspath(__file__),
+        )
+        pixmap = QPixmap(path)
+        # QPixmap loads as null for a missing or unreadable file.
+        return self.blank_preview() if pixmap.isNull() else pixmap
 
     def add_images(self, rules):
         for idx, rule in enumerate(rules):
-            pixmap = self.rule2img(
-                rule,
-                64,100,3)
-            
+            pixmap = self.rule2img(rule)
 
             # Create a label to show the image and set the pixmap
             img_label = QLabel()
             img_label.setPixmap(pixmap)
             img_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # pixmap.scaled(128, 1024, Qt.AspectRatioMode.KeepAspectRatio)
             img_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-                
+
             # Create a label for the caption
             caption_label = QLabel(rule)
             caption_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -115,7 +128,7 @@ class GalleryTab(QWidget):
             vbox.setStretchFactor(caption_label, 0)
             vbox.setContentsMargins(0, 0, 0, 0)  # set margins to 0
             vbox.setSpacing(0)
-                
+
             # Create a QWidget to hold the QVBoxLayout and apply a border to it
             container = QWidget(self)
             container.setLayout(vbox)

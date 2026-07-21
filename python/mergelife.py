@@ -1,7 +1,5 @@
 import numpy as np
 from scipy.ndimage import convolve
-import scipy
-import scipy.stats
 import ctypes
 from PIL import Image
 import dp
@@ -49,7 +47,10 @@ def update_step(ml_instance):
     sorted_rule = ml_instance['sorted_rule']
     height = ml_instance['height']
     width = ml_instance['width']
-    changed = np.zeros((height, width), dtype=bool)
+    # Cells not yet claimed by an earlier (higher priority) sub-rule. Tracked
+    # directly rather than as the complement of a "changed" mask, so the loop
+    # below does not allocate a fresh inversion on every iteration.
+    remaining = np.ones((height, width), dtype=bool)
 
     # Swap lattice
     t = ml_instance['lattice'][1]
@@ -68,15 +69,19 @@ def update_step(ml_instance):
     # Merge RGB -- integer floor((r+g+b)/3), matching the paper (Sec. 2) and the
     # Java/JS/C engines. Widen out of uint8 first so the channel sum can't wrap.
     data_avg = prev_data.astype(int).sum(axis=2) // 3
-    pad_val = scipy.stats.mode(data_avg, axis=None)[0]
-    pad_val = int(pad_val)
+    # data_avg holds small non-negative integers, so bincount().argmax() gives
+    # the mode far more cheaply than scipy.stats.mode, and breaks ties the same
+    # way (lowest value wins).
+    pad_val = int(np.bincount(data_avg.ravel()).argmax())
     data_cnt = convolve(data_avg, kernel, cval=pad_val, mode='constant')
 
     # Perform update
     for limit, pct, cidx in sorted_rule:
         mask = data_cnt < limit
-        mask = np.logical_and(mask, np.logical_not(changed))
-        changed = np.logical_or(changed, mask)
+        np.logical_and(mask, remaining, out=mask)
+        if not mask.any():
+            continue
+        remaining &= ~mask
 
         if pct < 0:
             pct = abs(pct)
@@ -84,13 +89,15 @@ def update_step(ml_instance):
             if cidx >= len(COLOR_TABLE):
                 cidx = 0
 
-        d = COLOR_TABLE[cidx] - prev_data[mask]
-        current_data[mask] = prev_data[mask] + np.floor(d * pct)
-        ml_instance['lattice'][0]['eval'] = {
-            'mode': pad_val,
-            'merge': data_avg,
-            'neighbor': data_cnt
-        }
+        # Index prev_data once and reuse; boolean indexing is the costly part.
+        sel = prev_data[mask]
+        current_data[mask] = sel + np.floor((COLOR_TABLE[cidx] - sel) * pct)
+
+    ml_instance['lattice'][0]['eval'] = {
+        'mode': pad_val,
+        'merge': data_avg,
+        'neighbor': data_cnt
+    }
 
     ml_instance['time_step'] += 1
     return current_data
