@@ -5,13 +5,13 @@
  */
 package org.heatonresearch.mergelife;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,13 +48,12 @@ public class MergeLifeConfig {
      * @param filename path to the JSON configuration.
      * @throws IOException if the file cannot be read.
      */
-    @SuppressWarnings("unchecked")
     public MergeLifeConfig(String filename) throws IOException {
         byte[] mapData = Files.readAllBytes(Paths.get(filename));
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> map = objectMapper.readValue(mapData, HashMap.class);
-        Map<String, String> configMap = (Map<String, String>) map.get("config");
+        Map<String, Object> map = objectMapper.readValue(mapData, new TypeReference<Map<String, Object>>() { });
 
+        Map<String, Object> configMap = readMap(map, "config");
         this.rows = readInt(configMap, "rows");
         this.cols = readInt(configMap, "cols");
         this.zoom = readInt(configMap, "zoom");
@@ -68,47 +67,71 @@ public class MergeLifeConfig {
         this.maxRuns = readInt(configMap, "maxRuns");
 
         BasicObjectiveFunction objFunction = new BasicObjectiveFunction(this);
-        ArrayList<Object> list = (ArrayList<Object>) map.get("objective");
-        for (Object obj : list) {
-            Map map2 = (Map) obj;
-            String stat = (String) map2.get("stat");
-            double min = Double.parseDouble(map2.get("min").toString());
-            double max = Double.parseDouble(map2.get("max").toString());
-            double weight = Double.parseDouble(map2.get("weight").toString());
-            double minWeight = Double.parseDouble(map2.get("min_weight").toString());
-            double maxWeight = Double.parseDouble(map2.get("max_weight").toString());
-            objFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(stat, min, max, weight, minWeight, maxWeight));
+        for (Object entry : readList(map, "objective")) {
+            Map<String, Object> statMap = asMap(entry, "objective entry");
+            objFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(
+                    readString(statMap, "stat"),
+                    readDouble(statMap, "min"),
+                    readDouble(statMap, "max"),
+                    readDouble(statMap, "weight"),
+                    readDouble(statMap, "min_weight"),
+                    readDouble(statMap, "max_weight")));
         }
         this.objectiveFunction = objFunction;
     }
 
-    private int readInt(Map<String, String> map, String key) {
-        if (!map.containsKey(key)) {
+    private static Object require(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value == null) {
             throw new MergeLifeException("Missing value for " + key);
         }
-        Object obj = map.get(key);
-        if (obj instanceof Integer) {
-            return (int) obj;
+        return value;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> asMap(Object value, String what) {
+        if (!(value instanceof Map)) {
+            throw new MergeLifeException("Expected an object for " + what);
         }
-        String str = map.get(key);
+        return (Map<String, Object>) value;
+    }
+
+    private static Map<String, Object> readMap(Map<String, Object> map, String key) {
+        return asMap(require(map, key), key);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> readList(Map<String, Object> map, String key) {
+        Object value = require(map, key);
+        if (!(value instanceof List)) {
+            throw new MergeLifeException("Expected a list for " + key);
+        }
+        return (List<Object>) value;
+    }
+
+    private static String readString(Map<String, Object> map, String key) {
+        return require(map, key).toString();
+    }
+
+    private static int readInt(Map<String, Object> map, String key) {
+        Object value = require(map, key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
         try {
-            return Integer.parseInt(str);
+            return Integer.parseInt(value.toString());
         } catch (NumberFormatException ex) {
             throw new MergeLifeException("Expected numeric value for " + key);
         }
     }
 
-    private double readDouble(Map<String, String> map, String key) {
-        if (!map.containsKey(key)) {
-            throw new MergeLifeException("Missing value for " + key);
+    private static double readDouble(Map<String, Object> map, String key) {
+        Object value = require(map, key);
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
         }
-        Object obj = map.get(key);
-        if (obj instanceof Double) {
-            return (double) obj;
-        }
-        String str = map.get(key);
         try {
-            return Double.parseDouble(str);
+            return Double.parseDouble(value.toString());
         } catch (NumberFormatException ex) {
             throw new MergeLifeException("Expected floating point value for " + key);
         }

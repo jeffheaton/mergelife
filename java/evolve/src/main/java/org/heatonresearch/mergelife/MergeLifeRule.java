@@ -132,7 +132,7 @@ public class MergeLifeRule {
                 String hex = matcher.group(i+1);
 
                 int o1 = Integer.parseInt(hex.substring(0,2),16);
-                int o2 = Integer.valueOf(hex.substring(2,4),16).byteValue();
+                int o2 = (byte) Integer.parseInt(hex.substring(2, 4), 16);
 
                 int alpha = (int)(o1 * 8);
                 double beta = o2>0 ? o2/127.0 : o2/128.0;
