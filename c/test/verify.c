@@ -69,6 +69,9 @@ static void naive_step(NaiveGrid *g, const MlRule *rule) {
       const uint8_t *line = g->rgb[g->cur] + ((size_t)row * g->cols + col) * 3;
       uint8_t *linePrime = g->rgb[target] + ((size_t)row * g->cols + col) * 3;
 
+      /* Paper: a cell matched by no sub-rule keeps its current value. */
+      linePrime[0] = line[0]; linePrime[1] = line[1]; linePrime[2] = line[2];
+
       for (int d = 0; d < ML_SUBRULES; d++) {
         if (c < rule->alpha[d]) {
           int dPrime = rule->gamma[d] + 1;

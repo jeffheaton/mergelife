@@ -29,13 +29,38 @@ def test_tohex_fromhex_roundtrip(sample_rule_code):
     assert mergelife.fromHex(mergelife.toHex(code)) == code
 
 
-def test_parse_update_rule_is_sorted_permutation(sample_rule_code):
-    """parse_update_rule yields one sorted entry per colour, keeping indices."""
+def test_parse_update_rule_sorted_by_alpha_stable(sample_rule_code):
+    """Sub-rules are ordered by alpha only; equal ranges keep hex order (paper)."""
     rule = mergelife.parse_update_rule(sample_rule_code)
 
     assert len(rule) == 8
-    assert rule == sorted(rule)  # returned sorted by (limit, pct, index)
+    alphas = [entry[0] for entry in rule]
+    assert alphas == sorted(alphas)                        # ordered by alpha
     assert sorted(entry[2] for entry in rule) == list(range(8))
+    # Within each tied-alpha group the original hex index order is preserved.
+    for a in set(alphas):
+        idxs = [entry[2] for entry in rule if entry[0] == a]
+        assert idxs == sorted(idxs)
+
+
+def test_parse_update_rule_ties_break_by_index_not_percent():
+    """Equal alphas with descending percents keep index order, not percent order."""
+    # All octet-1 bytes equal -> every alpha == 128; octet-2 descending -> pct desc.
+    rule = mergelife.parse_update_rule("1008-1007-1006-1005-1004-1003-1002-1001")
+    assert [entry[0] for entry in rule] == [128] * 8
+    assert [entry[2] for entry in rule] == list(range(8))  # not reordered by percent
+
+
+def test_update_step_unmatched_cell_keeps_value():
+    """Paper: a cell matched by no sub-rule keeps its current value (issue #4)."""
+    # Every alpha is 0, so no neighbor count ever matches -> every cell is noop.
+    inst = mergelife.new_ml_instance(6, 6, "0000-0000-0000-0000-0000-0000-0000-0000")
+    current = np.copy(inst["lattice"][0]["data"])
+    # Make the back buffer different so a 2-generation revert would be visible.
+    inst["lattice"][1]["data"][:] = 0
+    mergelife.update_step(inst)
+    # Unmatched cells keep their current value rather than reverting to the buffer.
+    assert np.array_equal(inst["lattice"][0]["data"], current)
 
 
 def test_random_update_rule_has_valid_shape():

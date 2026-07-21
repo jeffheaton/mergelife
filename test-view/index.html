@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MergeLife — paper-correct update-rule test</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:#15171b; color:#e6e6e6; }
+  header { padding:16px 20px; border-bottom:1px solid #2a2d33; }
+  h1 { font-size:18px; margin:0 0 6px; }
+  p.sub { margin:0; color:#9aa0a8; font-size:13px; line-height:1.55; max-width:960px; }
+  code { background:#23262c; padding:1px 5px; border-radius:4px; font-size:12px; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:14px 20px; border-bottom:1px solid #2a2d33; }
+  .controls input[type=text]{ background:#23262c; border:1px solid #3a3e46; color:#e6e6e6; padding:7px 9px; border-radius:6px; font-family:ui-monospace,SFMono-Regular,monospace; width:min(360px,60vw); font-size:13px; }
+  button { background:#2f6df0; color:#fff; border:0; padding:8px 14px; border-radius:6px; font-size:13px; cursor:pointer; }
+  button.secondary { background:#3a3e46; }
+  button:active { transform:translateY(1px); }
+  label.speed { font-size:12px; color:#9aa0a8; display:flex; align-items:center; gap:6px; }
+  .seed { font-size:12px; color:#9aa0a8; font-variant-numeric: tabular-nums; }
+  .panels { display:flex; flex-wrap:wrap; gap:24px; padding:20px; justify-content:center; }
+  .panel h2 { font-size:14px; margin:0 0 3px; }
+  .panel .tag { font-size:12px; color:#9aa0a8; margin:0 0 8px; }
+  .panel.published h2 { color:#f0a24b; }
+  .panel.paper h2 { color:#4bd06f; }
+  canvas { image-rendering: pixelated; width:400px; height:400px; max-width:80vw; background:#000; border:1px solid #3a3e46; border-radius:6px; display:block; }
+  .count { font-size:12px; color:#9aa0a8; margin-top:6px; font-variant-numeric: tabular-nums; }
+  .readout { text-align:center; padding:0 20px 26px; font-size:14px; font-variant-numeric: tabular-nums; }
+  .readout.same { color:#4bd06f; }
+  .readout.diff { color:#f0a24b; }
+</style>
+</head>
+<body>
+<header>
+  <h1>MergeLife — paper-correct update-rule test</h1>
+  <p class="sub">
+    Both panels run the <strong>same rule</strong>, the <strong>same seed</strong>, and the <strong>same initial grid</strong>, stepped in lockstep.
+    The JS viewer already does the paper's integer merge and &alpha;-only sort, so the <strong>only</strong> difference here is the no-match cell (issue&nbsp;#4):
+    the published viewer leaves it in the back buffer (reverts two generations &mdash; the source of the "flashing"), while the paper says an unmatched cell
+    <em>"does not change its value."</em> Rule is read from <code>?rule=</code>.
+  </p>
+</header>
+
+<div class="controls">
+  <input id="rule" type="text" spellcheck="false" autocomplete="off">
+  <button id="apply">Apply rule</button>
+  <button id="play" class="secondary">Pause</button>
+  <button id="step" class="secondary">Step</button>
+  <button id="reset" class="secondary">Reset (new seed)</button>
+  <label class="speed">Speed <input id="speed" type="range" min="1" max="60" value="20"></label>
+  <span class="seed" id="seedlabel"></span>
+</div>
+
+<div class="panels">
+  <div class="panel published">
+    <h2>Published viewer (current)</h2>
+    <p class="tag">no-match cell &rarr; reverts 2 generations</p>
+    <canvas id="cvPub" width="100" height="100"></canvas>
+    <div class="count" id="countPub">step 0</div>
+  </div>
+  <div class="panel paper">
+    <h2>Paper-correct (#4 fixed)</h2>
+    <p class="tag">no-match cell &rarr; keeps its value</p>
+    <canvas id="cvPaper" width="100" height="100"></canvas>
+    <div class="count" id="countPaper">step 0</div>
+  </div>
+</div>
+
+<div class="readout same" id="readout">&nbsp;</div>
+
+<script>
+'use strict';
+const ROWS = 100, COLS = 100;
+const DEFAULT_RULE = 'e542-5f79-9341-f31e-6c6b-7f08-8773-7068';
+// Paper Table 2 key-colors, index 0..7.
+const KEY_COLOR = [[0,0,0],[255,0,0],[0,255,0],[255,255,0],[0,0,255],[255,0,255],[0,255,255],[255,255,255]];
+
+// Seeded PRNG so both panels start from an identical random grid.
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+// Decode a 16-byte hex rule into sub-rules [alpha, beta, index], sorted by alpha
+// only (stable) — this already matches the paper and Java/JS/C.
+function parseRule(hex){
+  const s = hex.indexOf(';'); if (s !== -1) hex = hex.slice(0, s);
+  hex = hex.replace(/\W+/g, '');
+  if (hex.length < 32) return null;
+  const r = [];
+  for (let i = 0; i < 8; i++){
+    const o1 = parseInt(hex.substr(i*4, 2), 16);
+    let   o2 = parseInt(hex.substr(i*4+2, 2), 16);
+    if (Number.isNaN(o1) || Number.isNaN(o2)) return null;
+    if (o2 & 0x80) o2 -= 256;                 // octet-2 is two's complement
+    const pct = o2 > 0 ? o2/127 : o2/128;
+    let range = o1 * 8; if (range >= 2040) range = 2048;
+    r.push([range, pct, i]);
+  }
+  r.sort((a, b) => a[0] - b[0]);
+  return r;
+}
+
+class MergeLife {
+  constructor(paperCorrect){
+    this.paper = paperCorrect;
+    this.grid  = [this.zeros(), this.zeros()];
+    this.merge = Array.from({length: ROWS}, () => new Int32Array(COLS));
+    this.cur = 0; this.step = 0; this.mode = 0; this.rule = null; this.noopCount = 0;
+  }
+  zeros(){ return Array.from({length: ROWS}, () => Array.from({length: COLS}, () => [0,0,0])); }
+
+  seed(seedVal){
+    const rng = mulberry32(seedVal);
+    const g = this.grid[0], h = this.grid[1];
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+      g[r][c][0] = Math.floor(rng()*256); g[r][c][1] = Math.floor(rng()*256); g[r][c][2] = Math.floor(rng()*256);
+      h[r][c][0] = 0; h[r][c][1] = 0; h[r][c][2] = 0;   // back buffer starts at zero, as the references do
+    }
+    this.cur = 0; this.step = 0;
+  }
+
+  // Merged value = floor((r+g+b)/3), integer (paper §2). Also finds the mode (background).
+  calcMode(){
+    const hist = new Int32Array(256), g = this.grid[this.cur];
+    for (let r = 0; r < ROWS; r++){ const mr = this.merge[r], gr = g[r];
+      for (let c = 0; c < COLS; c++){ const p = gr[c]; const v = ((p[0]+p[1]+p[2])/3)|0; mr[c] = v; hist[v]++; } }
+    let m = 0; for (let i = 1; i < 256; i++) if (hist[i] > hist[m]) m = i; this.mode = m;
+  }
+
+  // Sum of the 8 Moore neighbors' merged values; out-of-bounds padded with the mode.
+  neighbors(r, c){
+    const M = this.merge, md = this.mode;
+    const rs = [r-1,r+1,r,r,r-1,r+1,r-1,r+1], cs = [c,c,c-1,c+1,c-1,c+1,c+1,c-1];
+    let s = 0;
+    for (let i = 0; i < 8; i++){ const nr = rs[i], nc = cs[i]; s += (nr>=0 && nc>=0 && nr<ROWS && nc<COLS) ? M[nr][nc] : md; }
+    return s;
+  }
+
+  advance(){
+    this.calcMode();
+    const src = this.grid[this.cur], dst = this.grid[1-this.cur], rule = this.rule;
+    let noop = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+      const nc = this.neighbors(r, c);
+      let matched = false;
+      for (let o = 0; o < rule.length; o++){
+        if (nc < rule[o][0]){
+          let ki = rule[o][2], pct = rule[o][1];
+          if (pct < 0){ pct = Math.abs(pct); ki += 1; if (ki >= 8) ki = 0; }  // negative % targets the next key color
+          const s = src[r][c], d = dst[r][c], K = KEY_COLOR[ki];
+          d[0] = s[0] + Math.floor((K[0]-s[0])*pct);
+          d[1] = s[1] + Math.floor((K[1]-s[1])*pct);
+          d[2] = s[2] + Math.floor((K[2]-s[2])*pct);
+          matched = true; break;
+        }
+      }
+      if (!matched){
+        noop++;
+        if (this.paper){                          // PAPER: keep the cell's current value
+          const s = src[r][c], d = dst[r][c]; d[0] = s[0]; d[1] = s[1]; d[2] = s[2];
+        }
+        // PUBLISHED: leave dst[r][c] untouched -> shows the back buffer (two generations ago)
+      }
+    }
+    this.noopCount = noop;
+    this.cur = 1 - this.cur; this.step++;
+  }
+
+  render(ctx, img){
+    const g = this.grid[this.cur], data = img.data;
+    let i = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){ const p = g[r][c]; data[i++] = p[0]; data[i++] = p[1]; data[i++] = p[2]; data[i++] = 255; }
+    ctx.putImageData(img, 0, 0);
+  }
+}
+
+const cvPub = document.getElementById('cvPub'),   ctxPub = cvPub.getContext('2d');
+const cvPaper = document.getElementById('cvPaper'), ctxPaper = cvPaper.getContext('2d');
+const imgPub = ctxPub.createImageData(COLS, ROWS), imgPaper = ctxPaper.createImageData(COLS, ROWS);
+const enginePub = new MergeLife(false), enginePaper = new MergeLife(true);
+const ruleInput = document.getElementById('rule');
+
+let seed = 0, playing = true, timer = null, stepsPerSec = 20;
+
+function ruleFromUrl(){ return new URLSearchParams(location.search).get('rule') || DEFAULT_RULE; }
+
+function applyRule(hex){
+  const parsed = parseRule(hex);
+  if (!parsed){ alert('Invalid rule: ' + hex); return; }
+  enginePub.rule = parsed; enginePaper.rule = parsed;
+  reset(true);
+}
+
+function reset(newSeed){
+  if (newSeed) seed = (Math.random() * 0xffffffff) >>> 0;
+  enginePub.seed(seed); enginePaper.seed(seed);
+  document.getElementById('seedlabel').textContent = 'seed ' + seed;
+  draw();
+}
+
+const readoutEl = document.getElementById('readout');
+function draw(){
+  enginePub.render(ctxPub, imgPub); enginePaper.render(ctxPaper, imgPaper);
+  document.getElementById('countPub').textContent   = 'step ' + enginePub.step;
+  document.getElementById('countPaper').textContent = 'step ' + enginePaper.step;
+  const a = enginePub.grid[enginePub.cur], b = enginePaper.grid[enginePaper.cur];
+  let diff = 0;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+    const p = a[r][c], q = b[r][c];
+    if (p[0]!==q[0] || p[1]!==q[1] || p[2]!==q[2]) diff++;
+  }
+  const pct = (100*diff/(ROWS*COLS)).toFixed(2);
+  readoutEl.className = 'readout ' + (diff === 0 ? 'same' : 'diff');
+  readoutEl.textContent = diff === 0
+    ? `identical — published and paper-correct agree exactly (0 diverging cells) · unmatched cells this step: ${enginePaper.noopCount}`
+    : `diverging: ${diff} cells (${pct}%) · unmatched cells this step: ${enginePaper.noopCount}`;
+}
+
+function tick(){ enginePub.advance(); enginePaper.advance(); draw(); }
+function loop(){ if (timer){ clearInterval(timer); timer = null; } if (playing) timer = setInterval(tick, 1000/stepsPerSec); }
+
+document.getElementById('apply').onclick = () => applyRule(ruleInput.value);
+ruleInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyRule(ruleInput.value); });
+document.getElementById('play').onclick  = e => { playing = !playing; e.target.textContent = playing ? 'Pause' : 'Play'; loop(); };
+document.getElementById('step').onclick  = () => { if (!playing) tick(); else tick(); };
+document.getElementById('reset').onclick = () => reset(true);
+document.getElementById('speed').oninput = e => { stepsPerSec = +e.target.value; if (playing) loop(); };
+
+ruleInput.value = ruleFromUrl();
+applyRule(ruleInput.value);   // parse + seed both
+loop();
+</script>
+</body>
+</html>

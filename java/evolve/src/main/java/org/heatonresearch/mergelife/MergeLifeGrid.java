@@ -187,6 +187,9 @@ public class MergeLifeGrid {
             for (int col = 0; col < line.length; col += 1) {
                 int c = countNeighbors(row,col);
 
+                // Paper: a cell matched by no sub-rule keeps its current value.
+                for(int j=0;j<3;j++) { linePrime[col][j] = line[col][j]; }
+
                 for(MergeLifeRule.SubRule subRule: rule.getSubRules()) {
                     if( c < subRule.getAlpha() ) {
                         int dPrime = subRule.getGamma()+1;

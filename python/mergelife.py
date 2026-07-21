@@ -35,13 +35,15 @@ def parse_update_rule(code):
             pct = x[1] / 128.0
         sorted_code.append((2048 if rng == 2040 else rng, pct, i))
 
-    sorted_code = sorted(sorted_code)
+    # Paper: sub-rules are ordered by the high (alpha) column only; equal ranges
+    # keep their original hex-string order. Python's sort is stable, so key on
+    # alpha alone (the full-tuple sort broke ties by percent, unlike Java/JS/C).
+    sorted_code = sorted(sorted_code, key=lambda x: x[0])
     return sorted_code
 
 
 def update_step(ml_instance):
     kernel = [[1, 1, 1], [1, 0, 1], [1, 1, 1]]
-    THIRD = 1.0 / 3.0
 
     # Get important values
     sorted_rule = ml_instance['sorted_rule']
@@ -58,9 +60,14 @@ def update_step(ml_instance):
     prev_data = ml_instance['lattice'][1]['data']
     current_data = ml_instance['lattice'][0]['data']
 
-    # Merge RGB
-    data_avg = np.dot(prev_data, [THIRD, THIRD, THIRD])
-    data_avg = data_avg.astype(int)
+    # Paper: a cell matched by no sub-rule keeps its current value. Seed the new
+    # buffer with the current state so unmatched cells are left unchanged. The
+    # references instead leave the stale back buffer (reverting two generations).
+    current_data[:] = prev_data
+
+    # Merge RGB -- integer floor((r+g+b)/3), matching the paper (Sec. 2) and the
+    # Java/JS/C engines. Widen out of uint8 first so the channel sum can't wrap.
+    data_avg = prev_data.astype(int).sum(axis=2) // 3
     pad_val = scipy.stats.mode(data_avg, axis=None)[0]
     pad_val = int(pad_val)
     data_cnt = convolve(data_avg, kernel, cval=pad_val, mode='constant')

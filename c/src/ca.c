@@ -272,9 +272,8 @@ void ml_grid_step(MlGrid *g, const MlRule *rule) {
         int nc = h0[c] + h1[c] + h2[c] - m[c];
         unsigned slot = rule->nc2slot[nc];
         g->slot_hist[slot]++;
-        if (slot == ML_NOOP) continue; /* leaves the destination buffer alone,
-                                        * exactly as the reference double
-                                        * buffering does */
+        /* Paper: a cell matched by no sub-rule keeps its current value.
+         * chan[ML_NOOP] is the identity map, so fall through and copy s -> d. */
         d[0] = rule->chan[slot][0][s[0]];
         d[1] = rule->chan[slot][1][s[1]];
         d[2] = rule->chan[slot][2][s[2]];

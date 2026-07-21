@@ -92,6 +92,9 @@ const MergeLifeRender = function () {
       for (let col = 0; col < line.length; col += 1) {
         const nc = this.sumNeighbor(this.mergeGrid, row, col, this.gridMode)
 
+        // Paper: a cell matched by no sub-rule keeps its current value.
+        lineNext[col][0] = line[col][0]; lineNext[col][1] = line[col][1]; lineNext[col][2] = line[col][2]
+
         for (let i = 0; i < updateRule.length; i++) {
           if (nc < updateRule[i][0]) {
             let ki = updateRule[i][2]
