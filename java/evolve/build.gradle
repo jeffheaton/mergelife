@@ -21,7 +21,7 @@ java {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
 
     testImplementation 'junit:junit:4.13.2'
 }
@@ -31,8 +31,10 @@ dependencies {
 sourceSets {
     examples {
         java.srcDirs = ['src/examples/java']
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
+        // main.output alone gives the library classes but none of their dependencies,
+        // so the example needs main's runtime classpath (jackson) as well.
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
+        runtimeClasspath += sourceSets.main.output + configurations.runtimeClasspath
     }
 }
 
