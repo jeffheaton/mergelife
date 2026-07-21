@@ -1,7 +1,6 @@
-pyinstaller==6.7.0
-pyqt6==6.7.0
-numpy==1.26.4
-scipy==1.11.3
-opencv-python-headless==4.9.0.80
+pyinstaller==6.21.0
+pyqt6==6.11.0
+numpy==2.4.6
+scipy==1.17.1
 pillow==12.3.0
 appdirs==1.4.4

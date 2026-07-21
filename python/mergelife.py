@@ -194,7 +194,7 @@ def calc_objective_stats(ml_instance):
     if 'eval-md-cnt' in ml_instance['track']:
         mode_cnt = ml_instance['track']['eval-md-cnt']
     else:
-        mode_cnt = np.zeros((height, width), dtype=np.int)
+        mode_cnt = np.zeros((height, width), dtype=int)
         ml_instance['track']['eval-md-cnt'] = mode_cnt
 
     mode_cnt[np.logical_not(mode_mask)] = 0
@@ -206,7 +206,7 @@ def calc_objective_stats(ml_instance):
     if 'eval-same-cnt' in ml_instance['track']:
         same_cnt = ml_instance['track']['eval-same-cnt']
     else:
-        same_cnt = np.zeros((height, width), dtype=np.int)
+        same_cnt = np.zeros((height, width), dtype=int)
         ml_instance['track']['eval-same-cnt'] = same_cnt
 
     same_mask = (d1_avg == d2_avg)
@@ -229,7 +229,7 @@ def calc_objective_stats(ml_instance):
     if 'eval-last-mode' in ml_instance['track']:
         last_mode = ml_instance['track']['eval-last-mode']
     else:
-        last_mode = np.zeros((height, width), dtype=np.int)
+        last_mode = np.zeros((height, width), dtype=int)
         ml_instance['track']['eval-last-mode'] = last_mode
 
     last_mode[mode_mask] = time_step
