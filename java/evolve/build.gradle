@@ -1,34 +1,48 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
-    }
+plugins {
+    id 'java-library'
 }
 
-
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'java'
-apply plugin: 'application'
-
-mainClassName = 'org.heatonresearch.mergelife.MergeLife'
+group = 'org.heatonresearch'
+version = '2.0.0'
 
 repositories {
     mavenCentral()
 }
 
-jar {
-    baseName = 'gs-gradle'
-    version =  '0.1.0'
+// Reference library. Its only runtime dependency is jackson (MergeLifeConfig reads
+// the shared JSON objective format); otherwise pure JDK. Targets Java 17 bytecode
+// (build with any JDK 17+); no fat jar, no application/shadow plugins.
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+    withSourcesJar()
+}
 
 dependencies {
-    compile "joda-time:joda-time:2.2"
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    testCompile "junit:junit:4.12"
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+
+    testImplementation 'junit:junit:4.13.2'
+}
+
+// A runnable reference example, kept in its own source set so it stays out of the
+// published library jar.
+sourceSets {
+    examples {
+        java.srcDirs = ['src/examples/java']
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+tasks.register('runExample', JavaExec) {
+    group = 'documentation'
+    description = 'Run the MergeLife reference example (score + render a rule).'
+    classpath = sourceSets.examples.runtimeClasspath
+    mainClass = 'org.heatonresearch.mergelife.examples.Example'
+}
+
+test {
+    useJUnit()
 }

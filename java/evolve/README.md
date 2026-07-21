@@ -1,50 +1,60 @@
-MergeLife Java Evolve Utility
-=============================
+MergeLife (Java reference library)
+==================================
 
-This project contains a Java implementation of the MergeLife evolutionary algorithm.
-This project is used mainly to evolve new MergeLife rule strings. It does not have
-ability to animate a CA.  If you wish to view an animated MergeLife rule, the
-[JavaScript MergeLife viewer](https://www.heatonresearch.com/mergelife/) is your best option. The Java version makes use of
-multithreading to enhance performance on multiprocessor systems.
+A small, dependency-free Java library implementing the MergeLife continuous
+cellular automaton and its genetic-algorithm objective function, as described in
+[the paper](https://doi.org/10.1007/s10710-018-9336-1). Its update rule is
+paper-correct and verified byte-identical to the C engine in this repository.
 
-This project builds a JAR file named **mergelife-evolve-all.jar** ([binary download]()) that can be
-used from the command line to render, evolve, and score MergeLife update rules.
+This is the **reference implementation** — favouring readability over speed. For
+performance use the C engine (`c/`); to animate rules use the
+[JavaScript viewer](https://www.heatonresearch.com/mergelife/). This library is a
+clean, portable source to read from or port elsewhere (e.g. C#/Unity).
 
-Render an Image
+Requirements
+------------
+
+- A JDK 17 or newer to build. The produced library targets Java 17 bytecode. Its
+  only runtime dependency is `jackson-databind`, used by `MergeLifeConfig` to read
+  the shared JSON objective format.
+
+Build
+-----
+
+```
+./gradlew build          # compile, run tests, produce build/libs/mergelife-2.0.0.jar
+```
+
+There is no fat jar and no CLI wrapper — this is a plain library.
+
+Run the example
 ---------------
 
-The **render** command allows a single image to be generated for a MergeLife CA.
-This image is the grid after the specified number of render steps.  A MergeLife
-hex string must be specified for the CA to be rendered.  The output will be
-a **.png** file for that hex string. The dimensions and zoom factor can also
-be specified.
+`src/examples/java/.../Example.java` demonstrates the library end to end (score a
+rule against the paper objective, then render it to a PNG):
 
 ```
-java -jar mergelife-evolve-all.jar -cols 100 -rows 100 -renderSteps 250 -zoom 5 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+./gradlew runExample
+./gradlew runExample --args="E542-5F79-9341-F31E-6C6B-7F08-8773-7068"
 ```
 
+Use the library
+---------------
 
-Evolve Cellular Automata
-------------------------
+```java
+MergeLifeConfig config = MergeLifeConfig.paperObjective();
+MergeLifeGeneticAlgorithm ga = new MergeLifeGeneticAlgorithm(new Random(), config);
 
-The **evolve** command will search begin a search for MergeLife update rules.
-Any interesting rule found will be written as a **.png** file where the filename
-matches the update rule hex string.  A configuration file must be specified to
-define the objective function.  A sample configuration file, that was used
-with the MergeLife paper, is [provided here](https://github.com/jeffheaton/mergelife/blob/master/java/evolve/paperObjective.json).
-
-```
-java -jar mergelife-evolve-all.jar -config paperObjective.json evolve
+double score = ga.score("E542-5F79-9341-F31E-6C6B-7F08-8773-7068"); // objective score
+ga.render("E542-5F79-9341-F31E-6C6B-7F08-8773-7068");                // -> PNG
+ga.process();                                                        // evolve new rules
 ```
 
+The paper's objective is available programmatically via
+`MergeLifeConfig.paperObjective()`, or loaded from
+[`paperObjective.json`](paperObjective.json) with
+`new MergeLifeConfig("paperObjective.json")` — the same shared file the Python, C,
+and JavaScript tools use.
 
-Score a Cellular Automation
----------------------------
-
-The **score** command will run the objective function against the specified hex string.
-A configuration file must be provided that specifies the objective function. A sample configuration file, that was used
-with the MergeLife paper, is [provided here](https://github.com/jeffheaton/mergelife/blob/master/java/evolve/paperObjective.json).
-
-```
-java -jar mergelife-evolve-all.jar -config paperObjective.json  score E542-5F79-9341-F31E-6C6B-7F08-8773-7068
-```
+Note: `render()` and the genetic algorithm write `mergelife-<rule>.png` into the
+working directory.

@@ -5,7 +5,6 @@
  */
 package org.heatonresearch.util;
 
-import javafx.scene.media.MediaException;
 import org.heatonresearch.mergelife.MergeLifeConfig;
 import org.heatonresearch.mergelife.MergeLifeException;
 import org.heatonresearch.mergelife.MergeLifeGeneticAlgorithm;

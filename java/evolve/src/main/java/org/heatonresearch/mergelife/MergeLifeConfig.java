@@ -1,5 +1,5 @@
 /*
- * MergeLife, Copyrighr 2018 by Jeff Heaton
+ * MergeLife, Copyright 2018 by Jeff Heaton
  * http://www.heatonresearch.com/mergelife/
  * MIT License
  */
@@ -14,6 +14,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Configuration for a MergeLife run: grid size, render/GA parameters, and the
+ * objective function.
+ *
+ * <p>Build one programmatically with the setters, or use {@link #paperObjective()}
+ * for the exact objective published in the MergeLife paper (equivalent to the
+ * shared {@code paperObjective.json}).
+ */
 public class MergeLifeConfig {
     private int rows;
     private int cols;
@@ -30,14 +38,22 @@ public class MergeLifeConfig {
     private EvaluateObjective objectiveFunction;
 
     public MergeLifeConfig() {
-
     }
 
+    /**
+     * Load a configuration from a JSON file (the shared {@code paperObjective.json}
+     * format): a {@code "config"} object of scalar parameters plus an
+     * {@code "objective"} array of stat weightings.
+     *
+     * @param filename path to the JSON configuration.
+     * @throws IOException if the file cannot be read.
+     */
+    @SuppressWarnings("unchecked")
     public MergeLifeConfig(String filename) throws IOException {
         byte[] mapData = Files.readAllBytes(Paths.get(filename));
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> map = objectMapper.readValue(mapData, HashMap.class);
-        Map<String,String> configMap = (Map<String,String>)map.get("config");
+        Map<String, String> configMap = (Map<String, String>) map.get("config");
 
         this.rows = readInt(configMap, "rows");
         this.cols = readInt(configMap, "cols");
@@ -52,53 +68,81 @@ public class MergeLifeConfig {
         this.maxRuns = readInt(configMap, "maxRuns");
 
         BasicObjectiveFunction objFunction = new BasicObjectiveFunction(this);
-        ArrayList<Object> list = (ArrayList<Object>)map.get("objective");
-        for(Object obj: list) {
-            Map map2 = (Map)obj;
-            String stat = (String)map2.get("stat");
+        ArrayList<Object> list = (ArrayList<Object>) map.get("objective");
+        for (Object obj : list) {
+            Map map2 = (Map) obj;
+            String stat = (String) map2.get("stat");
             double min = Double.parseDouble(map2.get("min").toString());
             double max = Double.parseDouble(map2.get("max").toString());
             double weight = Double.parseDouble(map2.get("weight").toString());
             double minWeight = Double.parseDouble(map2.get("min_weight").toString());
             double maxWeight = Double.parseDouble(map2.get("max_weight").toString());
-            objFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(stat,min,max,weight,minWeight,maxWeight));
+            objFunction.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat(stat, min, max, weight, minWeight, maxWeight));
         }
         this.objectiveFunction = objFunction;
     }
 
-    private int readInt(Map<String,String> map, String key) {
-        if(!map.containsKey(key)) {
+    private int readInt(Map<String, String> map, String key) {
+        if (!map.containsKey(key)) {
             throw new MergeLifeException("Missing value for " + key);
         }
-
         Object obj = map.get(key);
-        if( obj instanceof Integer) {
-            return (int)obj;
+        if (obj instanceof Integer) {
+            return (int) obj;
         }
         String str = map.get(key);
         try {
             return Integer.parseInt(str);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             throw new MergeLifeException("Expected numeric value for " + key);
         }
     }
 
-    private double readDouble(Map<String,String> map, String key) {
-        if(!map.containsKey(key)) {
+    private double readDouble(Map<String, String> map, String key) {
+        if (!map.containsKey(key)) {
             throw new MergeLifeException("Missing value for " + key);
         }
-
         Object obj = map.get(key);
-        if( obj instanceof Double) {
-            return (double)obj;
+        if (obj instanceof Double) {
+            return (double) obj;
         }
-
         String str = map.get(key);
         try {
             return Double.parseDouble(str);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             throw new MergeLifeException("Expected floating point value for " + key);
         }
+    }
+
+    /**
+     * The parameters and objective function used in the MergeLife paper
+     * (Heaton, 2018), equivalent to the shared {@code paperObjective.json}.
+     *
+     * @return a fully-populated configuration.
+     */
+    public static MergeLifeConfig paperObjective() {
+        MergeLifeConfig config = new MergeLifeConfig();
+        config.rows = 100;
+        config.cols = 100;
+        config.zoom = 5;
+        config.renderSteps = 250;
+        config.populationSize = 100;
+        config.tournamentCycles = 5;
+        config.crossoverPct = 0.75;
+        config.evalCycles = 5;
+        config.patience = 1000;
+        config.scoreThreshold = 3.5;
+        config.maxRuns = 1000000;
+
+        BasicObjectiveFunction obj = new BasicObjectiveFunction(config);
+        //                                                           stat          min    max    weight  minW   maxW
+        obj.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat("steps",      300,   1000,  1,      -1,    1));
+        obj.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat("foreground", 0.001, 0.1,   1,      -0.1,  -1));
+        obj.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat("active",     0.001, 0.1,   1,      -1,    -1));
+        obj.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat("rect",       0.02,  0.25,  2,      -2,    2));
+        obj.addStat(new BasicObjectiveFunction.ObjectiveFunctionStat("mage",       5,     10,    0,      -5,    0));
+        config.objectiveFunction = obj;
+        return config;
     }
 
     public EvaluateObjective getObjectiveFunction() {

@@ -6,27 +6,23 @@
   "dependencies": {
     "command-line-args": "^5.0.2",
     "command-line-usage": "^5.0.5",
+    "jimp": "^0.16.1",
+    "seedrandom": "^2.4.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
     "eslint": "^9.15.0",
-    "eslint-config": "^0.3.0",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jasmine": "^2.10.1",
     "eslint-plugin-node": "^6.0.0",
     "eslint-plugin-promise": "^3.8.0",
-    "jimp": "^0.16.1",
-    "npm": "^12.0.1",
-    "seedrandom": "^2.4.4"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-minify": "^0.4.3",
     "eslint-plugin-standard": "^3.1.0",
     "mocha": "^11.1.0"
   },
   "scripts": {
     "test": "mocha --require test/setup --colors",
-    "build": "babel src -d lib"
+    "build": "esbuild src/mergelife.js src/mergelife-evolve.js --minify --sourcemap --outdir=lib"
   },
   "author": "Jeff Heaton",
   "license": "MIT"
