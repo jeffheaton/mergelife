@@ -174,7 +174,6 @@ const MergeLifeRender = function () {
     this.ctx.strokeStyle = 'grey'
 
     const canvasWidth = this.ctx.canvas.clientWidth;
-    const canvasHeight = this.ctx.canvas.clientHeight;
     const gridWidth = grid[0].length
     const gridHeight = grid.length
     const pix = this.imgdata.data

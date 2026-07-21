@@ -4,7 +4,7 @@ const ml = require('./mergelife')
 const mlev = require('./mergelife-evolve')
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
-const Jimp = require('Jimp')
+const { Jimp, rgbaToInt } = require('jimp')
 const fs = require('fs')
 const cluster = require('cluster')
 const os = require('os')
@@ -48,7 +48,7 @@ function score (ruleText, objective) {
   console.log(`Final score: ${score}`)
 }
 
-function render (ruleText) {
+async function render (ruleText) {
   const rows = config.config.rows
   const cols = config.config.cols
   const steps = config.config.renderSteps
@@ -66,15 +66,13 @@ function render (ruleText) {
 
   const imageData = renderer.grid[0]
 
-  const image = new Jimp(cols * zoom, rows * zoom, 0xffffffff, function (err, image) {
-    if (err) throw err
-  })
+  const image = new Jimp({ width: cols * zoom, height: rows * zoom, color: 0xffffffff })
 
   image.setPixelColor(0x000000ff, 1,1)
 
   imageData.forEach((row, y) => {
     row.forEach((color, x) => {
-      color = Jimp.rgbaToInt(color[0],color[1],color[2],0xff)
+      color = rgbaToInt(color[0],color[1],color[2],0xff)
       const x2 = x * zoom
       const y2 = y * zoom
       for (let i = 0; i < zoom; i++) {
@@ -87,13 +85,8 @@ function render (ruleText) {
 
   const filename = `${ruleText}.png`
 
-  image.write(filename, (err) => {
-    if (err) {
-      throw err
-    } else {
-      console.log(`Saved: ${filename}`)
-    }
-  })
+  await image.write(filename)
+  console.log(`Saved: ${filename}`)
 }
 
 function report () {
@@ -245,7 +238,9 @@ function evolve () {
       if (requestStop) {
         // reset and try again
         if (topGenome.score >= config.config.scoreThreshold) {
-          render(topGenome.rule)
+          render(topGenome.rule).catch((err) => {
+            console.error(`Failed to render: ${err.message}`)
+          })
         }
         evalCount = 0
         requestStop = false
@@ -336,7 +331,10 @@ if (!('command' in options) || options.help) {
     process.exit(1)
   } else {
     const rule = options.command[1]
-    render(rule)
+    render(rule).catch((err) => {
+      console.error(`Failed to render: ${err.message}`)
+      process.exit(1)
+    })
   }
 } else if (options.command[0] === 'score') {
   if (options.command.length < 2) {

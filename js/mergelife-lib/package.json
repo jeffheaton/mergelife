@@ -4,23 +4,21 @@
   "description": "",
   "main": "mergelife-util.js",
   "dependencies": {
-    "command-line-args": "^5.0.2",
-    "command-line-usage": "^5.0.5",
-    "jimp": "^0.16.1",
     "seedrandom": "^2.4.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "esbuild": "^0.28.1",
-    "eslint": "^9.15.0",
-    "eslint-config-standard": "^11.0.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jasmine": "^2.10.1",
-    "eslint-plugin-node": "^6.0.0",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
     "mocha": "^11.1.0"
   },
+  "overrides": {
+    "serialize-javascript": "^7.0.7",
+    "diff": "^8.0.3"
+  },
   "scripts": {
+    "lint": "eslint src test",
     "test": "mocha --require test/setup --colors",
     "build": "esbuild src/mergelife.js src/mergelife-evolve.js --minify --sourcemap --outdir=lib"
   },
