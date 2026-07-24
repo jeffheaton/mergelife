@@ -2,7 +2,7 @@ import ctypes
 import numpy as np
 from scipy.ndimage import convolve
 import logging
-import mergelife.dp as dp
+from . import dp
 from PIL import Image
 
 logger = logging.getLogger(__name__)
@@ -183,7 +183,8 @@ def calc_objective_stats(ml_instance):
     mode_mask = (d2_avg == md2)
     # mode_equal = sum(mode_equal.ravel()) / (height*width)
 
-    # has been mode for >5
+    # Paper Sec. 4: a stable background cell has been the background color for
+    # longer than 100 CA generations.
     if 'eval-md-cnt' in ml_instance['track']:
         mode_cnt = ml_instance['track']['eval-md-cnt']
     else:
@@ -193,7 +194,7 @@ def calc_objective_stats(ml_instance):
     mode_cnt[np.logical_not(mode_mask)] = 0
     mode_cnt += mode_mask
 
-    mc = np.sum(mode_cnt > 50)
+    mc = np.sum(mode_cnt > 100)
 
     # has been color (not mode) for >5
     if 'eval-same-cnt' in ml_instance['track']:
@@ -260,13 +261,31 @@ def calc_objective_stats(ml_instance):
 
 
 def is_lattice_stable(ml_instance, o=None):
+    """Paper Sec. 4.1: the CA has converged when any of the following holds --
+    less than 1% of the merged cells have changed value in the last 100 CA
+    generations, the stable background count has not changed for 100 CA
+    generations, or more than 1000 total CA generations have run."""
     if o is None:
         o = calc_objective_stats(ml_instance)
 
-    cnt_bg = o['bg']
+    height = ml_instance['height']
+    width = ml_instance['width']
+    time_step = ml_instance['time_step']
 
-    if ml_instance['time_step'] > 100:
-        if cnt_bg < 0.01:
+    # Track when each cell's merged value last changed.
+    e1 = ml_instance['lattice'][0]['eval']
+    e2 = ml_instance['lattice'][1]['eval']
+    if 'eval-last-change' in ml_instance['track']:
+        last_change = ml_instance['track']['eval-last-change']
+    else:
+        last_change = np.zeros((height, width), dtype=int)
+        ml_instance['track']['eval-last-change'] = last_change
+    if e1 is not None and e2 is not None:
+        last_change[e1['merge'] != e2['merge']] = time_step
+
+    if time_step > 100:
+        changed_recently = np.sum((time_step - last_change) < 100)
+        if changed_recently < 0.01 * (height * width):
             return True
 
     # Time to stop?
@@ -284,7 +303,7 @@ def is_lattice_stable(ml_instance, o=None):
     ml_instance['track']['eval-mc-nochange'] = mc_nochange
     ml_instance['track']['eval-last-mc'] = last_mc
 
-    return ml_instance['time_step'] > 1000
+    return time_step > 1000
 
 
 def count_discrete(ml_instance):

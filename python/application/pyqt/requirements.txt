@@ -1,3 +1,7 @@
+# The MergeLife engine and trainer come from the shared library at
+# python/mergelife-lib. The relative path below resolves when pip runs from
+# this directory:  pip install -r requirements.txt
+../../mergelife-lib
 pyinstaller==6.21.0
 pyqt6==6.11.0
 numpy==2.4.6

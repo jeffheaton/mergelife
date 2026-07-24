@@ -20,11 +20,11 @@ import sys
 
 import numpy as np
 from PIL import Image
+from mergelife.mergelife import new_ml_instance, randomize_lattice, update_step
 
 # Allow running as `python tools/generate_gallery.py` from the app directory.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from mergelife.mergelife import new_ml_instance, randomize_lattice, update_step  # noqa: E402
 from tab_gallery import GalleryTab  # noqa: E402
 
 # Must match the values GalleryTab renders at, or the previews will not line up

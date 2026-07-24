@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mergelife"
+version = "1.0.0"
+description = "MergeLife: evolving continuous cellular automata for aesthetic objectives"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Jeff Heaton" }]
+keywords = ["cellular-automata", "artificial-life", "genetic-algorithm", "generative-art"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Life",
+]
+dependencies = [
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "pillow>=10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jeffheaton/mergelife"
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mergelife"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

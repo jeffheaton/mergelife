@@ -28,10 +28,15 @@ src/%.o: src/%.c src/mergelife.h
 verify: test/verify.c $(LIBOBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test/verify.c $(LIBOBJ) $(LDLIBS)
 
-test: verify
+# Replays the cross-engine vectors in ../conformance/vectors.txt.
+conformance: test/conformance.c $(LIBOBJ)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test/conformance.c $(LIBOBJ) $(LDLIBS)
+
+test: verify conformance
 	./verify
+	./conformance
 
 clean:
-	rm -f $(OBJ) $(BIN) verify
+	rm -f $(OBJ) $(BIN) verify conformance
 
 .PHONY: all clean test

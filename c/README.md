@@ -196,26 +196,27 @@ and therefore earns `max_weight` (+1) instead of the steeply negative in-range
 value (−0.857). Stopping at exactly 1000 makes every long-running rule score
 two points lower than the published table.
 
-**Cells matched by no sub-rule keep the value from two generations ago.** The
-paper says "no change is made to that cell", but all three reference
-implementations double-buffer and simply skip the write, so the cell reverts to
-the other buffer's contents. This is observable whenever a rule's largest
-`alpha` is below 2040, and it is a real source of the flashing the paper
-mentions. The implementation behavior is reproduced, not the stated intent,
-so rules found here look the same in the viewer.
+**Cells matched by no sub-rule keep their current value.** The paper says "no
+change is made to that cell", but the original reference implementations
+double-buffered and simply skipped the write, so the cell reverted to the
+other buffer's contents — a real source of the flashing the paper mentions.
+Every engine in this repo (including this one; see the `ML_NOOP` identity
+table in `ca.c`) has since been corrected to the paper's stated behavior, and
+the shared conformance vectors in `conformance/` encode it.
 
 **Sub-rules with equal ranges keep their original hex order.** Java's
 `Collections.sort` and JavaScript's `Array.sort` are both stable, so ties break
 by position in the hex string.
 
 
-Two inconsistencies in the existing implementations
----------------------------------------------------
+Two inconsistencies found in the historical implementations
+-----------------------------------------------------------
 
-Found while establishing the above; neither is introduced by this trainer.
+Found while establishing the above; neither was introduced by this trainer.
+The Python issue is resolved: the legacy module is gone.
 
-**`python/mergelife.py` simulates a different CA.** It merges RGB with a
-floating point dot product and truncates:
+**The legacy top-level `python/mergelife.py` simulated a different CA.** It
+merged RGB with a floating point dot product and truncated:
 
 ```python
 data_avg = np.dot(prev_data, [THIRD, THIRD, THIRD]).astype(int)
@@ -225,16 +226,20 @@ Java and JavaScript use integer division, `(r + g + b) / 3`. These disagree on
 **42 of the 256 gray levels** — for `r = g = b = 85` the float path gives
 `84.99999999999999 → 84` where the integer path gives 85. Since the merged
 value feeds the neighbor count and the background mode, Python's trajectories
-diverge from the viewer's. `python/mergelife.py` also sorts sub-rules by
-`(alpha, percent, index)`, so tied ranges break differently than in Java and
-JavaScript.
+diverged from the viewer's. That module also sorted sub-rules by
+`(alpha, percent, index)`, breaking tied ranges differently than Java and
+JavaScript. Both defects were fixed before the module was replaced by the
+shared `mergelife` library (python/mergelife-lib), which merges with integer
+arithmetic, sorts stably by alpha alone, and is the reference engine for the
+conformance vectors.
 
 **Java averages evaluation cycles where the paper says maximum.**
 `BasicObjectiveFunction.calculateObjective` returns `sum / evalCycles`, while
-the paper states "the max score from these 5 runs becomes the score" and
-`python/ml_evolve.py` uses `np.max`. Since Java produced the published rules,
-the published scores are means of five cycles, not maxima. `--aggregate
-mean|max` selects either; max is the default here, matching the paper text.
+the paper states "the max score from these 5 runs becomes the score" and the
+mergelife library's `objective_function` takes `np.max`. Since Java produced
+the published rules, the published scores are means of five cycles, not
+maxima. `--aggregate mean|max` selects either; max is the default here,
+matching the paper text.
 
 
 Command line

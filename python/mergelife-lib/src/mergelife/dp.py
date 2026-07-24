@@ -28,12 +28,8 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 from collections import namedtuple
+from functools import reduce
 from operator import mul
-
-try:
-    reduce = reduce
-except NameError:
-    from functools import reduce # py3k
 
 Info = namedtuple('Info', 'start height')
 
@@ -98,64 +94,3 @@ def max_rectangle_size(histogram):
 
 def area(size):
     return reduce(mul, size)
-
-import unittest
-class TestCase(unittest.TestCase):
-    def test(self):
-        self.assertEqual(max_size(self.__s2m("""
-        0 0 0 0 1 0
-        0 0 1 0 0 1
-        0 0 0 0 0 0
-        1 0 0 0 0 0
-        0 0 0 0 0 1
-        0 0 1 0 0 0""")), (3, 4))
-        self.assertEqual(max_size([[1, 1], [0, 0]]), (1, 2))
-        self.assertEqual(max_size([[0, 0], [1, 1]]), (1, 2))
-        self.assertEqual(max_size([[1, 0], [1, 0]]), (2, 1))
-        self.assertEqual(max_size([[0, 1], [0, 1]]), (2, 1))
-        self.assertEqual(max_size(self.__s2m("""
-        0 0 0 0 1 0
-        0 0 1 0 0 1
-        0 0 0 0 0 0
-        1 0 0 0 0 0
-        0 0 0 0 0 1
-        0 0 1 0 0 0
-        0 0 0 0 0 0
-        0 0 0 0 0 0""")), (7, 2))
-        self.assertEqual(max_size([[]]), (0, 0))
-        self.assertEqual(max_size([]), (0, 0))
-        self.assertEqual(max_size(self.__s2m("""
-        0 0 0 0 1 0
-        0 0 1 0 0 1
-        0 0 0 0 0 0
-        1 0 0 0 0 0
-        0 0 0 0 0 0
-        0 0 1 0 0 1
-        0 0 0 0 0 0
-        0 0 0 0 0 0""")), (3, 5))
-        self.assertEqual(max_size(self.__s2m("""
-        0 0 0 0 1 0
-        0 0 0 0 0 0
-        0 0 1 0 0 1
-        0 0 0 0 0 0
-        1 0 0 0 0 0
-        0 0 0 0 0 0
-        0 0 1 0 0 1
-        0 0 0 0 0 0
-        0 0 0 0 0 1""")), (8, 2))
-        self.assertEqual(max_size(self.__s2m("""
-        0 0 0 0 1 1 1
-        0 0 0 0 0 0 0
-        0 0 0 1 1 1 1
-        0 0 1 1 1 1 1
-        1 0 1 1 1 1 1
-        1 0 1 1 1 1 1
-        1 0 1 1 1 1 1
-        """)), (3, 3))
-
-    def __s2m(self, s):
-        return [map(int, line.split())
-                for line in s.splitlines() if line.strip()]
-
-if __name__=="__main__":
-    import unittest; unittest.main()

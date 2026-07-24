@@ -1,60 +1,60 @@
-MergeLife Python Evolve Utility
-===============================
+MergeLife Python
+================
 
-This project contains a Python implementation of the MergeLife evolutionary algorithm and viewer.
-This project is used both to evolve new MergeLife rule strings and to view animated MergeLife CA. The animation
-uses matplotlib.  For evolution, multiple cores are used via the Python multiprocessing package.  This sidesteps
-Python's GIL limitation.
+The Python side of MergeLife lives in two places:
 
-Viewing a CA
-------------
+* **[mergelife-lib/](mergelife-lib/)** — the `mergelife` library: the update
+  rule engine, the paper-compliant evolutionary trainer, and the objective
+  function, packaged as an installable wheel. This is the single Python source
+  of truth; it is verified against the shared cross-language conformance
+  vectors (`conformance/vectors.txt`) and is also the reference engine that
+  generates them.
+* **[application/pyqt/](application/pyqt/)** — the HeatonCA desktop app
+  (PyQt6), which imports the library.
 
-It is easiest just to use the [Javascript viewer](http://www.heatonresearch.com/mergelife/).  However, I do provide a Python viewer too.
-
-The Python viewer will launch a Matplotlib window and animate the CA.  The value
-CODE in the file ml_viewer.py specifies the ML rule that is to be viewed.
-There are many CODE values to choose from in the comments of the source code.
+Install the library
+-------------------
 
 ```
-python ml_viewer.py --rows 300 --cols 300 E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+pip install ./mergelife-lib            # from this directory
+pip install './mergelife-lib[test]'    # with pytest, to run its test suite
 ```
 
+Use it
+------
 
-Render an Image
+```python
+import mergelife
+
+ml = mergelife.new_ml_instance(100, 100, "e542-5f79-9341-f31e-6c6b-7f08-8773-7068")
+for _ in range(250):
+    mergelife.update_step(ml)
+mergelife.save_image(ml, "out.png")
+```
+
+The trainer is `mergelife.ml_evolve.Evolve`; see the library
+[README](mergelife-lib/README.md) for the API and paper-conformance notes.
+
+Runnable examples
+-----------------
+
+[mergelife-lib/examples/](mergelife-lib/examples/) covers the tasks the old
+top-level scripts used to do:
+
+| Task | Example |
+|---|---|
+| View a CA interactively | `pygame_viewer.py` (pygame; rule entry, presets, pause/step) |
+| Evolve new rules | `train.py` (the paper's GA and objective by default) |
+| Render a rule to a PNG | `render.py` |
+
+The paper's config/objective JSON ships alongside them as
+`examples/paperObjective.json`.
+
+The desktop app
 ---------------
 
-The **render** command allows a single image to be generated for a MergeLife CA.
-This image is the grid after the specified number of render steps.  A MergeLife
-hex string must be specified for the CA to be rendered.  The output will be
-a **.png** file for that hex string. The dimensions and zoom factor can also
-be specified.
-
 ```
-python ml_utility.py --rows 100 --cols 100 --renderSteps 250 --zoom 5 render E542-5F79-9341-F31E-6C6B-7F08-8773-7068
-```
-
-
-Evolve Cellular Automata
-------------------------
-
-The **evolve** command will search begin a search for MergeLife update rules.
-Any interesting rule found will be written as a **.png** file where the filename
-matches the update rule hex string.  A configuration file must be specified to
-define the objective function.  A sample configuration file, that was used
-with the MergeLife paper, is [provided here](https://github.com/jeffheaton/mergelife/blob/master/java/evolve/paperObjective.json).
-
-```
-python ml_utility.py --config paperObjective.json evolve
-```
-
-
-Score a Cellular Automation
----------------------------
-
-The **score** command will run the objective function against the specified hex string.
-A configuration file must be provided that specifies the objective function. A sample configuration file, that was used
-with the MergeLife paper, is [provided here](https://github.com/jeffheaton/mergelife/blob/master/java/evolve/paperObjective.json).
-
-```
-python ml_utility.py --config ../java/evolve/paperObjective.json score E542-5F79-9341-F31E-6C6B-7F08-8773-7068
+cd application/pyqt
+python -m venv venv && venv/bin/pip install -r requirements.txt
+venv/bin/python heaton-ca.py
 ```

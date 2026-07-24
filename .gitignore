@@ -22,6 +22,7 @@ __pycache__
 # c trainer build output
 c/mergelife-trainer
 c/verify
+c/conformance
 c/src/*.o
 
 # Testing and coverage

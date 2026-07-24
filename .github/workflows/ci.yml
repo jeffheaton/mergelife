@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Floor of requires-python in python/mergelife-lib/pyproject.toml,
+        # plus the newest stable release.
+        python-version: ["3.11", "3.14"]
+    defaults:
+      run:
+        working-directory: python/mergelife-lib
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: python/mergelife-lib/pyproject.toml
+      - name: Install library with test dependencies
+        run: pip install '.[test]'
+      - name: Run tests (includes cross-engine conformance)
+        run: pytest
+
+  javascript:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            js/mergelife-lib/package-lock.json
+            js/mergelife-util/package-lock.json
+      - name: mergelife-lib install
+        run: npm ci
+        working-directory: js/mergelife-lib
+      - name: mergelife-lib lint
+        run: npm run lint
+        working-directory: js/mergelife-lib
+      - name: mergelife-lib test (includes cross-engine conformance)
+        run: npm test
+        working-directory: js/mergelife-lib
+      - name: mergelife-lib build
+        run: npm run build
+        working-directory: js/mergelife-lib
+      # No test suite yet; the install alone catches broken lockfiles and
+      # unresolvable dependency trees on a fresh clone.
+      - name: mergelife-util install
+        run: npm ci
+        working-directory: js/mergelife-util
+
+  java:
+    name: Java
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build and test (includes cross-engine conformance)
+        run: ./gradlew build --console=plain
+        working-directory: java/evolve
+
+  c:
+    name: C
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install zlib headers
+        run: sudo apt-get update && sudo apt-get install -y zlib1g-dev
+      - name: Build and test (verify + cross-engine conformance)
+        run: make test
+        working-directory: c
