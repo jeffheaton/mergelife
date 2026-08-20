@@ -14,22 +14,52 @@ the cross-language golden vectors.
 ## Paper conformance
 
 The engine and trainer follow the published paper (Heaton, *Evolving
-continuous cellular automata for aesthetic objectives*, GPEM 20:93–125, 2019)
-exactly, including three places where the paper differs from every historical
+continuous cellular automata for aesthetic objectives*, GPEM 20:93–125, 2019),
+including one place where the paper differs from every historical
 implementation in this repo:
 
 * mutation exchanges two random hex digits (Sec. 5.3) rather than replacing
-  one digit with a random value,
-* a stable background cell requires more than 100 CA generations as the
-  background color (Sec. 4), not 50,
-* convergence uses the paper's three conditions (Sec. 4.1), including the
-  "less than 1% of merged cells changed in 100 generations" test, and drops
-  the legacy Python-only early exit (stop when stable background stays under
-  1% after 100 generations).
+  one digit with a random value.
 
-Trainer results therefore may differ from the legacy Java/JS/Python trainers
-until those are migrated to this library's behavior. The update rule itself is
-unchanged and verified against the shared cross-language conformance vectors.
+### Why the objective follows the 2018 trainer, not the paper's Sec. 4.1 text
+
+The **evaluation layer** — the bookkeeping behind the objective statistics and
+the convergence test that decides when to measure them — is deliberately the
+2018 reference trainer's, the code that produced the published rules and the
+gallery. A run ends when the world dies (stable background under 1% after
+generation 100), when the stable background count has not moved for more than
+100 generations, or at the generation cap; a stable background cell is one that
+has held the background color for more than 50 generations.
+
+This library briefly used the paper's Sec. 4.1 wording instead — the "less than
+1% of merged cells changed in the last 100 generations" test, with the
+100-generation stable-background threshold the same section implies. That
+combination reads nearly every world as converged around generation 101: no
+cell can qualify as stable background before then, and MergeLife's signature
+look (a settled background carrying gliders and sparks) moves well under 1% of
+a 10,000-cell lattice. Scored over the 30 curated gallery rules at the paper's
+configuration (100×100, five cycles, best of three lattice seeds):
+
+| | 2018 trainer | paper Sec. 4.1 |
+|---|---|---|
+| median score | 3.76 | 1.54 |
+| at or above the 3.5 save threshold | 20 / 30 | 5 / 30 |
+| negative | 6 / 30 | 11 / 30 |
+
+A fitness function that ranks its own hall of fame that far down is optimizing
+for something else — under Sec. 4.1 a GA out-scores every curated rule with
+static worlds that converge at exactly 101 generations. The paper's text and
+the paper's code disagree, and every score of record came from the code.
+
+Both settings share the objective table (Sec. 4, Table 3) verbatim — the
+weights and reward bands never changed. The update rule itself is untouched by
+any of this and stays verified against the shared cross-language conformance
+vectors, which pin lattice evolution only.
+
+The C, Java, and JS trainers in this repo already use the 2018 evaluation layer
+(minus the Python-only dead-world exit), so the four engines now agree on
+convergence again; trainer results still differ from them through the mutation
+operator above.
 
 ## Layout
 

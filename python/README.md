@@ -4,11 +4,13 @@ MergeLife Python
 The Python side of MergeLife lives in two places:
 
 * **[mergelife-lib/](mergelife-lib/)** — the `mergelife` library: the update
-  rule engine, the paper-compliant evolutionary trainer, and the objective
-  function, packaged as an installable wheel. This is the single Python source
-  of truth; it is verified against the shared cross-language conformance
-  vectors (`conformance/vectors.txt`) and is also the reference engine that
-  generates them.
+  rule engine, the paper's evolutionary trainer, and the objective function,
+  packaged as an installable wheel. This is the single Python source of truth;
+  it is verified against the shared cross-language conformance vectors
+  (`conformance/vectors.txt`) and is also the reference engine that generates
+  them. See the library
+  [README](mergelife-lib/README.md#paper-conformance) for where it follows the
+  paper and where it follows the 2018 trainer that produced the published rules.
 * **[application/pyqt/](application/pyqt/)** — the HeatonCA desktop app
   (PyQt6), which imports the library.
 

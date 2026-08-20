@@ -8,6 +8,7 @@ from PIL import Image
 import mergelife
 
 PAPER_RULE = "e542-5f79-9341-f31e-6c6b-7f08-8773-7068"
+STATIC_RULE = "0000-0000-0000-0000-0000-0000-0000-0000"  # matches no cell, ever
 RULE_RE = re.compile(r"^[0-9a-f]{4}(-[0-9a-f]{4}){7}$")
 
 PAPER_OBJECTIVE = [
@@ -97,16 +98,47 @@ def test_objective_function_smoke():
     assert np.isfinite(result["score"])
 
 
-def test_static_rule_converges_when_change_window_closes():
-    # Paper Sec. 4.1, first convergence condition: stop once less than 1% of
-    # the merged cells have changed value during the last 100 CA generations.
-    # An all-zero rule never matches any cell, so the grid is static from the
-    # first generation and must stop the moment the 100-generation window can
-    # be judged.
-    np.random.seed(5)
-    ml = mergelife.new_ml_instance(20, 20, "0000-0000-0000-0000-0000-0000-0000-0000")
-    result = mergelife.calc_objective_function(ml, PAPER_OBJECTIVE)
-    assert result["time_step"] == 101
+def _run_to_convergence(ml):
+    # The trainer's loop shape: step, then ask whether that generation ended it.
+    while True:
+        mergelife.update_step(ml)
+        if mergelife.is_lattice_stable(ml):
+            return ml["time_step"]
+
+
+def test_static_world_converges_on_frozen_background():
+    # The 2018 trainer's frozen-background exit: the stable background count has
+    # not moved for more than 100 CA generations. STATIC_RULE matches no cell, so
+    # the lattice never changes; a uniform lattice makes every cell background,
+    # which qualifies as stable at generation 52 and then never moves again --
+    # 101 further generations puts the exit at 153.
+    ml = mergelife.new_ml_instance(20, 20, STATIC_RULE)
+    ml["lattice"][0]["data"][:] = 7
+    ml["lattice"][1]["data"][:] = 7
+    assert _run_to_convergence(ml) == 153
+
+
+def test_exploded_world_converges_on_dead_world_exit():
+    # The 2018 trainer's dead-world exit: past generation 100, less than 1% of
+    # the lattice is stable background. Giving every cell a distinct merged value
+    # leaves the mode holding a single cell (1/256), so the exit fires the first
+    # generation it is allowed to, at 101 -- well before the frozen-background
+    # counter above could reach 153.
+    ml = mergelife.new_ml_instance(16, 16, STATIC_RULE)
+    distinct = np.arange(256, dtype=np.uint8).reshape(16, 16)
+    ml["lattice"][0]["data"][:] = np.repeat(distinct[:, :, None], 3, axis=2)
+    ml["lattice"][1]["data"][:] = ml["lattice"][0]["data"]
+    assert _run_to_convergence(ml) == 101
+
+
+def test_long_running_rule_records_a_step_above_the_objective_max():
+    # The cap is a strict `>`, so a rule that never converges stops at 1001 --
+    # above the steps rule's max of 1000, which earns max_weight rather than the
+    # steeply negative in-range value. Surviving to the cap is what the objective
+    # rewards, and every published score depends on this off-by-one.
+    np.random.seed(7)
+    ml = mergelife.new_ml_instance(100, 100, PAPER_RULE)
+    assert mergelife.calc_objective_function(ml, PAPER_OBJECTIVE)["time_step"] == 1001
 
 
 def test_save_image_roundtrip(tmp_path):

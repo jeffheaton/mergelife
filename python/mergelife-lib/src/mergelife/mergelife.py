@@ -183,8 +183,12 @@ def calc_objective_stats(ml_instance):
     mode_mask = (d2_avg == md2)
     # mode_equal = sum(mode_equal.ravel()) / (height*width)
 
-    # Paper Sec. 4: a stable background cell has been the background color for
-    # longer than 100 CA generations.
+    # A stable background cell has held the background color for more than 50
+    # CA generations -- the 2018 reference trainer's threshold. The paper's
+    # prose (Sec. 4) says 100, but no cell can qualify before generation 101,
+    # so under 100 the stable count sits at zero long enough for the frozen-
+    # background exit in is_lattice_stable() to end every run at ~101
+    # generations. Every published score came from 50.
     if 'eval-md-cnt' in ml_instance['track']:
         mode_cnt = ml_instance['track']['eval-md-cnt']
     else:
@@ -194,7 +198,7 @@ def calc_objective_stats(ml_instance):
     mode_cnt[np.logical_not(mode_mask)] = 0
     mode_cnt += mode_mask
 
-    mc = np.sum(mode_cnt > 100)
+    mc = np.sum(mode_cnt > 50)
 
     # has been color (not mode) for >5
     if 'eval-same-cnt' in ml_instance['track']:
@@ -261,32 +265,32 @@ def calc_objective_stats(ml_instance):
 
 
 def is_lattice_stable(ml_instance, o=None):
-    """Paper Sec. 4.1: the CA has converged when any of the following holds --
-    less than 1% of the merged cells have changed value in the last 100 CA
-    generations, the stable background count has not changed for 100 CA
-    generations, or more than 1000 total CA generations have run."""
+    """The 2018 reference trainer's convergence test: a dead world, a frozen
+    background, or the 1000-generation cap.
+
+    This is deliberately *not* the paper's Sec. 4.1 text. Its "less than 1% of
+    the merged cells changed in the last 100 CA generations" condition reads
+    nearly every world -- lively or static -- as converged around generation
+    101, because MergeLife's signature look (a settled background carrying
+    gliders and sparks) moves well under 1% of a 10,000-cell lattice. Scored
+    over the 30 curated gallery rules, that costs more than two points of
+    median score (3.76 here, 1.54 under Sec. 4.1), drives eleven of them
+    negative, and leaves the historical 3.5 save threshold above all but five.
+    Every published score, and the gallery itself, came from the detector
+    below.
+
+    The cap is a strict `>`, so an unconverged run stops at generation 1001 --
+    above the steps rule's max of 1000, which earns max_weight. Surviving to
+    the cap is the signature this objective rewards; see the same note in
+    c/README.md, which the C, Java, and JS engines match.
+    """
     if o is None:
         o = calc_objective_stats(ml_instance)
 
-    height = ml_instance['height']
-    width = ml_instance['width']
-    time_step = ml_instance['time_step']
-
-    # Track when each cell's merged value last changed.
-    e1 = ml_instance['lattice'][0]['eval']
-    e2 = ml_instance['lattice'][1]['eval']
-    if 'eval-last-change' in ml_instance['track']:
-        last_change = ml_instance['track']['eval-last-change']
-    else:
-        last_change = np.zeros((height, width), dtype=int)
-        ml_instance['track']['eval-last-change'] = last_change
-    if e1 is not None and e2 is not None:
-        last_change[e1['merge'] != e2['merge']] = time_step
-
-    if time_step > 100:
-        changed_recently = np.sum((time_step - last_change) < 100)
-        if changed_recently < 0.01 * (height * width):
-            return True
+    # Dead world: the background has been squeezed out entirely -- the lattice
+    # exploded into uniform foreground and will not recover.
+    if ml_instance['time_step'] > 100 and o['bg'] < 0.01:
+        return True
 
     # Time to stop?
     mc_nochange = ml_instance['track'].get('eval-mc-nochange', 0)
@@ -303,7 +307,7 @@ def is_lattice_stable(ml_instance, o=None):
     ml_instance['track']['eval-mc-nochange'] = mc_nochange
     ml_instance['track']['eval-last-mc'] = last_mc
 
-    return time_step > 1000
+    return ml_instance['time_step'] > 1000
 
 
 def count_discrete(ml_instance):
