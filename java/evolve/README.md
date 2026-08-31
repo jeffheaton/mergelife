@@ -6,7 +6,7 @@ cellular automaton and its genetic-algorithm objective function, as described in
 [the paper](https://doi.org/10.1007/s10710-018-9336-1). Its update rule is
 paper-correct and verified byte-identical to the C engine in this repository.
 
-This is the **reference implementation** — favouring readability over speed. For
+This is the **reference implementation** — favoring readability over speed. For
 performance use the C engine (`c/`); to animate rules use the
 [JavaScript viewer](https://www.heatonresearch.com/mergelife/). This library is a
 clean, portable source to read from or port elsewhere (e.g. C#/Unity).

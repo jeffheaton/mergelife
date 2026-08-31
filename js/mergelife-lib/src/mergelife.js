@@ -171,7 +171,7 @@ const MergeLifeRender = function () {
   this.render = function () {
     const grid = this.grid[this.currentGrid]
 
-    this.ctx.strokeStyle = 'grey'
+    this.ctx.strokeStyle = 'gray'
 
     const canvasWidth = this.ctx.canvas.clientWidth;
     const gridWidth = grid[0].length

@@ -194,7 +194,7 @@ static int patch_weight(const uint8_t *fg, int rows, int cols, int r, int c) {
  * A spaceship is a small shape with clear space around it.  Chaotic noise
  * also throws up 5x5 blocks that happen to match a shifted block in the next
  * generation, but in a chaotic grid there is no clear space, so requiring the
- * surrounding ring to be mostly background separates a real travelling
+ * surrounding ring to be mostly background separates a real traveling
  * structure from a lucky correlation in the noise.
  */
 static int ring_weight(const uint8_t *fg, int rows, int cols, int r, int c) {
@@ -341,7 +341,7 @@ static void ships_step(MlTracker *t, const MlGrid *g) {
       s->net_c += bc;
 
       if (!s->counted && s->age >= ML_SHIP_AGE) {
-        /* Still travelling through open space at the moment we confirm it. */
+        /* Still traveling through open space at the moment we confirm it. */
         if (ring_weight(t->fg_now, rows, cols, s->row, s->col) > 8) {
           s->active = 0;
           continue;

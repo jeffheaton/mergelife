@@ -102,7 +102,7 @@ static void print_stats(const char *hex, double score, const MlStats *s) {
   printf("  mage        %8.0f    generations since the background changed\n", s->mage);
   printf("  colors      %8.4f    distinct merged colors present\n", s->colors);
   printf("  ships       %8.2f    translating structures per 10k cells\n", s->ships);
-  printf("  shipdist    %8.2f    mean distance they travelled\n", s->shipdist);
+  printf("  shipdist    %8.2f    mean distance they traveled\n", s->shipdist);
   printf("  guns        %8.2f    repeat emission sites per 10k cells\n", s->guns);
   printf("  entvar      %8.4f    sub-rule entropy spread (class 4 marker)\n", s->entvar);
   printf("  late        %8.4f    late activity vs mid-run activity\n", s->late);

@@ -101,7 +101,7 @@ typedef struct {
 
   /* --- new measures */
   double ships;     /* confirmed translating structures per 10k cells */
-  double shipdist;  /* mean distance those structures travelled, in cells */
+  double shipdist;  /* mean distance those structures traveled, in cells */
   double guns;      /* sites that emitted >= 3 spaceships over the run */
   double entvar;    /* std-dev of sub-rule usage entropy: a Wolfram class 4 proxy */
   double late;      /* activity in the final quarter of the run vs. the first */

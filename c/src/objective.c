@@ -154,7 +154,7 @@ int ml_objective_preset(const char *name, MlObjective *o) {
      * long time -- rather than inferring all of that from `active`.
      *
      * The threshold is calibrated against the paper's own named rules: Red
-     * World, the rule its author calls his favourite, scores about 10.5 here,
+     * World, the rule its author calls his favorite, scores about 10.5 here,
      * and the reporting bar is set just below it so that anything reported is
      * in that class.  For reference, still-life-and-oscillators scores 3.8,
      * Game of Life 2.0, chaos -2.6 and a dead rule -6.7. */

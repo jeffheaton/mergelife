@@ -44,7 +44,7 @@ def render_rule(rule, seed):
         update_step(ml)
 
     grid = np.asarray(ml["lattice"][0]["data"], dtype=np.uint8)
-    # Nearest-neighbour upscale -- the CA look depends on hard pixel edges, so
+    # Nearest-neighbor upscale -- the CA look depends on hard pixel edges, so
     # this must not be a smooth scale.
     return np.repeat(np.repeat(grid, CELL_SIZE, axis=0), CELL_SIZE, axis=1)
 
