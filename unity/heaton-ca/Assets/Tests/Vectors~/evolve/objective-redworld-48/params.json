@@ -1,0 +1,42 @@
+{
+  "family": "evolve",
+  "kind": "objective",
+  "outputs": {
+    "runs": {
+      "columns": [
+        "steps",
+        "foreground",
+        "active",
+        "rect",
+        "mage",
+        "score"
+      ],
+      "file": "runs.f64",
+      "shape": [
+        3,
+        6
+      ]
+    },
+    "score": {
+      "columns": [
+        "max_score",
+        "total_steps"
+      ],
+      "file": "score.f64",
+      "shape": [
+        2
+      ]
+    }
+  },
+  "params": {
+    "cycles": 3,
+    "genome": "e542-5f79-9341-f31e-6c6b-7f08-8773-7068",
+    "height": 48,
+    "max_steps": 500,
+    "objective": "paper",
+    "seed": 11,
+    "width": 48
+  },
+  "spec_version": "0.2.0",
+  "tier": "bit-exact"
+}

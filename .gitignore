@@ -37,3 +37,29 @@ coverage.xml
 
 # Claude Code settings
 .claude/
+
+# Unity app (unity/heaton-ca): generated folders and IDE files
+unity/heaton-ca/[Ll]ibrary/
+unity/heaton-ca/[Tt]emp/
+unity/heaton-ca/[Oo]bj/
+unity/heaton-ca/[Ll]ogs/
+unity/heaton-ca/[Uu]ser[Ss]ettings/
+unity/heaton-ca/.utmp/
+unity/heaton-ca/*.csproj
+unity/heaton-ca/*.sln
+unity/heaton-ca/*.slnx
+unity/heaton-ca/.vs/
+unity/heaton-ca/.vsconfig
+unity/heaton-ca/Assets/[Ii]nit[Tt]est[Ss]cene*.unity*
+unity/heaton-ca/Assets/[Ss]ceneDependencyCache*
+unity/heaton-ca/Assets/StreamingAssets/aa*
+unity/heaton-ca/*.apk
+unity/heaton-ca/*.aab
+unity/heaton-ca/*.app
+
+# Personal release environment: real Apple team, keystore path and publish target.
+# Sourced before a release; release-env.sample.sh is the committed template.
+unity/heaton-ca/release-env.sh
+
+# Burst drops generated WebGL output at the project root during a WebGL build.
+unity/heaton-ca/Data/

@@ -1,0 +1,39 @@
+{
+  "expected": {
+    "best_genome": "75f6-9a96-f442-05ee-f65c-cbec-23ee-de46",
+    "best_score": {
+      "file": "best.f64",
+      "shape": [
+        1
+      ]
+    },
+    "evals": 20,
+    "population": [
+      "8238-6fef-e0c5-4ce4-6a47-9b70-3f0c-2c66",
+      "8aa6-6486-10af-b315-8377-b20a-1bc8-9108",
+      "75f6-9a96-f442-05ee-f65c-cbec-23ee-de46",
+      "904c-c4f7-9e22-f347-d8b8-d9e7-a76a-e7c5",
+      "75f6-2fd9-e0da-87b4-b737-fa2c-ac79-dd51",
+      "8aa6-6fd9-e0af-b315-8377-b20a-1bc8-9108",
+      "75f6-2fd9-e0da-87b4-b73c-cbec-ac79-dd51",
+      "75f6-9a96-f442-05ee-f657-fa2c-23ee-de46"
+    ]
+  },
+  "family": "evolve",
+  "kind": "run",
+  "params": {
+    "crossover_rate": 0.75,
+    "eval_cycles": 1,
+    "height": 24,
+    "max_evals": 20,
+    "max_steps": 120,
+    "objective": "paper",
+    "patience": 1000,
+    "population_size": 8,
+    "seed": 123,
+    "tournament_rounds": 3,
+    "width": 24
+  },
+  "spec_version": "0.2.0",
+  "tier": "bit-exact"
+}

@@ -1,0 +1,144 @@
+{
+  "case": "tied-limits",
+  "expected_rows": [
+    {
+      "color_index": 0,
+      "color_name": "Black",
+      "limit": 128,
+      "percent": 0.12598425196850394,
+      "percent_byte": 16,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 0,
+      "target_index": 0,
+      "target_name": "Black",
+      "target_rgb": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "color_index": 1,
+      "color_name": "Red",
+      "limit": 128,
+      "percent": 0.25196850393700787,
+      "percent_byte": 32,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 1,
+      "target_name": "Red",
+      "target_rgb": [
+        255,
+        0,
+        0
+      ]
+    },
+    {
+      "color_index": 2,
+      "color_name": "Green",
+      "limit": 128,
+      "percent": 0.3779527559055118,
+      "percent_byte": 48,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 2,
+      "target_name": "Green",
+      "target_rgb": [
+        0,
+        255,
+        0
+      ]
+    },
+    {
+      "color_index": 3,
+      "color_name": "Yellow",
+      "limit": 128,
+      "percent": 0.5039370078740157,
+      "percent_byte": 64,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 3,
+      "target_name": "Yellow",
+      "target_rgb": [
+        255,
+        255,
+        0
+      ]
+    },
+    {
+      "color_index": 4,
+      "color_name": "Blue",
+      "limit": 128,
+      "percent": 0.6299212598425197,
+      "percent_byte": 80,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 4,
+      "target_name": "Blue",
+      "target_rgb": [
+        0,
+        0,
+        255
+      ]
+    },
+    {
+      "color_index": 5,
+      "color_name": "Purple",
+      "limit": 128,
+      "percent": 0.7559055118110236,
+      "percent_byte": 96,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 5,
+      "target_name": "Purple",
+      "target_rgb": [
+        255,
+        0,
+        255
+      ]
+    },
+    {
+      "color_index": 6,
+      "color_name": "Cyan",
+      "limit": 128,
+      "percent": 0.8818897637795275,
+      "percent_byte": 112,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 6,
+      "target_name": "Cyan",
+      "target_rgb": [
+        0,
+        255,
+        255
+      ]
+    },
+    {
+      "color_index": 7,
+      "color_name": "White",
+      "limit": 128,
+      "percent": -1.0,
+      "percent_byte": -128,
+      "range_byte": 16,
+      "range_high": 127,
+      "range_low": 128,
+      "target_index": 0,
+      "target_name": "Black",
+      "target_rgb": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "family": "mergelife-decode",
+  "rule": "1010-1020-1030-1040-1050-1060-1070-1080",
+  "tier": "bit-exact"
+}

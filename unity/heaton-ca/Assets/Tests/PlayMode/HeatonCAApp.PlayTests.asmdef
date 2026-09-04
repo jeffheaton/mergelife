@@ -1,0 +1,25 @@
+{
+    "name": "HeatonCAApp.PlayTests",
+    "rootNamespace": "HeatonCA.PlayTests",
+    "references": [
+        "HeatonCAApp",
+        "HeatonCA.Engine",
+        "HeatonCA.SelfCheck",
+        "UnityEngine.UI",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

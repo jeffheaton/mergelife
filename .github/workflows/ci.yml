@@ -87,3 +87,191 @@ jobs:
       - name: Build and test (verify + cross-engine conformance)
         run: make test
         working-directory: c
+
+  # ---------------------------------------------------------------------------
+  # HeatonCA -- the Unity port under unity/heaton-ca.
+  #
+  # Two jobs. `unity-lint` needs no Unity license, costs seconds and always
+  # runs; it also decides whether the expensive macOS job has anything to do,
+  # because GitHub Actions has no per-job `paths:` filter and a workflow-level
+  # one would switch off the python/javascript/java/c jobs above as well.
+  #
+  # `unity` replays the determinism gate: the EditMode suite (engine conformance
+  # against the repository's own vectors plus the app unit tests) and the
+  # PlayMode smoke suite, so "the C# engine still matches every other engine in
+  # this repository" stops depending on someone remembering to run them locally.
+  #
+  # Unlike the sibling heaton-life-unity workflow this needs no second checkout.
+  # The conformance vectors live in THIS repository (conformance/vectors.txt),
+  # and the heaton-life vector families are vendored at
+  # unity/heaton-ca/Assets/Tests/Vectors~, so one checkout has everything the
+  # EditMode suite reads.
+  unity-lint:
+    name: Unity lint
+    runs-on: ubuntu-latest
+    outputs:
+      run-unity: ${{ steps.filter.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The path filter below diffs against the push / pull-request base.
+          fetch-depth: 0
+
+      # Deliberately the first step, so its output exists even when a lint step
+      # below fails: a spelling slip must not silently cancel the Unity gate.
+      - name: Does this change touch the Unity project?
+        id: filter
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BASE_SHA:-}" ] \
+             || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "No usable base commit (new branch, first push or force push); running the Unity gate."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed="$(git diff --name-only "$BASE_SHA" "$GITHUB_SHA")"
+          echo "Changed files:"
+          printf '%s\n' "$changed" | sed 's/^/  /'
+          if printf '%s\n' "$changed" \
+             | grep -qE '^(unity/heaton-ca/|conformance/|\.github/workflows/ci\.yml$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nothing under unity/heaton-ca/ or conformance/ changed; skipping the Unity gate."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # American English (both CLAUDE.md files) plus ASCII source under
+      # Assets/Scripts and Assets/Tests. Runs whether or not the Unity project
+      # changed -- it is cheap, and it covers the docs and store copy that live
+      # under unity/heaton-ca as well as the C#.
+      - name: Spelling and source-encoding lint
+        run: unity/heaton-ca/tools/spelling-check.sh
+
+      # unity/heaton-ca/Assets/Engine is a verbatim copy of heaton-life's
+      # HeatonLife.Core. A sparse checkout of the upstream repository lets
+      # engine-sync-check.sh diff the copy against it, so drift is caught here
+      # rather than at the next import. jeffheaton/heaton-life may be private to
+      # the default GITHUB_TOKEN; the checkout is therefore allowed to fail, and
+      # the step after it falls back to --self (headers, namespace rename,
+      # PROVENANCE.md, no PngGrid/ToPng leftovers) with a warning.
+      - name: Check out HeatonLife.Core (upstream engine)
+        id: upstream
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: jeffheaton/heaton-life
+          path: heaton-life
+          sparse-checkout: dotnet/src/HeatonLife.Core
+          persist-credentials: false
+
+      - name: Engine sync check
+        env:
+          UPSTREAM: ${{ github.workspace }}/heaton-life/dotnet/src/HeatonLife.Core
+          UPSTREAM_OUTCOME: ${{ steps.upstream.outcome }}
+        run: |
+          set -euo pipefail
+          if [ "$UPSTREAM_OUTCOME" = "success" ] && [ -d "$UPSTREAM" ]; then
+            HEATONCA_UPSTREAM_ENGINE="$UPSTREAM" unity/heaton-ca/tools/engine-sync-check.sh
+          else
+            echo "::warning title=Engine sync check degraded::Could not check out jeffheaton/heaton-life (private repository, or the token lacks access), so Assets/Engine was verified only on its own terms. Drift against upstream was NOT checked in this run."
+            unity/heaton-ca/tools/engine-sync-check.sh --self
+          fi
+
+  # REQUIRED REPOSITORY SECRETS -- set ONE row:
+  #   UNITY_LICENSE                                 (Personal: contents of the .ulf)
+  #   UNITY_EMAIL + UNITY_PASSWORD + UNITY_SERIAL   (Pro/Plus seat)
+  # Until one is set the job warns and skips its remaining steps rather than
+  # failing, so adding Unity CI does not paint master red before the secrets
+  # land. macos-15 is the platform HeatonCA is built and released on.
+  unity:
+    name: Unity (macOS)
+    needs: unity-lint
+    # `!cancelled()` rather than the default `success()`: unity-lint is only
+    # consulted for its path filter here, so a lint failure must not hide the
+    # determinism result. Only a cancellation stops this job.
+    if: ${{ !cancelled() && needs.unity-lint.outputs.run-unity == 'true' }}
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Are the Unity license secrets configured?
+        id: lic
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        run: |
+          set -euo pipefail
+          if [ -n "${UNITY_LICENSE:-}" ]; then
+            echo "Using UNITY_LICENSE (Personal seat)."
+            echo "have=true" >> "$GITHUB_OUTPUT"
+          elif [ -n "${UNITY_EMAIL:-}" ] && [ -n "${UNITY_PASSWORD:-}" ] && [ -n "${UNITY_SERIAL:-}" ]; then
+            echo "Using UNITY_EMAIL / UNITY_PASSWORD / UNITY_SERIAL (Pro or Plus seat)."
+            echo "have=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "have=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Unity gate skipped::Set UNITY_LICENSE, or all three of UNITY_EMAIL, UNITY_PASSWORD and UNITY_SERIAL, to run the HeatonCA EditMode and PlayMode suites."
+          fi
+
+      # Library/ is a package and script-import cache, not a source of truth:
+      # the editor rebuilds whatever is stale, so restoring an older key is safe
+      # and turns a cold ~10 minute import into well under a minute.
+      - uses: actions/cache@v4
+        if: steps.lic.outputs.have == 'true'
+        with:
+          path: unity/heaton-ca/Library
+          key: Library-heaton-ca-${{ hashFiles('unity/heaton-ca/Packages/packages-lock.json', 'unity/heaton-ca/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-heaton-ca-
+
+      # EditMode replays conformance/vectors.txt and the vendored heaton-life
+      # vector families against Assets/Engine, and unit-tests the app services.
+      - name: EditMode suite
+        if: steps.lic.outputs.have == 'true'
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: unity/heaton-ca
+          testMode: editmode
+          artifactsPath: unity-editmode-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: HeatonCA EditMode
+
+      # PlayMode boots the app headlessly, including the determinism self-check
+      # that every shipped player runs at startup.
+      - name: PlayMode suite
+        if: steps.lic.outputs.have == 'true'
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: unity/heaton-ca
+          testMode: playmode
+          artifactsPath: unity-playmode-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: HeatonCA PlayMode
+
+      # Both locations are listed because unity-test-runner has resolved
+      # artifactsPath against the workspace in some versions and against
+      # projectPath in others; whichever one exists is uploaded.
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.lic.outputs.have == 'true'
+        with:
+          name: heaton-ca-test-results
+          path: |
+            unity-editmode-results
+            unity-playmode-results
+            unity/heaton-ca/unity-editmode-results
+            unity/heaton-ca/unity-playmode-results
+          if-no-files-found: warn
+          retention-days: 7

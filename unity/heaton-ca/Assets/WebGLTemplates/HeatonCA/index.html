@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#15171b">
+    <title>HeatonCA</title>
+    <link rel="icon" href="TemplateData/favicon.png">
+    <link rel="apple-touch-icon" href="TemplateData/apple-touch-icon.png">
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+      <div id="heatonca-mobile-banner" hidden>
+        <span>HeatonCA runs best in a desktop browser.</span>
+        <button id="heatonca-mobile-banner-dismiss" type="button" aria-label="Dismiss">&times;</button>
+      </div>
+    </div>
+    <script>
+      // HeatonCA WebGL page: Unity's Default template (6000.5.0f1) with the
+      // canvas filling the viewport, a dark ground, no Unity footer or
+      // fullscreen chrome, and a dismissible notice for mobile browsers, which
+      // Unity does not officially support. The triple-brace macros and the
+      // #if blocks are Unity's template preprocessor; the build substitutes
+      // them (a literal triple brace anywhere in this file would be evaluated).
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: unityShowBanner,
+        // Render at the display's native density: the canvas is sized in CSS
+        // pixels (100vw x 100vh in style.css) and Unity multiplies by this
+        // ratio for the WebGL backing store, so cells stay crisp on HiDPI
+        // screens. Updated below when the ratio changes (browser zoom, or the
+        // window moving between displays).
+        devicePixelRatio: window.devicePixelRatio || 1,
+      };
+
+      // The same test the jslib's HeatonCA_IsMobileBrowser uses; iPadOS Safari
+      // reports a Macintosh user agent, hence the touch-point check.
+      var isMobileBrowser = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent)
+        || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+      if (isMobileBrowser) {
+        // Mobile device style: fill the whole browser client area with the canvas.
+        var viewport = document.querySelector('meta[name="viewport"]');
+        viewport.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover';
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        var mobileBanner = document.querySelector("#heatonca-mobile-banner");
+        var dismissKey = "heatonca.mobileBannerDismissed";
+        var dismissed = false;
+        try { dismissed = window.localStorage.getItem(dismissKey) === "1"; } catch (e) {}
+        mobileBanner.hidden = dismissed;
+        document.querySelector("#heatonca-mobile-banner-dismiss").onclick = function() {
+          mobileBanner.hidden = true;
+          try { window.localStorage.setItem(dismissKey, "1"); } catch (e) {}
+        };
+      }
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = function() {
+        createUnityInstance(canvas, config, function(progress) {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then(function(unityInstance) {
+          loadingBar.style.display = "none";
+          window.heatonCA = unityInstance;
+          // Keep the backing store matched to the current density; Unity reads
+          // Module.devicePixelRatio every time it sizes the canvas.
+          var trackDensity = function() {
+            var ratio = window.devicePixelRatio || 1;
+            unityInstance.Module.devicePixelRatio = ratio;
+            var query = window.matchMedia("(resolution: " + ratio + "dppx)");
+            var onChange = function() {
+              query.removeEventListener("change", onChange);
+              trackDensity();
+            };
+            query.addEventListener("change", onChange);
+          };
+          if (window.matchMedia) trackDensity();
+        }).catch(function(message) {
+          // No alert(): a modal is useless to the headless smoke test and to a
+          // user who can read the banner. The console line is what
+          // tools/webgl-smoke.sh reports when a build fails to load.
+          console.error("[HeatonCA] LOAD FAILED: " + message);
+          unityShowBanner(message, 'error');
+        });
+      };
+      script.onerror = function() {
+        console.error("[HeatonCA] LOAD FAILED: could not fetch " + loaderUrl);
+        unityShowBanner("Could not load " + loaderUrl, 'error');
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

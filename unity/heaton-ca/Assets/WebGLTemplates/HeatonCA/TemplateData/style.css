@@ -1,0 +1,17 @@
+/* HeatonCA WebGL template: Unity's Default style.css (6000.5.0f1) reduced to a
+   full-viewport canvas on a dark ground. The Unity logo, footer, build title,
+   and fullscreen button are gone; the loading bar keeps Unity's dark
+   progress-bar images, which sit beside this file. */
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #15171b }
+#unity-container { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh }
+#unity-canvas { display: block; width: 100vw; height: 100vh; background: #15171b; outline: none }
+@supports (height: 100dvh) {
+  #unity-container, #unity-canvas { height: 100dvh }
+}
+#unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none }
+#unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; margin-left: 6.5px; background: url('progress-bar-empty-dark.png') no-repeat center }
+#unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url('progress-bar-full-dark.png') no-repeat center }
+#unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
+#heatonca-mobile-banner { position: fixed; left: 50%; bottom: 12px; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 24px); box-sizing: border-box; padding: 10px 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.92); color: #15171b; font: 14px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); z-index: 10 }
+#heatonca-mobile-banner[hidden] { display: none }
+#heatonca-mobile-banner-dismiss { border: 0; background: transparent; color: inherit; font-size: 20px; line-height: 1; padding: 0 4px; cursor: pointer }

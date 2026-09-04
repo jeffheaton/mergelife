@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    Entitlements for the HeatonCA Mac App Store build (bundle id
+    com.heatonresearch.heaton-ca; the signing team comes from
+    $HEATONCA_APPLE_TEAM_ID and is not checked in).
+
+    Packaging/package-macos-appstore.sh signs the app with this file and with
+    nothing else: `store` mode copies it and adds the two identity keys
+    (com.apple.application-identifier, com.apple.developer.team-identifier) read
+    out of the provisioning profile at signing time, so they cannot drift from
+    the profile the app embeds. Entitlements go on the app only - macOS ignores
+    entitlements on nested dylibs and bundles.
+
+    Keep this list minimal. Every entitlement is something App Review asks about,
+    and the privacy label ("Data Not Collected") plus docs/privacy.md have to stay
+    true of the binary.
+-->
+<plist version="1.0">
+<dict>
+	<!-- The Mac App Store requires the App Sandbox. It also relocates the app's
+	     storage: under the sandbox Unity keys persistentDataPath by BUNDLE ID, so
+	     settings, evolve finds, and saved PNGs live in
+	     ~/Library/Containers/com.heatonresearch.heaton-ca/Data/Library/Application Support/
+	     com.heatonresearch.heaton-ca/, and Player.log in that container's
+	     Library/Logs/Jeff Heaton/HeatonCA/. Nothing in the app may assume a path
+	     outside the container. -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+
+	<!-- The macOS player is a MONO build (Contents/Frameworks/libmonobdwgc-2.0.dylib),
+	     and Mono JITs: it writes machine code into memory and then executes it.
+	     Both keys are declared, not just allow-jit - allow-jit covers the MAP_JIT
+	     path and allow-unsigned-executable-memory the plain RWX one, and the pair
+	     is what dynaface and Heaton Life ship after allow-jit alone proved not to
+	     be enough. Do not trim one because it looks redundant without re-running
+	     `package-macos-appstore.sh sandbox-test` and launching the result.
+
+	     They become removable only if the macOS player switches to IL2CPP - a
+	     scripting-backend change, which re-arms the determinism gate
+	     (tools/macos-selfcheck.sh) before it ships. -->
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<true/>
+
+	<!-- Deliberately absent, so the next person does not re-derive these:
+
+	     * com.apple.security.files.user-selected.read-only / .read-write -
+	       HeatonCA opens no file the user picks and writes none outside its
+	       container. PngExporter.Save's desktop branch writes into
+	       persistentDataPath/Snapshots and then asks the file manager to REVEAL
+	       the file, which is not file access and needs no entitlement.
+	       IF a desktop "save PNGs to a folder of my choosing" option ever lands
+	       (the PyQt app's Evolve trainer wrote <rule>.png into a chosen folder,
+	       and the plan lists that folder mirror as a P2 item), it needs
+	       com.apple.security.files.user-selected.read-write here PLUS a real
+	       NSSavePanel/NSOpenPanel: the entitlement only makes the panel's result
+	       usable, it grants nothing on its own. Add it in the same change as the
+	       panel, never "in advance".
+
+	     * com.apple.security.network.client - the app makes no network requests
+	       (engine telemetry is off and docs/privacy.md says it never connects on
+	       its own). Opening a help or About link hands the URL to the default
+	       browser through LaunchServices, which is the system's request, not the
+	       app's, and works sandboxed without this key.
+
+	     * hardened-runtime options beyond the two JIT keys - a Mac App Store
+	       build is signed sandbox-only; the hardened runtime belongs to the
+	       Developer ID / notarization path, which this product does not use. -->
+</dict>
+</plist>

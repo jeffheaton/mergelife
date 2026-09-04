@@ -1,0 +1,30 @@
+{
+  "checkpoints": [
+    {
+      "file": "state_00000.png",
+      "step": 0
+    },
+    {
+      "file": "state_00001.png",
+      "step": 1
+    },
+    {
+      "file": "state_00010.png",
+      "step": 10
+    },
+    {
+      "file": "state_00050.png",
+      "step": 50
+    }
+  ],
+  "family": "mergelife",
+  "params": {
+    "genome": "e542-5f79-9341-f31e-6c6b-7f08-8773-7068",
+    "height": 48,
+    "init": "soup",
+    "seed": 5,
+    "width": 48
+  },
+  "spec_version": "0.2.0",
+  "tier": "bit-exact"
+}
