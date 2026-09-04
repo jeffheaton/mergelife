@@ -63,3 +63,7 @@ unity/heaton-ca/release-env.sh
 
 # Burst drops generated WebGL output at the project root during a WebGL build.
 unity/heaton-ca/Data/
+
+# Mac App Store provisioning profile: not secret, but it carries the developer
+# team and is personal account material. Regenerate it from the developer portal.
+unity/heaton-ca/Packaging/*.provisionprofile

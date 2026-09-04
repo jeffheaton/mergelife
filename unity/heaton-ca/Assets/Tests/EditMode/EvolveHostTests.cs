@@ -247,6 +247,56 @@ namespace HeatonCA.Tests
         /// The status readout follows the session: idle before the first Start,
         /// suspended while the app holds chunks back, stopped once the lanes drain.
         /// </summary>
+        /// <summary>
+        /// Seeding progress must be right when sampled from INSIDE an evaluation.
+        ///
+        /// The engine's Admit() evicts down to PopulationSize - 1, then Score() raises
+        /// Evals and fires onProgress, and only then adds the new candidate. So a
+        /// publish made from inside an evaluation sees a population one short forever,
+        /// which pinned the Evolve screen at "Generating new population: 99/100" for a
+        /// whole steady-state run. StatusTracksTheSession missed it because PumpTo only
+        /// samples between chunks, where the population is whole. This calls the host's
+        /// rule at the exact moment that used to be wrong.
+        /// </summary>
+        [Test]
+        public void SeedingProgressIsCorrectWhenSampledInsideAnEvaluation()
+        {
+            const int population = 8;
+            var dipped = false;
+            var wrong = new List<string>();
+            var evolver = new Engine.Evolver(
+                width: TinyEdge,
+                height: TinyEdge,
+                populationSize: population,
+                evalCycles: 1,
+                maxSteps: TinyMaxSteps,
+                seed: 123,
+                onProgress: e =>
+                {
+                    (int done, int total) = EvolveHost.SeedingProgressFor(e);
+                    bool filled = e.Evals >= population;
+                    if (filled && e.Population.Count < population)
+                    {
+                        dipped = true; // the root cause is still present in the engine
+                    }
+                    if (filled && done != total)
+                    {
+                        wrong.Add($"eval {e.Evals}: reported {done}/{total} after the fill");
+                    }
+                    if (!filled && done >= total)
+                    {
+                        wrong.Add($"eval {e.Evals}: reported full at {done}/{total} while filling");
+                    }
+                });
+            evolver.Run(population * 4);
+
+            Assert.IsTrue(
+                dipped,
+                "expected the engine to show a short population mid-evaluation; if Admit() "
+                + "no longer evicts before scoring, EvolveHost.SeedingProgressFor can be revisited");
+            Assert.IsEmpty(wrong, string.Join("\n", wrong));
+        }
+
         [Test]
         public void StatusTracksTheSession()
         {

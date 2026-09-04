@@ -802,6 +802,25 @@ namespace HeatonCAApp
         /// chunks either way). Reads only the lane's own evolver — other lanes'
         /// evolvers are mid-run on other threads and must never be touched here.
         /// </summary>
+        /// <summary>
+        /// How far the initial population fill has got, as (done, target).
+        ///
+        /// Keyed on <c>Evals</c>, never on <c>Population.Count</c>: the engine's
+        /// <c>Admit</c> evicts down to <c>PopulationSize - 1</c> BEFORE <c>Score</c>
+        /// raises <c>Evals</c> and fires the progress callback that lands here, so a
+        /// publish made from inside an evaluation always sees the population one
+        /// short. Deriving "still seeding" from that count left the Evolve screen
+        /// stuck on "Generating new population: 99/100" for an entire steady-state
+        /// run. Evals counts one per admitted candidate while filling and keeps
+        /// climbing after, so Min pins it at the target once the population is whole,
+        /// whenever the publish happens. Each run builds a fresh Evolver, so this
+        /// resets on restart.
+        /// </summary>
+        public static (int Done, int Total) SeedingProgressFor(Evolver evolver) =>
+            evolver == null
+                ? (0, 0)
+                : (Mathf.Min(evolver.Evals, evolver.PopulationSize), evolver.PopulationSize);
+
         private void PublishLane(Lane lane)
         {
             Evolver evolver = lane.Evolver;
@@ -817,7 +836,7 @@ namespace HeatonCAApp
                 BestScore = evolver.Best?.Score ?? double.NegativeInfinity,
                 BestGenome = evolver.Best?.Genome,
                 Population = population,
-                SeedingProgress = (population.Count, evolver.PopulationSize),
+                SeedingProgress = SeedingProgressFor(evolver),
             };
             lock (_lock)
             {

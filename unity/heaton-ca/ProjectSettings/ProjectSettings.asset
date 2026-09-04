@@ -174,9 +174,9 @@ PlayerSettings:
     Standalone: com.heatonresearch.heaton-ca
     iPhone: com.heatonresearch.heaton-ca
   buildNumber:
-    Standalone: 1
+    Standalone: 2.0.0
     VisionOS: 0
-    iPhone: 2
+    iPhone: 2.0.0
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
