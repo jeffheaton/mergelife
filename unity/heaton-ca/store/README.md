@@ -115,6 +115,14 @@ Per-set guidance:
 - The **iPad and Mac** sets show the wide layouts (decoder as a table, gallery
   at more columns); the **phone** sets show the stacked ones. That contrast is
   the point of having both — do not shoot the phone sets from a tablet.
+- **Scene 03 on the Play phone** cannot show everything. At 1080x1920 / density
+  420 the Evolve page is 731 dp tall and its content overflows by about 160 dp,
+  so the threshold slider and the Finds button sit below the fold while the
+  preview and the counters are on screen. Shoot it scrolled to the top: the
+  preview tile, Run/Eval/Evals-per-minute, the rule, the score and
+  `Status: Running...` all read, and the slider is the one item that gives way.
+  Every other set — the two tablets included — fits the whole page, slider and
+  all, so this concession is the Play phone's alone.
 
 ## Capturing
 

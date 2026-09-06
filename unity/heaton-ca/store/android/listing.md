@@ -81,15 +81,17 @@ Free and open source: https://github.com/jeffheaton/mergelife
 
 - **App icon**: `graphics/icon-512.png` (512×512 PNG, RGB, no alpha)
 - **Feature graphic**: `graphics/feature-graphic-1024x500.png` (1024×500 PNG, RGB, no alpha)
-- **Phone screenshots**: `phone/01…08` — **PLACEHOLDER, not yet captured.**
-  1080×1920 portrait PNG, alpha stripped, **maximum 8** (Play's limit; the iOS
-  set allows 10, so the Android set is the iOS list minus the two weakest
-  shots). Plan and capture procedure: `store/README.md`.
-- **Tablet screenshots**: `tablet-10/01…08` — **PLACEHOLDER, not yet captured.**
-  2560×1600 landscape PNG; Play accepts the same set for the 7-inch and 10-inch
-  slots. Shoot them on a tablet AVD so the multi-column Gallery and the
-  wide-table Rule decoder are visible - those two layouts are the reason the
-  tablet set is not just upscaled phone shots.
+- **Phone screenshots**: `phone/01…08` — all eight captured on the `Play_Phone`
+  AVD from the 2.0.0 `.apk`. 1080×1920 portrait PNG, alpha stripped, **maximum
+  8** (Play's limit; the iOS set allows 10, so the Android set is the whole
+  scene list with nothing to spare). Plan and capture procedure:
+  `store/README.md`.
+- **Tablet screenshots**: `tablet-10/01…08` — all eight captured on the
+  `Play_Tablet` AVD from the same `.apk`. 2560×1600 landscape PNG; Play accepts
+  the same set for the 7-inch and 10-inch slots. They are shot on a tablet AVD
+  so the multi-column Gallery and the wide-table Rule decoder are visible -
+  those two layouts are the reason the tablet set is not just upscaled phone
+  shots.
 - **Video**: none.
 
 ## Store settings
