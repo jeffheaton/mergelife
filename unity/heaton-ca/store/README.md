@@ -19,6 +19,8 @@ store/
   android/graphics/              icon-512.png, feature-graphic-1024x500.png
   android/phone/NN-*.png         Play phone screenshots, 1080x1920 (max 8)
   android/tablet-10/NN-*.png     Play tablet screenshots, 2560x1600
+  windows/listing.md             Microsoft Store (Partner Center) text and declarations
+  windows/NN-*.png               Windows screenshots, 2560x1600
   webgl/README.md                hosting notes for the web build
 ```
 
@@ -35,6 +37,7 @@ screenshots are shot by hand from finished builds and committed.
 | Mac | `macos/` | **2560x1600** | landscape | 1-10 (ship 8) | macOS player, windowed on a Retina display |
 | Play phone | `android/phone/` | **1080x1920** | portrait | 2-8 (**max 8**) | `Play_Phone` AVD |
 | Play tablet | `android/tablet-10/` | **2560x1600** | landscape | 2-8 | `Play_Tablet` AVD |
+| Windows | `windows/` | **2560x1600** | landscape | 1-10 (ship 8) | registered MSIX player, windowed on a 200%-scaled display |
 
 Notes on the sizes:
 
@@ -50,9 +53,19 @@ Notes on the sizes:
   density 276 (`~/.android/avd/*/config.ini`), so `adb exec-out screencap`
   needs no resizing. Play accepts the tablet set for both the 7-inch and
   10-inch slots.
-- Windows ships as a zip from a GitHub release and the WebGL build is
-  self-hosted; neither has a store listing, so neither needs a screenshot set.
-  (If a Windows set is ever wanted, Partner Center's floor is 1366x768.)
+- **Windows ships twice**: an unsigned zip on a GitHub release, and a
+  Microsoft Store MSIX. The Store listing needs a screenshot set. Partner
+  Center's floor is 1366x768, but the set is shot at 2560x1600 so the two
+  desktop listings show the same pictures at the same size. Unlike the iOS and
+  Android sets there is no emulator here, so the size comes from the display:
+  on a 200%-scaled panel (3024x1898 physical) a window whose client area is
+  1280x800 logical is 2560x1600 physical -- the same Retina recipe as the Mac
+  set. Two things this makes mandatory: the capture process must be DPI-aware
+  (a DPI-unaware one silently returns scaled, blurry pixels), and the window is
+  parked at the screen origin so anything anchored to the screen's bottom-right
+  falls outside the client area.
+- The WebGL build is self-hosted and has no store listing, so it needs no
+  screenshot set.
 
 ## Rules every screenshot must satisfy
 
@@ -234,6 +247,7 @@ want = {
     "store/macos":          (2560, 1600, 10),
     "store/android/phone":  (1080, 1920, 8),
     "store/android/tablet-10": (2560, 1600, 8),
+    "store/windows":        (2560, 1600, 10),
 }
 bad = 0
 for d, (w, h, cap) in want.items():
