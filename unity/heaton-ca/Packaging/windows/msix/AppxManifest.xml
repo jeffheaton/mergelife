@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MSIX manifest for the Microsoft Store build: the Unity Win64 player packaged as a
+  full-trust Win32 app (the Desktop Bridge), never Unity's UWP target. UWP would force
+  IL2CPP - a scripting-backend change that re-arms the determinism device gate (README
+  "Standalone stays Mono") - and would break NativeMenuBarWin (the WndProc subclass and
+  its user32 menu calls) and PngExporter.Reveal (Process.Start of explorer.exe). Ported
+  from heaton-life-unity's Packaging/msix/AppxManifest.xml, which already ships a
+  Unity/Mono app through Store certification.
+
+  Identity is assigned by Partner Center (HeatonCA product page > Product management >
+  Product identity): Package/Identity/Name and Package/Identity/Publisher must match it
+  EXACTLY or the upload is refused, and DisplayName must keep matching the reserved
+  Store name. The Publisher CN is the Partner Center account's, shared with Heaton Life
+  and Dynaface. The Name below was CONFIRMED against the product identity page on
+  2026-09-07, after the name HeatonCA was reserved: Package/Identity/Name,
+  Package/Identity/Publisher and Package/Properties/PublisherDisplayName all match this
+  file exactly, so the expected <Publisher>.<ReservedName> form held. __VERSION__ and
+  __ARCH__ are stamped by package-msix.ps1 at pack time (version = ProjectSettings
+  bundleVersion + ".0" - the Store requires the 4th field to be 0). The script also
+  generates resources.pri beside this manifest so the .scale-200 logos are actually
+  served on HiDPI displays.
+
+  Capabilities: runFullTrust alone. It is what lets the plain Win32 player (the menu
+  hook, Process.Start of explorer.exe, Application.OpenURL for the manual) run unchanged
+  inside the MSIX container. No webcam/microphone (nothing captures), no internetClient
+  (ShellExecute of the manual URL needs none; the app never connects on its own - the
+  privacy policy's claim, kept true by the telemetry flags in ProjectSettings).
+
+  No FileTypeAssociation on purpose: the Windows player does not read command-line
+  arguments and Unity's deep-link path is not populated on it, so an "Open with
+  HeatonCA" on a rule file would launch the app WITHOUT the file - a Store-visible
+  promise the app would break. Add one only together with command-line open support.
+-->
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap rescap">
+
+  <Identity Name="JeffHeaton.HeatonCA"
+            Publisher="CN=CA868514-4C45-44CC-A8F7-4302E1A9FD41"
+            Version="__VERSION__"
+            ProcessorArchitecture="__ARCH__" />
+
+  <Properties>
+    <DisplayName>HeatonCA</DisplayName>
+    <PublisherDisplayName>Jeff Heaton</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <!-- Min 10.0.19043 (21H1): Unity 6 players do not support older Windows 10 builds. -->
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop"
+                        MinVersion="10.0.19043.0"
+                        MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="HeatonCA" Executable="HeatonCA.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="HeatonCA"
+                          Description="Evolve and explore MergeLife cellular automata: gallery, decoder, and trainer."
+                          BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Square150x150Logo.png"
+                          Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

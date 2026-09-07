@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  makepri configuration for package-windows-msix.ps1: indexes the logo set listed in the
+  generated layout.resfiles (the resfiles indexer takes no wildcards; the script writes
+  one line per staged Assets\*.png) into resources.pri, so the manifest's unqualified
+  Assets\<Logo>.png names resolve to their .scale-200.png siblings on HiDPI displays.
+  The index root is the package root, so resource names come out as Files/Assets/... -
+  indexing from inside Assets\ drops that prefix and nothing resolves. No
+  <packaging> autoResourcePackage block on purpose: that would split Scale-200 into a
+  separate resource pack, which only a bundle could carry.
+-->
+<resources targetOsVersion="10.0.0" majorVersion="1">
+  <index root="\" startIndexAt="layout.resfiles">
+    <default>
+      <qualifier name="Language" value="en-US"/>
+      <qualifier name="Contrast" value="standard"/>
+      <qualifier name="Scale" value="100"/>
+      <qualifier name="HomeRegion" value="001"/>
+      <qualifier name="TargetSize" value="256"/>
+      <qualifier name="LayoutDirection" value="LTR"/>
+      <qualifier name="Theme" value="dark"/>
+      <qualifier name="AlternateForm" value=""/>
+      <qualifier name="DXFeatureLevel" value="DX9"/>
+      <qualifier name="Configuration" value=""/>
+      <qualifier name="DeviceFamily" value="Universal"/>
+      <qualifier name="Custom" value=""/>
+    </default>
+    <indexer-config type="resfiles" qualifierDelimiter="."/>
+  </index>
+</resources>
