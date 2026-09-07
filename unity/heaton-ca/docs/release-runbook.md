@@ -63,7 +63,17 @@ higher than the last one: App Store Connect rejects the upload as ITMS-90189
 
 - [ ] Open App Store Connect, app id **6469583429**, and find the **highest
       build number ever uploaded on either platform**. iOS and macOS share one
-      counter for this record. **`<TBD: highest existing build number>`**
+      counter for this record.
+
+      **Read on 2026-09-06:** TestFlight > iOS Builds was **empty** (2.0.0 adds
+      the iOS platform to the record), and TestFlight > macOS Builds held four
+      version groups -- 1.1.0 (build `1.1.0`, Expired), 1.0.1, 1.0.0, 0.0.1 --
+      so the highest ever uploaded was the dotted string **`1.1.0`**. The PyQt
+      builds stamped `CFBundleVersion` equal to `CFBundleShortVersionString`,
+      exactly as `store/ios/listing.md` section 6 predicted. 2.0.0 therefore
+      moved the counter to plain integers, which Apple orders above any of
+      those component by component: **iOS = 10, macOS = 11**. The next release
+      continues from 12.
 - [ ] Note the record's current category and confirm it still matches
       `public.app-category.utilities`.
 - [ ] Find the last `bundleVersionCode` uploaded to Google Play (its own,
@@ -80,6 +90,29 @@ export HEATONCA_STORE=1     # makes the Apple builds FAIL rather than stamp a de
 the About page's build stamp agrees across platforms. `bundleVersion` stays
 `2.0.0` — the store version moves on its own schedule, in
 `ProjectSettings/ProjectSettings.asset`.
+
+### The version record is named `bundleVersion`, never the build number
+
+Creating the App Store Connect **version record** is a separate act from
+uploading a build, and its "Version" field is the *marketing* version --
+`bundleVersion`, i.e. **2.0.0**. The build number belongs only to the binary
+and shows up on its own under the Build section.
+
+Both platforms got this wrong on 2026-09-06 and both had to be corrected:
+
+- **macOS** was created as version **`11`** -- the build number typed into the
+  version field. Caught while still "Prepare for Submission", so the Version
+  field was editable and a plain edit fixed it.
+- **iOS** was created as version **`1.0`**, which is what App Store Connect
+  pre-fills when you use **Add Platform > iOS**. It had already reached
+  "Waiting for Review", where the field is locked, so fixing it cost a
+  **Remove from Review**, an edit, and a re-submission -- and with it, the
+  place in the review queue.
+
+So: immediately after creating a version record, and **before** submitting,
+confirm the version reads `2.0.0` on both platform pages. A record whose
+version disagrees with the binary's `CFBundleShortVersionString` is a
+contradiction the store will happily publish.
 
 ## 2. Pre-flight checks (cheap, run them all)
 
@@ -103,6 +136,9 @@ tools/spelling-check.sh                         # American English (and an ASCII
 - [ ] `git status --porcelain unity/heaton-ca` is empty apart from the
       build-churn files documented in the [README](../README.md#build-churn-to-leave-alone)
       (`UniversalRenderPipelineGlobalSettings.asset`, `Assets/Scripts/BuildInfo.cs`).
+      A store build adds a third: `ProjectSettings/ProjectSettings.asset` picks
+      up the build number from `CIBuild.ApplyAppleBuildNumber`. That one is not
+      churn to tolerate -- revert it before committing anything (step 11).
 - [ ] Every URL in `Assets/Scripts/AppLinks.cs` resolves (in-repo file or HTTP 200).
 
 ## 3. Run the full gate set green
@@ -260,8 +296,8 @@ shasum -a 256 \
 
 | Artifact | Path | Build number | Size | SHA-256 | Uploaded |
 | --- | --- | --- | --- | --- | --- |
-| macOS `.pkg` | `build/mas/HeatonCA-2.0.0.pkg` | | | | |
-| iOS archive | Xcode Organizer | | | | |
+| macOS `.pkg` | `build/mas/HeatonCA-2.0.0.pkg` | 11 | 46 MB | `39ee330c06bbdcb21ab42482925cb254600488edb6ff05ad26ee782cb32c08dc` | 2026-09-06 |
+| iOS archive | Xcode Organizer | 10 | n/a | n/a | 2026-09-06 |
 | Android `.aab` | `build/android/HeatonCA.aab` | | | | |
 | WebGL `webgl.wasm.unityweb` | `build/webgl/Build/` | n/a | | | |
 | WebGL `webgl.data.unityweb` | `build/webgl/Build/` | n/a | | | |

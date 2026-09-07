@@ -297,7 +297,12 @@ To reproduce the screenshots: Home > Gallery > tap any tile (the simulator start
      the iOS one (or vice versa). Ship one platform, bump by one, ship the
      other. `../macos/listing.md` says the same thing from the other side.
   5. Never commit a build number. It lives in the environment; the repo's
-     value is 1 and dev builds log `DEV BUILD NUMBER`.
+     checked-in `buildNumber` is `2.0.0` for both Apple targets, and dev builds
+     log `DEV BUILD NUMBER`. A **store** build does write the real number into
+     `ProjectSettings/ProjectSettings.asset`, because `ApplyAppleBuildNumber`
+     assigns `PlayerSettings.{macOS,iOS}.buildNumber` and Unity serializes it --
+     `git checkout --` that file afterwards. The generated Xcode project already
+     carries the number, so reverting cannot affect an archive.
 - The version string (`2.0.0`, from `bundleVersion`) is shared and stays the
   same for both platforms.
 
@@ -336,8 +341,13 @@ Sizes, scene list, capture commands and the no-alpha rule are in
 
 ## Open items (Jeff only)
 
-- The highest build number ever uploaded on either platform (section 6). It is
-  visible only in App Store Connect.
+- ~~The highest build number ever uploaded on either platform (section 6).~~
+  **Resolved 2026-09-06.** TestFlight > iOS Builds was empty; TestFlight >
+  macOS Builds held 1.1.0 (build `1.1.0`, Expired), 1.0.1, 1.0.0 and 0.0.1, so
+  the highest ever was the dotted string `1.1.0` -- confirming this section's
+  prediction that the PyQt builds stamped `CFBundleVersion` from the version
+  string. **iOS 2.0.0 builds as `10`; macOS 2.0.0 takes `11`.** The counter is
+  now plain integers; the next release continues from `12`.
 - Confirm the record's live subtitle and primary category in App Store
   Connect. The values in section 1 were read from the public App Store page on
   2026-09-02, which also showed version **1.1.0** while this repo's PyQt app

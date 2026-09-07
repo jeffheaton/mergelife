@@ -361,6 +361,16 @@ The order matters:
 - `Assets/Scripts/BuildInfo.cs` is rewritten by `BuildInfoGenerator` on every
   player build (it is the About page's build stamp). Committing it is harmless;
   a diff there means someone built, not that someone edited.
+- `ProjectSettings/ProjectSettings.asset` gains the store build number on an
+  Apple store build: `CIBuild.ApplyAppleBuildNumber` assigns
+  `PlayerSettings.macOS.buildNumber` and `PlayerSettings.iOS.buildNumber`, and
+  Unity serializes both to disk. Unlike the two above, this one **must be
+  reverted, never committed** -- a committed build number is the counter
+  drifting out of the environment and into the repo, which is what
+  `store/ios/listing.md` section 6 forbids. `git checkout --
+  unity/heaton-ca/ProjectSettings/ProjectSettings.asset` after each store
+  build; the generated Xcode project already carries the number, so reverting
+  cannot affect an archive.
 
 ## Gotchas earned while gating
 
