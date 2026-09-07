@@ -370,7 +370,7 @@ per cell, to a file named after the rule's first group and the UTC time —
 
 | Platform | Where it goes |
 | --- | --- |
-| **iPhone, iPad** | your photo library, in an album called **HeatonCA**, plus a copy inside the app that the Files app can reach under *On My iPhone* → *HeatonCA* → *Snapshots*. The first save asks permission to add to Photos |
+| **iPhone, iPad** | your photo library, alongside your other recent photos, plus a copy inside the app that the Files app can reach under *On My iPhone* → *HeatonCA* → *Snapshots*. The first save asks permission to add to Photos |
 | **Android** | your gallery, plus a copy in the app's own storage |
 | **Mac, Windows** | a `Snapshots` folder in the app's data folder, and the app opens Finder or Explorer with the new file selected. On the Mac App Store version that folder is inside the app's sandbox container, so use the reveal rather than hunting for it |
 | **Browser** | your browser's downloads |

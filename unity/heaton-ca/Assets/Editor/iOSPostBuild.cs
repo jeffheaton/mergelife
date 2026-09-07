@@ -67,6 +67,17 @@ public static class iOSPostBuild
         // ProjectSettings/NativeGallery.json at order 1; this runs later and wins.
         plist.root.SetString("NSPhotoLibraryAddUsageDescription", PhotoLibraryAddUsageDescription);
 
+        // Add-only is the whole story: PngExporter calls only
+        // NativeGallery.SaveImageToGallery, and NativeGallery pins
+        // PermissionFreeMode = true, so on iOS 14+ it asks for PHAccessLevelAddOnly
+        // and never reads the library. NativeGallery's order-1 post-build sets the
+        // read key anyway, with its stock placeholder ("The app requires access to
+        // Photos to interact with it."), which App Store review rejects as
+        // insufficient -- and no honest replacement exists for a resource the app
+        // does not touch. Drop the key instead; the prompt the user actually sees
+        // comes from NSPhotoLibraryAddUsageDescription above.
+        plist.root.values.Remove("NSPhotoLibraryUsageDescription");
+
         plist.WriteToFile(plistPath);
 
         // App Store validation requires a dSYM for UnityRuntime.framework.

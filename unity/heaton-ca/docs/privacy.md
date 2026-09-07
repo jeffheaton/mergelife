@@ -65,8 +65,9 @@ access.
 
 The one prompt you may see is on **iPhone and iPad**: the first time you use
 **Save PNG**, iOS asks for permission to add photos to your photo library. It
-is used for exactly that — writing the image you just asked to save into a
-"HeatonCA" album — and for nothing else. HeatonCA never *reads* your photo
+is used for exactly that — writing the image you just asked to save into
+your photo library — and for nothing else. The app asks only for permission to
+*add*, the narrower of the two Photos permissions; HeatonCA never *reads* your photo
 library, and declining only means the image is saved inside the app (where the
 Files app can still reach it) instead of in Photos. On **Android**, saving an
 image may likewise ask for the permission the system requires to place a file

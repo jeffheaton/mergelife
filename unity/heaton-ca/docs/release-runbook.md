@@ -74,6 +74,13 @@ higher than the last one: App Store Connect rejects the upload as ITMS-90189
       moved the counter to plain integers, which Apple orders above any of
       those component by component: **iOS = 10, macOS = 11**. The next release
       continues from 12.
+
+      **Read on 2026-09-07:** iOS build 10 came back from review rejected on a
+      purpose string (see step 5), so 2.0.0 was resubmitted on iOS as build
+      **12** -- a rejected build still consumes its number, and the counter is
+      shared, so 11 was gone to macOS. macOS 2.0.0 was not rebuilt: the
+      rejection was iOS-only and the accepted macOS binary stays as it is. The
+      next release continues from **13**.
 - [ ] Note the record's current category and confirm it still matches
       `public.app-category.utilities`.
 - [ ] Find the last `bundleVersionCode` uploaded to Google Play (its own,
@@ -200,9 +207,24 @@ open build/ios/Unity-iPhone.xcodeproj
 - [ ] Generated `Info.plist` carries `ITSAppUsesNonExemptEncryption=false`,
       `UIFileSharingEnabled`, `LSSupportsOpeningDocumentsInPlace`, and
       `NSPhotoLibraryAddUsageDescription`.
+- [ ] Generated `Info.plist` does **not** carry `NSPhotoLibraryUsageDescription`.
+      NativeGallery injects it with a placeholder sentence and `iOSPostBuild`
+      removes it again; the app is add-only and App Store review rejects the
+      placeholder (it did, on the 2.0.0 build 10 submission).
 - [ ] `PrivacyInfo.xcprivacy` declares CA92.1, 35F9.1, E174.1, C617.1, no
       tracking, no collected data.
-- [ ] Archive (Any iOS Device), Distribute App, App Store Connect.
+
+Both plist checks and the archive are scripted -- `tools/ios-archive.sh` audits
+the generated `Info.plist`, archives, exports a store `.ipa`, then re-audits the
+plist *inside the archived binary*, which is the copy review actually reads:
+
+```bash
+tools/ios-archive.sh                 # -> build/ios-archive/{HeatonCA.xcarchive,export/*.ipa}
+```
+
+- [ ] `ios-archive: PASS` with the version and build number you expect.
+- [ ] Upload the `.ipa` with Transporter.app, or open the `.xcarchive` in
+      Xcode's Organizer and use Distribute App. The script never uploads.
 - [ ] The build number is the same `HEATONCA_BUILD_NUMBER` used for macOS — the
       counter is shared, so the two platforms must not reuse one value between
       them either.
@@ -324,6 +346,7 @@ Play version code used, the Unity version, and the engine commit
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | ITMS-90189 "Redundant Binary Upload" | build number not above the shared iOS/macOS counter | bump `HEATONCA_BUILD_NUMBER`, rebuild, re-archive |
+| Review rejects a purpose string as placeholder text | a third-party plugin's post-build injected its own stock sentence; NativeGallery writes both Photos keys unconditionally | the app is add-only, so `iOSPostBuild` deletes `NSPhotoLibraryUsageDescription` at order 100; `tools/ios-archive.sh` fails the build if it comes back |
 | ITMS-91053 (undeclared required-reason API) | `PrivacyInfo.xcprivacy` missing or overwritten | confirm `iOSPostBuild` / `macOSPostBuild` ran; both throw on a failed edit, so check the build log |
 | ITMS-91109 (quarantined file in payload) | the downloaded `.provisionprofile` reintroduced `com.apple.quarantine` | the packaging script runs `xattr -cr` *after* copying the profile; do not reorder |
 | Play rejects the bundle as debug-signed | one of the four `HEATONCA_ANDROID_*` variables unset | export all four, rebuild |
