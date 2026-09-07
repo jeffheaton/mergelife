@@ -319,7 +319,8 @@ shasum -a 256 \
 | Artifact | Path | Build number | Size | SHA-256 | Uploaded |
 | --- | --- | --- | --- | --- | --- |
 | macOS `.pkg` | `build/mas/HeatonCA-2.0.0.pkg` | 11 | 46 MB | `39ee330c06bbdcb21ab42482925cb254600488edb6ff05ad26ee782cb32c08dc` | 2026-09-06 |
-| iOS archive | Xcode Organizer | 10 | n/a | n/a | 2026-09-06 |
+| iOS archive | Xcode Organizer | 10 | n/a | n/a | 2026-09-06 (rejected) |
+| iOS `.ipa` | `build/ios-archive/export/HeatonCA.ipa` | 12 | 97 MB | `97ee336c762e7f074a08a6656aaa6fd0f960588628a1ae3e3bf91739c0de0005` | |
 | Android `.aab` | `build/android/HeatonCA.aab` | | | | |
 | WebGL `webgl.wasm.unityweb` | `build/webgl/Build/` | n/a | | | |
 | WebGL `webgl.data.unityweb` | `build/webgl/Build/` | n/a | | | |
