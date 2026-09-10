@@ -7,7 +7,9 @@ Store package, and the unsigned zip on a GitHub release that
 `CIBuild.Windows` Mono player and the same passing determinism self-check —
 neither is a rebuild of the other.
 
-- **Product**: HeatonCA — name reserved in Partner Center, 2026-09-07
+- **Product**: HeatonCA — name reserved in Partner Center, 2026-09-07;
+  published 2026-09-09 as Store ID **9MX32SZ72H5W**
+  (`https://apps.microsoft.com/detail/9MX32SZ72H5W`)
 - **Package identity**: `JeffHeaton.HeatonCA`, publisher
   `CN=CA868514-4C45-44CC-A8F7-4302E1A9FD41` (the account's, shared with Heaton
   Life and Dynaface)

@@ -23,7 +23,14 @@ HeatonCA App
 
 *HeatonCA* is the MergeLife application, built with Unity for iPhone, iPad, macOS, Android, Windows, and the web; its source is in [unity/heaton-ca](https://github.com/jeffheaton/mergelife/tree/master/unity/heaton-ca). The app animates any 16-byte MergeLife update rule in full color, offers a gallery of thirty curated rules, decodes a rule into the eight sub-rules that define it, and runs the genetic algorithm of the paper on the device, so new rules can be evolved and saved as PNG images. The app carries a C# copy of the MergeLife engine that replays this repository's [conformance vectors](https://github.com/jeffheaton/mergelife/blob/master/conformance/vectors.txt), so a rule produces the same lattice in the app as it does in the other implementations here.
 
-* [HeatonCA on the Apple App Store](https://apps.apple.com/us/app/heatonca/id6469583429)
+Get HeatonCA:
+
+* [Apple App Store - macOS](https://apps.apple.com/us/app/heatonca/id6469583429), with iPhone and iPad to follow on the same listing
+* [Microsoft Store - Windows 10/11](https://apps.microsoft.com/detail/9MX32SZ72H5W)
+* Google Play - Android: coming soon
+
+More about the app:
+
 * [HeatonCA user manual](https://github.com/jeffheaton/mergelife/blob/master/unity/heaton-ca/docs/manual.md)
 * [Building HeatonCA from source](https://github.com/jeffheaton/mergelife/blob/master/unity/heaton-ca/README.md)
 * [Binary Downloads](https://github.com/jeffheaton/mergelife/blob/master/binaries.md), which says what has shipped on each platform
