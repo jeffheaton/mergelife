@@ -45,4 +45,4 @@ Reference MergeLife Implementations
 MergeLife in 3rd Party Software
 -------------------------------
 
-* [Visions of Chaos](https://softology.com.au/voc.htm)
+* [Visions of Chaos](https://softology.pro/voc.htm)
