@@ -25,9 +25,9 @@ HeatonCA App
 
 Get HeatonCA:
 
-* [Apple App Store - macOS](https://apps.apple.com/us/app/heatonca/id6469583429), with iPhone and iPad to follow on the same listing
+* [Apple App Store](https://apps.apple.com/us/app/heatonca/id6469583429) - iPhone, iPad, and Mac, all on the one listing
 * [Microsoft Store - Windows 10/11](https://apps.microsoft.com/detail/9MX32SZ72H5W)
-* Google Play - Android: coming soon
+* Google Play - Android: in closed testing, coming soon
 
 More about the app:
 

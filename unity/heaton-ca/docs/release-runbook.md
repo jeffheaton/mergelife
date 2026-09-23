@@ -286,7 +286,10 @@ powershell -ExecutionPolicy Bypass -File tools\windows-selfcheck.ps1
 - [ ] Attach the zip to the GitHub release; the listing notes that the build is
       unsigned and SmartScreen will warn on first run.
 
-Microsoft Store / MSIX packaging is deliberately out of scope for 2.0.0.
+The Store package is a second Windows channel, not a rebuild of the zip:
+`Packaging/windows/package-msix.ps1` packs the same `CIBuild.Windows` Mono
+player as a Desktop Bridge MSIX. HeatonCA published on 2026-09-09 as Store ID
+`9MX32SZ72H5W`; see `store/windows/listing.md`.
 
 ## 9. Device verification (before releasing any of the uploads)
 
