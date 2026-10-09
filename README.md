@@ -27,7 +27,7 @@ Get HeatonCA:
 
 * [Apple App Store](https://apps.apple.com/us/app/heatonca/id6469583429) - iPhone, iPad, and Mac, all on the one listing
 * [Microsoft Store - Windows 10/11](https://apps.microsoft.com/detail/9MX32SZ72H5W)
-* Google Play - Android: in closed testing, coming soon
+* [Google Play - Android](https://play.google.com/store/apps/details?id=com.heatonresearch.heatonca)
 
 More about the app:
 

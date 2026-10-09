@@ -18,6 +18,6 @@ The MergeLife application: simulator, gallery, rule decoder, and on-device train
 
 * [HeatonCA - Apple App Store](https://apps.apple.com/us/app/heatonca/id6469583429) - iPhone, iPad, and Mac, all on the one listing.
 * [HeatonCA - Microsoft Store](https://apps.microsoft.com/detail/9MX32SZ72H5W) - Windows 10/11.
-* HeatonCA - Google Play (Android) - in closed testing; the public listing is not published yet.
+* [HeatonCA - Google Play](https://play.google.com/store/apps/details?id=com.heatonresearch.heatonca) - Android.
 * HeatonCA - Web (runs in the browser) - pending; the hosting address is not chosen yet.
 * HeatonCA - Windows (zip) - pending; published with the version 2.0.0 release on GitHub.
